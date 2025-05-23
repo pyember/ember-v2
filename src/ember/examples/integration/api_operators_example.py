@@ -7,24 +7,16 @@ API keys are not available.
 
 Run this example with:
 ```bash
-uv run python -m src.ember.examples.integration.api_operators_example
+uv run python src/ember/examples/integration/api_operators_example.py
 ```
 """
 
 import logging
-from typing import ClassVar, List
+from typing import Any, ClassVar, List
 
-from ember.api.models import ModelEnum, get_model_service, get_registry
-from ember.api.operators import (
-    EnsembleOperator,
-    Field,
-    JudgeSynthesisOperator,
-    MostCommonAnswerSelector,
-    Operator,
-    Specification,
-)
-from ember.core.registry.model.model_module.lm import LMModule
-from ember.core.types.ember_model import EmberModel
+from ember.api.models import models
+from ember.api.non import non
+from ember.api.operators import Operator, Specification, EmberModel, Field
 
 
 # Define input/output models
@@ -114,32 +106,25 @@ class ModelProvider:
     """Helper class to provide real or mock models based on availability."""
 
     @staticmethod
-    def get_lm_module(model_enum: ModelEnum, temperature: float = 0.7) -> LMModule:
-        """Get a real or mocked LM module based on model availability.
+    def get_model(model_name: str, temperature: float = 0.7):
+        """Get a real or mocked model based on availability.
 
         Args:
-            model_enum: The model enum to get
+            model_name: The model name to get
             temperature: Temperature setting for the model
 
         Returns:
-            Either a real LM module or a mock LM module
+            Either a real bound model or a mock implementation
         """
-        registry = get_registry()
-
         # Try to get the real model
         try:
-            if hasattr(model_enum, "value") and registry.is_registered(
-                model_enum.value
-            ):
-                model_service = get_model_service()
-                model = model_service.get_model(model_enum.value)
-                model.temperature = temperature
-                return model
+            available_models = models.list()
+            if model_name in available_models:
+                return models.bind(model_name, temperature=temperature)
         except Exception as e:
-            logging.warning(f"Could not load model {model_enum}: {str(e)}")
+            logging.warning(f"Could not load model {model_name}: {str(e)}")
 
         # Fall back to mock implementation
-        model_name = model_enum.name if hasattr(model_enum, "name") else str(model_enum)
         logging.info(f"Using mock implementation for {model_name}")
         return MockLMModule(model_name=model_name, temperature=temperature)
 
@@ -153,16 +138,16 @@ class SimpleQuestionAnswerer(Operator[QuestionInput, AnswerOutput]):
     )
 
     # Field declarations
-    lm_module: LMModule
+    model: Any  # Bound model function
 
-    def __init__(self, *, model_enum: ModelEnum, temperature: float = 0.7):
+    def __init__(self, *, model_name: str = "gpt-4", temperature: float = 0.7):
         """Initialize the operator with model configuration.
 
         Args:
-            model_enum: The model enum to use
+            model_name: The model name to use
             temperature: Sampling temperature for generation
         """
-        self.lm_module = ModelProvider.get_lm_module(model_enum, temperature)
+        self.model = ModelProvider.get_model(model_name, temperature)
 
     def forward(self, *, inputs: QuestionInput) -> AnswerOutput:
         """Generate an answer to the input question.
@@ -173,12 +158,12 @@ class SimpleQuestionAnswerer(Operator[QuestionInput, AnswerOutput]):
         Returns:
             Structured answer output
         """
-        # Call the language model with the question
-        response = self.lm_module(prompt=inputs.question)
+        # Call the model with the question
+        response = self.model(inputs.question)
 
-        # Extract text content from response if it's not already a string
-        if hasattr(response, "data"):
-            response_text = response.data
+        # Extract text content from response
+        if hasattr(response, "text"):
+            response_text = response.text
         else:
             response_text = str(response)
 
@@ -198,17 +183,17 @@ class DiverseAnswerGenerator(Operator[QuestionInput, MultipleAnswersOutput]):
 
     # Field declarations
     prefixes: List[str]
-    lm_module: LMModule
+    model: Any  # Bound model function
 
-    def __init__(self, *, prefixes: List[str], model_enum: ModelEnum = ModelEnum.gpt_4):
+    def __init__(self, *, prefixes: List[str], model_name: str = "gpt-4"):
         """Initialize with different prefixes to guide diverse responses.
 
         Args:
             prefixes: Different framing instructions to get diverse answers
-            model_enum: The model enum to use
+            model_name: The model name to use
         """
         self.prefixes = prefixes
-        self.lm_module = ModelProvider.get_lm_module(model_enum)
+        self.model = ModelProvider.get_model(model_name)
 
     def forward(self, *, inputs: QuestionInput) -> MultipleAnswersOutput:
         """Generate multiple diverse answers using different prefixes.
@@ -224,11 +209,11 @@ class DiverseAnswerGenerator(Operator[QuestionInput, MultipleAnswersOutput]):
         for prefix in self.prefixes:
             # Prepend the prefix to the question
             prompt = f"{prefix} {inputs.question}"
-            response = self.lm_module(prompt=prompt)
+            response = self.model(prompt)
 
-            # Extract text content from response if it's not already a string
-            if hasattr(response, "data"):
-                response_text = response.data
+            # Extract text content from response
+            if hasattr(response, "text"):
+                response_text = response.text
             else:
                 response_text = str(response)
 
@@ -243,15 +228,18 @@ def main():
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
     # Check if API keys are available
-    registry = get_registry()
-    if not registry.list_models():
-        logging.warning(
-            "No models were discovered. This example will use mock models instead of real ones."
-        )
-        logging.warning(
-            "To use real models, set one of these environment variables: "
-            "OPENAI_API_KEY, ANTHROPIC_API_KEY, GOOGLE_API_KEY"
-        )
+    try:
+        available_models = models.list()
+        if not available_models:
+            logging.warning(
+                "No models were discovered. This example will use mock models instead of real ones."
+            )
+            logging.warning(
+                "To use real models, set one of these environment variables: "
+                "OPENAI_API_KEY, ANTHROPIC_API_KEY, GOOGLE_API_KEY"
+            )
+    except Exception:
+        logging.warning("Could not check available models. Using mock implementation.")
 
     # Create a question input
     question = QuestionInput(question="What is the meaning of life?")
@@ -259,36 +247,17 @@ def main():
     print(f"Question: {question.question}\n")
 
     # 1. Simple operator with GPT-4
-    simple_answerer = SimpleQuestionAnswerer(model_enum=ModelEnum.gpt_4)
+    simple_answerer = SimpleQuestionAnswerer(model_name="gpt-4")
     result1 = simple_answerer(inputs=question)
     print("1. Simple Operator:")
     print(f"   Answer: {result1.answer}")
     print(f"   Confidence: {result1.confidence}\n")
 
-    # Create a custom ensemble operator that handles response objects
-    class CustomEnsembleOperator(EnsembleOperator):
-        def forward(self, *, inputs: dict) -> dict:
-            # Call the underlying models with the query
-            raw_responses = [lm(prompt=inputs["query"]) for lm in self.lm_modules]
-
-            # Process responses to extract text
-            processed_responses = []
-            for response in raw_responses:
-                if hasattr(response, "data"):
-                    processed_responses.append(response.data)
-                else:
-                    processed_responses.append(str(response))
-
-            # Return the processed responses
-            return {"responses": processed_responses}
-
-    # Using fully typed model enums for clarity
-    ensemble = CustomEnsembleOperator(
-        lm_modules=[
-            ModelProvider.get_lm_module(ModelEnum.gpt_4),
-            ModelProvider.get_lm_module(ModelEnum.claude_3_5_sonnet),
-            ModelProvider.get_lm_module(ModelEnum.gemini_1_5_pro),
-        ]
+    # 2. Using ensemble operator from non API
+    ensemble = non.UniformEnsemble(
+        num_units=3,
+        model_name="gpt-4",
+        temperature=0.7
     )
 
     result2 = ensemble(inputs={"query": question.question})
@@ -298,9 +267,9 @@ def main():
         print(f"   Model {i}: {response}")
     print()
 
-    # 3. Ensemble with answer selection
-    # Demonstrating direct invocation of the MostCommonAnswerSelector
-    result3 = MostCommonAnswerSelector()(inputs={"responses": result2["responses"]})
+    # 3. Ensemble with answer selection using non API
+    selector = non.MostCommon()
+    result3 = selector(inputs={"responses": result2["responses"]})
     print("3. Ensemble with Most Common Answer Selector:")
     print(f"   Selected Answer: {result3['final_answer']}\n")
 
@@ -317,61 +286,11 @@ def main():
     # Generate diverse answers
     diverse_results = diverse_generator(inputs=question)
 
-    # Create a custom JudgeSynthesisOperator that handles response objects
-    class CustomJudgeSynthesisOperator(JudgeSynthesisOperator):
-        def forward(self, *, inputs: dict) -> dict:
-            # Prepare synthesizer prompt
-            question = inputs["query"]
-            responses = inputs["responses"]
-
-            # Build the prompt
-            prompt = (
-                f"I need you to synthesize the following perspectives on this question: '{question}'\n\n"
-                "Multiple advisors have provided their views:\n\n"
-            )
-
-            for i, response in enumerate(responses, 1):
-                prompt += f"Advisor {i}: {response}\n\n"
-
-            prompt += (
-                "Based on these perspectives, please provide:\n"
-                "1. Your reasoning process, synthesizing the different viewpoints\n"
-                "2. A final, balanced answer that represents the best synthesis\n\n"
-                "Format your response like this:\n"
-                "Reasoning: [your reasoning here]\n\n"
-                "Final Answer: [your final answer here]"
-            )
-
-            # Get the response
-            response = self.lm_module(prompt=prompt)
-
-            # Extract the text from the response if it's not already a string
-            if hasattr(response, "data"):
-                response_text = response.data
-            else:
-                response_text = str(response)
-
-            # Extract reasoning and final answer
-            reasoning = ""
-            final_answer = ""
-
-            if "Reasoning:" in response_text and "Final Answer:" in response_text:
-                parts = response_text.split("Final Answer:")
-                if len(parts) >= 2:
-                    reasoning_part = parts[0]
-                    if "Reasoning:" in reasoning_part:
-                        reasoning = reasoning_part.split("Reasoning:", 1)[1].strip()
-                    final_answer = parts[1].strip()
-            else:
-                # Fallback if the expected format isn't found
-                reasoning = "Could not extract reasoning"
-                final_answer = response_text
-
-            return {"reasoning": reasoning, "final_answer": final_answer}
-
-    # Use the judge synthesis operator to synthesize the answers
-    judge_lm = ModelProvider.get_lm_module(ModelEnum.claude_3_5_sonnet)
-    synthesizer = CustomJudgeSynthesisOperator(lm_module=judge_lm)
+    # Use JudgeSynthesisOperator from non API
+    synthesizer = non.JudgeSynthesisOperator(
+        model_name="gpt-4",
+        temperature=0.3
+    )
 
     # Prepare the input for the synthesizer
     synthesis_input = {"query": question.question, "responses": diverse_results.answers}
