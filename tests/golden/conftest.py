@@ -81,10 +81,7 @@ def mock_lm():
         else:
             return f"Mock response to: {prompt[:50]}..."
     
-    lm = MagicMock()
-    lm.side_effect = mock_invoke
-    lm.__call__.side_effect = mock_invoke
-    
+    lm = MagicMock(side_effect=mock_invoke)
     return lm
 
 
@@ -93,7 +90,8 @@ def mock_environment():
     """Mock environment variables for API keys."""
     env_vars = {
         "OPENAI_API_KEY": "mock-openai-key",
-        "ANTHROPIC_API_KEY": "mock-anthropic-key"
+        "ANTHROPIC_API_KEY": "mock-anthropic-key",
+        "GOOGLE_API_KEY": "mock-google-key"
     }
     
     with patch.dict(os.environ, env_vars):
@@ -136,43 +134,76 @@ def example_imports():
     """Common imports for examples."""
     return {
         "ember.api": ["non", "models", "data", "operators", "xcs"],
-        "ember.api.models": ["ModelService", "UsageService", "initialize_registry"],
+        "ember.api.models": ["model", "complete", "configure", "Response"],
         "ember.api.data": ["DataContext", "load_dataset_entries"],
-        "ember.api.xcs": ["jit", "pmap", "vmap"],
+        "ember.api.xcs": ["jit", "pmap", "vmap", "autograph"],
+        "ember.api.operators": ["Operator", "Specification"],
     }
 
 
-def run_example_main(module_path: str, mock_registry=None, mock_lm=None):
-    """Helper to run an example's main function with mocks."""
-    import importlib.util
+@pytest.fixture
+def mock_models_api():
+    """Mock the simplified models API."""
+    # Create a mock response object
+    class MockResponse:
+        def __init__(self, text):
+            self.text = text
+            self.usage = {
+                "total_tokens": 100,
+                "prompt_tokens": 20,
+                "completion_tokens": 80,
+                "cost": 0.003
+            }
+            self.model = "mock-model"
+            self.raw = {"data": text}
     
-    # Load the module
-    spec = importlib.util.spec_from_file_location("example_module", module_path)
-    module = importlib.util.module_from_spec(spec)
+    # Mock the models() function
+    def mock_models_call(model_id, prompt, **kwargs):
+        if "capital" in prompt.lower():
+            return MockResponse("The capital of France is Paris.")
+        elif "quantum" in prompt.lower():
+            return MockResponse("Quantum computing uses quantum bits (qubits).")
+        else:
+            return MockResponse(f"Mock response for {model_id}: {prompt[:50]}...")
     
-    # Apply mocks if provided
-    patches = []
-    if mock_registry:
-        patches.append(patch("ember.api.models.initialize_registry", return_value=mock_registry))
-    if mock_lm:
-        patches.append(patch("ember.api.non", return_value=mock_lm))
+    # Mock models.bind()
+    def mock_bind(model_id, **params):
+        bound = MagicMock()
+        bound.model_id = model_id
+        bound.params = params
+        bound.__call__ = lambda prompt, **kw: mock_models_call(model_id, prompt, **{**params, **kw})
+        bound.__repr__ = lambda: f"ModelBinding(model_id='{model_id}', params={params})"
+        return bound
     
-    # Execute with mocks
-    try:
-        for p in patches:
-            p.start()
-        
-        spec.loader.exec_module(module)
-        
-        # Run main if it exists
-        if hasattr(module, "main"):
-            module.main()
-            
-    finally:
-        for p in patches:
-            p.stop()
+    # Mock models.list()
+    def mock_list(provider=None):
+        all_models = [
+            "openai:gpt-4", "openai:gpt-3.5-turbo",
+            "anthropic:claude-3-sonnet", "anthropic:claude-3-opus",
+            "google:gemini-pro"
+        ]
+        if provider:
+            return [m for m in all_models if m.startswith(provider)]
+        return all_models
     
-    return module
+    # Mock models.info()
+    def mock_info(model_id):
+        return {
+            "id": f"provider:{model_id}" if ":" not in model_id else model_id,
+            "provider": model_id.split(":")[0] if ":" in model_id else "unknown",
+            "context_window": 8192,
+            "pricing": {"input": 0.01, "output": 0.03}
+        }
+    
+    # Create the mock models module
+    mock_models = MagicMock()
+    mock_models.side_effect = mock_models_call
+    mock_models.__call__ = mock_models_call
+    mock_models.bind = mock_bind
+    mock_models.list = mock_list
+    mock_models.info = mock_info
+    
+    return mock_models
 
 
 @pytest.fixture

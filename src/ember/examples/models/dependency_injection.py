@@ -1,183 +1,178 @@
-"""
-Example: Dependency Injection with ModelContext
+"""Dependency Injection and Configuration Example
 
-This example demonstrates how to use the dependency injection capabilities
-of the new model API to isolate different execution contexts.
+This example demonstrates how to use different model configurations
+for various use cases with the simplified API.
 
-Key concepts:
-1. Creating multiple contexts with different configurations
-2. Using models with explicit context dependencies
-3. Provider namespaces with contexts
-4. Temporary configuration overrides
+To run:
+    uv run python src/ember/examples/models/dependency_injection.py
+
+Required environment variables:
+    OPENAI_API_KEY (optional): Your OpenAI API key
+    ANTHROPIC_API_KEY (optional): Your Anthropic API key
 """
 
 import os
 from typing import Dict, List
 
-from ember.api.models import (
-    ContextConfig,
-    configure,
-    create_context,
-    create_provider_namespace,
-    model,
+from ember.api import models
+
+
+def different_configurations():
+    """Demonstrate using models with different configurations."""
+    print("\n=== Different Configurations ===\n")
+    
+    print("The simplified API allows per-call configuration:")
+    
+    # Example 1: Low temperature for factual responses
+    print("\n1. Factual response (low temperature):")
+    print('models("gpt-4", "What is the capital of France?", temperature=0.1)')
+    
+    # Example 2: High temperature for creative responses  
+    print("\n2. Creative response (high temperature):")
+    print('models("gpt-4", "Write a poem about Paris", temperature=0.9)')
+    
+    # Example 3: Limited tokens for summaries
+    print("\n3. Brief summary (limited tokens):")
+    print('models("gpt-4", "Summarize War and Peace", max_tokens=50)')
+    
+    print("\nEach call can have independent configuration without context management.")
+
+
+def model_binding_patterns():
+    """Show how to create reusable model configurations."""
+    print("\n=== Model Binding Patterns ===\n")
+    
+    print("Create reusable configurations with model binding:")
+    
+    # Create bound models with different configs
+    print("\n# Create specialized models")
+    print('factual_model = models.bind("gpt-4", temperature=0.1)')
+    print('creative_model = models.bind("gpt-4", temperature=0.9)')
+    print('summary_model = models.bind("gpt-4", max_tokens=100)')
+    
+    print("\n# Use them repeatedly")
+    print('factual_model("What is gravity?")')
+    print('creative_model("Write a story about gravity")')
+    print('summary_model("Explain quantum mechanics")')
+    
+    # Show actual binding if API is available
+    if os.environ.get("OPENAI_API_KEY"):
+        try:
+            factual = models.bind("gpt-4", temperature=0.1)
+            print(f"\nActual binding created: {factual}")
+        except Exception as e:
+            print(f"\n(Skipping actual binding: {e})")
+
+
+def ab_testing_pattern():
+    """Demonstrate A/B testing with different configurations."""
+    print("\n=== A/B Testing Pattern ===\n")
+    
+    def run_ab_test(prompt: str, configs: Dict[str, Dict]) -> Dict[str, str]:
+        """Run A/B test with different model configurations."""
+        results = {}
+        
+        for variant_name, config in configs.items():
+            print(f"\nTesting {variant_name}:")
+            print(f"  Model: {config['model']}")
+            print(f"  Params: {config['params']}")
+            
+            # In real usage:
+            # response = models(config['model'], prompt, **config['params'])
+            # results[variant_name] = response.text
+            
+            # For demo:
+            results[variant_name] = f"Mock response for {variant_name}"
+        
+        return results
+    
+    # Define test variants
+    test_configs = {
+        "Conservative": {
+            "model": "gpt-4",
+            "params": {"temperature": 0.2, "top_p": 0.9}
+        },
+        "Balanced": {
+            "model": "gpt-4", 
+            "params": {"temperature": 0.5, "top_p": 0.95}
+        },
+        "Creative": {
+            "model": "gpt-4",
+            "params": {"temperature": 0.8, "top_p": 1.0}
+        }
+    }
+    
+    # Run test
+    results = run_ab_test(
+        "Write a tagline for a new coffee shop",
+        test_configs
+    )
+    
+    print("\nResults collected for analysis")
+
+
+def custom_context_example():
+    """Show how to use custom contexts when needed."""
+    print("\n=== Custom Context Example ===\n")
+    
+    print("For advanced use cases, you can create custom contexts:")
+    
+    print("""
+from ember.api.models import create_context, ContextConfig
+
+# Create context with specific API keys
+dev_context = create_context(
+    config=ContextConfig(
+        api_keys={"openai": "dev-key", "anthropic": "dev-key"}
+    )
 )
 
-
-def create_isolated_contexts():
-    """Create multiple isolated contexts with different configurations."""
-    print("\n=== Creating Isolated Contexts ===\n")
-
-    # Create a context for production use
-    prod_config = ContextConfig(
-        auto_discover=True,
-        api_keys={
-            "openai": os.environ.get("OPENAI_API_KEY", "sk-prod-key"),
-            "anthropic": os.environ.get("ANTHROPIC_API_KEY", "sk-prod-key"),
-        },
-        default_timeout=30,
-    )
-    prod_context = create_context(config=prod_config)
-
-    # Create a context for testing
-    test_config = ContextConfig(
-        auto_discover=False,
-        api_keys={
-            "openai": "sk-test-key",
-            "anthropic": "sk-test-key",
-        },
-        default_timeout=5,
-    )
-    test_context = create_context(config=test_config)
-
-    # Use both contexts
-    try:
-        # This will use the production context (real API keys)
-        prod_model = model("gpt-4o", context=prod_context)
-
-        # This will use the test context (test API keys)
-        test_model = model("gpt-4o", context=test_context)
-
-        # Demonstrate the isolation - these will have different URLs and keys
-        print(f"Production model: {prod_model.model_id}")
-        print(f"Test model: {test_model.model_id}")
-
-        # NOTE: Since we're using fake test keys, this would fail in a real setting
-        # response = test_model("This is a test prompt")
-
-    except Exception as e:
-        print(f"Exception: {e}")
-
-    print("\nContexts remain isolated - changing one doesn't affect the other")
+# Use models with custom context
+response = models("gpt-4", "Hello", context=dev_context)
+""")
+    
+    print("\nThis is useful for:")
+    print("- Testing with different API keys")
+    print("- Isolated environments (dev/staging/prod)")
+    print("- Multi-tenant applications")
 
 
-def provider_namespaces_with_contexts():
-    """Create provider namespaces with different contexts."""
-    print("\n=== Provider Namespaces with Contexts ===\n")
-
-    # Create two contexts with different configurations
-    context1 = create_context(
-        config=ContextConfig(api_keys={"openai": "key1", "anthropic": "key1"})
-    )
-
-    context2 = create_context(
-        config=ContextConfig(api_keys={"openai": "key2", "anthropic": "key2"})
-    )
-
-    # Create provider namespaces with the contexts
-    openai1 = create_provider_namespace("openai", context=context1)
-    openai2 = create_provider_namespace("openai", context=context2)
-
-    # The models from these namespaces will use different contexts
-    model1 = openai1.gpt4o
-    model2 = openai2.gpt4o
-
-    print("Model 1 using context 1")
-    print("Model 2 using context 2")
-
-    print("\nEach model will use its own isolated key and configuration")
-
-
-def configuration_contexts():
-    """Demonstrate the use of configuration contexts."""
-    print("\n=== Configuration Contexts ===\n")
-
-    # Create a model with default config
-    gpt4 = model("gpt-4")
-
-    print("Default configuration:")
-    print(f"Temperature: {gpt4.config.get('temperature', 0.7)}")
-
-    # Temporarily override configuration
-    with configure(temperature=0.2, max_tokens=100):
-        print("\nWith configure() context manager:")
-        print(f"Temperature: {gpt4.config.get('temperature', 0.7)}")
-
-        # The override is only for this context
-        with configure(temperature=0.9):
-            print("\nNested configure() context:")
-            print(f"Temperature: {gpt4.config.get('temperature', 0.7)}")
-
-        print("\nBack to first configure() context:")
-        print(f"Temperature: {gpt4.config.get('temperature', 0.7)}")
-
-    print("\nBack to default configuration:")
-    print(f"Temperature: {gpt4.config.get('temperature', 0.7)}")
-
-
-def simulate_ab_testing():
-    """Simulate A/B testing with different model configurations."""
-    print("\n=== Simulating A/B Testing ===\n")
-
-    # Create contexts for A/B testing
-    context_a = create_context(
-        config=ContextConfig(
-            api_keys={"openai": "key-a", "anthropic": "key-a"}, auto_discover=True
-        )
-    )
-
-    context_b = create_context(
-        config=ContextConfig(
-            api_keys={"openai": "key-b", "anthropic": "key-b"}, auto_discover=True
-        )
-    )
-
-    # Create models with different contexts and configurations
-    model_a = model("gpt-4o", context=context_a, temperature=0.5)
-    model_b = model("claude-3-5-sonnet", context=context_b, temperature=0.7)
-
-    # Function to simulate running experiments
-    def run_experiment(prompt: str, models: Dict[str, callable], n_trials: int = 3):
-        """Run an experiment with multiple models."""
-        results: Dict[str, List[str]] = {name: [] for name in models}
-
-        for trial in range(n_trials):
-            for name, model_fn in models.items():
-                print(f"Trial {trial+1}: Running experiment with {name}")
-                # In a real setting, we would call the model
-                # response = model_fn(prompt)
-                # results[name].append(str(response))
-
-        return results
-
-    # Run the experiment
-    experiment = run_experiment(
-        prompt="Explain the benefits of quantum computing in three sentences.",
-        models={"GPT-4o": model_a, "Claude-3.5": model_b},
-    )
-
-    print("\nExperiment completed, contexts remained isolated")
+def configuration_hierarchy():
+    """Explain configuration hierarchy."""
+    print("\n=== Configuration Hierarchy ===\n")
+    
+    print("Configuration precedence (highest to lowest):")
+    print("\n1. Call-level parameters:")
+    print('   models("gpt-4", "Hello", temperature=0.9)')
+    
+    print("\n2. Bound model parameters:")
+    print('   gpt4 = models.bind("gpt-4", temperature=0.7)')
+    print('   gpt4("Hello")  # Uses temperature=0.7')
+    
+    print("\n3. Context configuration:")
+    print('   # When using custom contexts')
+    
+    print("\n4. Environment defaults:")
+    print('   # System-wide defaults')
+    
+    print("\nThis allows fine-grained control over model behavior.")
 
 
 def main():
     """Run all examples."""
-    print("=== Model Context and Dependency Injection Examples ===")
-
-    create_isolated_contexts()
-    provider_namespaces_with_contexts()
-    configuration_contexts()
-    simulate_ab_testing()
-
-    print("\n=== End of Examples ===")
+    print("=" * 60)
+    print("Dependency Injection and Configuration Examples")
+    print("=" * 60)
+    
+    different_configurations()
+    model_binding_patterns()
+    ab_testing_pattern()
+    custom_context_example()
+    configuration_hierarchy()
+    
+    print("\n" + "=" * 60)
+    print("Examples completed!")
+    print("=" * 60)
 
 
 if __name__ == "__main__":

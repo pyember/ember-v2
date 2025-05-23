@@ -12,7 +12,7 @@ from .test_golden_base import GoldenTestBase
 class TestModelsExamples(GoldenTestBase):
     """Test all models examples."""
     
-    def test_model_api_example(self, capture_output):
+    def test_model_api_example(self, capture_output, mock_models_api):
         """Test the simplified model API example."""
         expected_patterns = [
             r"=== Basic Invocation Example ===",
@@ -27,19 +27,8 @@ class TestModelsExamples(GoldenTestBase):
             r"All examples completed!",
         ]
         
-        # Mock the models API
-        mock_models = MagicMock()
-        mock_models.list.return_value = ["gpt-4", "claude-3", "gpt-3.5-turbo"]
-        mock_models.bind.return_value = MagicMock(__repr__=lambda self: "ModelBinding(model_id='gpt-4', params={'temperature': 0.5})")
-        mock_models.info.return_value = {
-            "id": "openai:gpt-4",
-            "provider": "openai",
-            "context_window": 8192,
-            "pricing": {"input": 0.03, "output": 0.06}
-        }
-        
         extra_patches = [
-            patch("ember.api.models", mock_models),
+            patch("ember.api.models", mock_models_api),
         ]
         
         results = self.run_category_tests(

@@ -1,24 +1,17 @@
 """Model Registry Usage Example
 
-Demonstrates patterns for integrating LLMs using the Ember model registry.
+Demonstrates various patterns for using models with the simplified API.
 
 This example shows:
-1. The one-line initialization pattern
-2. The standard initialization pattern
-3. Direct model access (PyTorch-like pattern)
+1. Direct model invocation
+2. Model invocation with parameters
+3. Type-safe enum usage
 4. Usage tracking and cost estimation
 5. Batch processing with multiple models
-6. Working with model enums for type safety
-7. Adding custom models to the registry
-
-For comprehensive documentation, see:
-docs/quickstart/model_registry.md
+6. Custom model registration
 
 To run:
     uv run python src/ember/examples/models/model_registry_example.py
-
-    # Or if in the virtual env
-    python src/ember/examples/models/model_registry_example.py
 
 Required environment variables:
     OPENAI_API_KEY (optional): Your OpenAI API key for OpenAI model examples
@@ -31,7 +24,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 
 from ember.api import models
-from ember.api.models import ModelCost, ModelEnum, ModelInfo, ProviderInfo, RateLimit
+from ember.api.models import ModelCost, ModelEnum, ModelInfo, RateLimit
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -41,42 +34,33 @@ def one_line_pattern():
     """Demonstrates the simplest one-line initialization pattern.
 
     Returns:
-        The models API object for reuse, or None if an error occurs
+        True if successful, False otherwise
     """
-    # With the new API, we don't need to initialize anything
-    # Just use the models API directly
-
     try:
-        # Direct model invocation
-        response = models.openai.gpt_4o("What is the capital of France?")
+        # Direct model invocation with the simplified API
+        response = models("openai:gpt-4o", "What is the capital of France?")
         print("\n=== One-line pattern result ===")
         print(response.data)
-        return models  # Return for reuse in other examples
+        return True
     except Exception as e:
         logger.exception("Error in one-line pattern: %s", str(e))
-        return None
+        return False
 
 
 def standard_pattern():
     """Demonstrates the standard initialization pattern with more control.
 
     Returns:
-        The configured model instance, or None if an error occurs
+        True if successful, False otherwise
     """
     try:
-        # With the new API, we can create a model instance with more control
-        from ember.api.models import ModelBuilder
-
-        # Create a model with specific parameters
-        model = (
-            ModelBuilder()
-            .temperature(0.7)
-            .max_tokens(100)
-            .build("anthropic:claude-3-5-sonnet")
+        # Use the models API with additional parameters
+        response = models(
+            "anthropic:claude-3-5-sonnet",
+            "Explain quantum computing in one sentence.",
+            temperature=0.7,
+            max_tokens=100
         )
-
-        # Use the model
-        response = model.generate(prompt="Explain quantum computing in one sentence.")
 
         print("\n=== Standard pattern result ===")
         print(f"Response: {response.data}")
@@ -84,47 +68,42 @@ def standard_pattern():
         # Check usage statistics
         if response.usage:
             print(f"Total tokens used: {response.usage.total_tokens}")
-            print("Estimated cost: available through the models.usage API")
+            if hasattr(response.usage, 'cost'):
+                print(f"Estimated cost: ${response.usage.cost:.4f}")
 
-        return model
+        return True
     except Exception as e:
         logger.exception("Error in standard pattern: %s", str(e))
-        return None
+        return False
 
 
 def direct_model_pattern():
-    """Demonstrates direct model access (PyTorch-like pattern).
+    """Demonstrates direct model access pattern.
 
     Returns:
-        The models API object for reuse, or None if an error occurs
+        True if successful, False otherwise
     """
     try:
-        # With the new API, we can use models directly
-        from ember.api.models import ModelAPI
-
-        # Use the direct model ID pattern
-        model = ModelAPI(model_id="openai:gpt-4o")
-        response = model.generate(prompt="What is the tallest mountain in the world?")
+        # Direct model access with the simplified API
+        response = models("openai:gpt-4o", "What is the tallest mountain in the world?")
 
         print("\n=== Direct model pattern result ===")
         print(response.data)
 
-        return models
+        return True
     except Exception as e:
         logger.exception("Error in direct model pattern: %s", str(e))
-        return None
+        return False
 
 
 def type_safe_enum_pattern() -> None:
     """Demonstrates using ModelEnum for type-safe model references."""
     try:
-        # With the new API, we can use enums directly with models
-        from ember.api.models import ModelAPI, get_registry
-
-        # Use enum instead of string literals
-        model = ModelAPI.from_enum(ModelEnum.gpt_4o)
-        response = model.generate(
-            prompt="What's your favorite programming language and why?"
+        # Use enum with the simplified API
+        model_id = ModelEnum.gpt_4o.value
+        response = models(
+            model_id,
+            "What's your favorite programming language and why?"
         )
 
         print("\n=== Type-safe enum pattern result ===")
@@ -135,8 +114,8 @@ def type_safe_enum_pattern() -> None:
         print(f"Response: {truncated_text}")
 
         # Access model metadata
-        registry = get_registry()
-        model_info = registry.get_model_info(model_id="openai:gpt-4o")
+        registry = models.get_registry()
+        model_info = registry.get_model_info(model_id=model_id)
         print("\nModel metadata:")
         print(f"Name: {model_info.name}")
         print(f"Provider: {model_info.provider.name}")
@@ -159,8 +138,6 @@ def type_safe_enum_pattern() -> None:
 def batch_processing_pattern() -> None:
     """Demonstrates batch processing with multiple models."""
     try:
-        from ember.api.models import ModelAPI
-
         # Define prompts and models
         prompts = [
             "What is machine learning?",
@@ -188,9 +165,8 @@ def batch_processing_pattern() -> None:
             """
             model_id, prompt = args
             try:
-                model = ModelAPI(model_id=model_id)
                 start_time = time.time()
-                response = model.generate(prompt=prompt)
+                response = models(model_id, prompt)
                 duration = time.time() - start_time
                 return model_id, prompt, response.data, duration
             except Exception as e:
@@ -244,9 +220,9 @@ def batch_processing_pattern() -> None:
         else:
             print("Effective throughput: N/A (no time elapsed)")
 
-        # Usage tracking with new API
+        # Usage tracking
         print(
-            "\nTotal usage across all batch operations is available through models.usage API"
+            "\nTotal usage across all batch operations can be tracked through response.usage"
         )
     except Exception as e:
         logger.exception("Error in batch processing pattern: %s", str(e))
@@ -255,11 +231,8 @@ def batch_processing_pattern() -> None:
 def custom_model_pattern() -> None:
     """Demonstrates adding custom models to the registry."""
     try:
-        # With the new API, we get the registry and register models directly
-        from ember.api.models import get_registry
-
-        # Get the registry
-        registry = get_registry()
+        # Get the registry using the simplified API
+        registry = models.get_registry()
 
         # Register a custom model with realistic values
         custom_model = ModelInfo(
@@ -274,11 +247,11 @@ def custom_model_pattern() -> None:
                 requests_per_minute=3000,  # 3K requests per minute
             ),
             context_window=128000,  # 128K context window
-            provider=ProviderInfo(
-                name="MyOrg AI",
-                default_api_key="${MYORG_API_KEY}",
-                api_base="https://api.myorg-ai.example.com/v1",
-            ),
+            provider={
+                "name": "MyOrg AI",
+                "default_api_key": "${MYORG_API_KEY}",
+                "base_url": "https://api.myorg-ai.example.com/v1",
+            },
         )
 
         # Check if model is already registered to avoid errors
