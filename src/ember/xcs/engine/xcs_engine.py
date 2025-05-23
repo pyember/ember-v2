@@ -335,7 +335,7 @@ class TopologicalSchedulerWithParallelDispatch(TopologicalScheduler):
                     try:
                         results[node_id] = future.result()
                     except Exception as e:
-                        logger.exception(f"Error executing node {node_id}: {e}")
+                        logger.error(f"Error executing node {node_id}: {e}", exc_info=True)
                         results[node_id] = {"error": str(e)}
 
         return results
@@ -410,7 +410,7 @@ def execute_graph(
                                     inputs = results[pred_id]
                                     break
                 except (AttributeError, TypeError) as e:
-                    logger.warning(f"Error preparing inputs for node {node_id}: {e}")
+                    logger.debug(f"Error preparing inputs for node {node_id}: {e}")
                     # If prepare_node_inputs or update fails, use global_input for source nodes
                     # or first predecessor result for non-source nodes
                     inputs = (
@@ -434,7 +434,7 @@ def execute_graph(
                     node_result = node.operator(inputs=inputs)
                     results[node_id] = node_result
                 except Exception as e:
-                    logger.exception(f"Error executing node {node_id}: {e}")
+                    logger.error(f"Error executing node {node_id}: {e}", exc_info=True)
                     results[node_id] = {"error": str(e)}
 
         # Parallel execution for parallel scheduler
@@ -477,7 +477,7 @@ def execute_graph(
                                         inputs = results[pred_id]
                                         break
                     except (AttributeError, TypeError) as e:
-                        logger.warning(
+                        logger.debug(
                             f"Error preparing inputs for node {node_id}: {e}"
                         )
                         # If prepare_node_inputs or update fails, use global_input for source nodes
@@ -507,7 +507,7 @@ def execute_graph(
                     try:
                         results[node_id] = future.result()
                     except Exception as e:
-                        logger.exception(f"Error executing node {node_id}: {e}")
+                        logger.error(f"Error executing node {node_id}: {e}", exc_info=True)
                         results[node_id] = {"error": str(e)}
 
     return results

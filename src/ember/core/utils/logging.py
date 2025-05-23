@@ -21,6 +21,7 @@ Usage:
 """
 
 import logging
+import os
 
 # Component groups allow configuring related loggers together
 COMPONENT_GROUPS = {
@@ -41,9 +42,17 @@ COMPONENT_GROUPS = {
     ],
     "http": [
         "httpcore",
+        "httpcore.connection",
+        "httpcore.http11",
         "httpx",
         "urllib3",
+        "urllib3.connectionpool",
+        "urllib3.util.retry",
         "openai",
+        "openai._base_client",
+        "openai._http_client",
+        "anthropic",
+        "anthropic._base_client",
     ],
 }
 
@@ -89,8 +98,13 @@ def configure_logging(
     set_component_group_level("model_registry", quiet_level)
     set_component_group_level("model_discovery", quiet_level)
 
-    # HTTP libraries are very verbose at INFO level
-    set_component_group_level("http", quiet_level)
+    # HTTP libraries are very verbose - use ERROR by default unless overridden
+    http_log_level = os.environ.get("EMBER_HTTP_LOG_LEVEL", "ERROR")
+    try:
+        http_level = getattr(logging, http_log_level.upper())
+    except AttributeError:
+        http_level = logging.ERROR
+    set_component_group_level("http", http_level)
 
     # Add NullHandler to HTTP libraries to prevent "no handler" warnings
     # and shutdown logging errors
@@ -144,19 +158,38 @@ def _configure_http_library_handlers() -> None:
     in normal operation. The actual handling of closed streams during shutdown
     is now handled by code in conftest.py that runs earlier in the process.
     """
-    # Set appropriate log levels for HTTP libraries
+    # Get the configured HTTP log level from environment or use ERROR
+    http_log_level = os.environ.get("EMBER_HTTP_LOG_LEVEL", "ERROR")
+    try:
+        http_level = getattr(logging, http_log_level.upper())
+    except AttributeError:
+        http_level = logging.ERROR
+    
+    # Extended list of HTTP libraries to suppress
     http_libraries = [
         "httpcore",
         "httpcore.connection",
         "httpcore.http11",
         "httpx",
         "urllib3",
+        "urllib3.connectionpool",
+        "urllib3.util.retry",
         "openai",
+        "openai._base_client",
+        "openai._http_client", 
+        "anthropic",
+        "anthropic._base_client",
+        "requests",
+        "requests.packages.urllib3",
     ]
 
-    # Use WARNING level for all HTTP libraries to reduce verbosity
+    # Use configured level for all HTTP libraries
     for name in http_libraries:
-        logging.getLogger(name).setLevel(logging.WARNING)
+        logger = logging.getLogger(name)
+        logger.setLevel(http_level)
+        # Add NullHandler to prevent propagation of unwanted logs
+        if not logger.handlers:
+            logger.addHandler(logging.NullHandler())
 
 
 def get_ember_logger(name: str) -> logging.Logger:
@@ -172,3 +205,107 @@ def get_ember_logger(name: str) -> logging.Logger:
     if not name.startswith("ember."):
         name = f"ember.{name}"
     return logging.getLogger(name)
+
+
+# Context managers for temporary log level control
+
+from contextlib import contextmanager
+from typing import Optional, List, Union
+
+
+@contextmanager
+def suppress_logs(loggers: Union[str, List[str]], level: int = logging.ERROR):
+    """
+    Context manager to temporarily suppress logs from specific loggers.
+    
+    Args:
+        loggers: Logger name(s) to suppress. Can be a string or list of strings.
+        level: Minimum level to show (default: ERROR, so only ERROR and CRITICAL show)
+        
+    Example:
+        with suppress_logs("ember.core.registry.model"):
+            # Model discovery logs suppressed here
+            registry = initialize_registry()
+    """
+    if isinstance(loggers, str):
+        loggers = [loggers]
+    
+    # Store original levels
+    original_levels = {}
+    for logger_name in loggers:
+        logger = logging.getLogger(logger_name)
+        original_levels[logger_name] = logger.level
+        logger.setLevel(level)
+    
+    try:
+        yield
+    finally:
+        # Restore original levels
+        for logger_name, original_level in original_levels.items():
+            logging.getLogger(logger_name).setLevel(original_level)
+
+
+@contextmanager
+def log_level(level: Union[int, str], logger_name: Optional[str] = None):
+    """
+    Context manager to temporarily change log level.
+    
+    Args:
+        level: Log level (e.g., logging.DEBUG, "DEBUG")
+        logger_name: Specific logger to modify (None for root logger)
+        
+    Example:
+        with log_level("DEBUG", "ember.xcs"):
+            # XCS logs at DEBUG level here
+            result = execute_graph(graph, inputs)
+    """
+    # Convert string level to int if needed
+    if isinstance(level, str):
+        level = getattr(logging, level.upper())
+    
+    # Get the logger
+    logger = logging.getLogger(logger_name) if logger_name else logging.getLogger()
+    
+    # Store original level
+    original_level = logger.level
+    logger.setLevel(level)
+    
+    try:
+        yield
+    finally:
+        # Restore original level
+        logger.setLevel(original_level)
+
+
+@contextmanager
+def verbose_mode():
+    """
+    Context manager for temporary verbose logging.
+    
+    Enables INFO level for all Ember components temporarily.
+    
+    Example:
+        with verbose_mode():
+            # All Ember logs at INFO level or above
+            models.list()
+    """
+    # Get all Ember component groups
+    groups_to_adjust = ["model_registry", "model_discovery", "http"]
+    
+    # Store original levels
+    original_levels = {}
+    
+    # Set INFO level for all groups
+    for group in groups_to_adjust:
+        if group in COMPONENT_GROUPS:
+            for logger_name in COMPONENT_GROUPS[group]:
+                logger = logging.getLogger(logger_name)
+                original_levels[logger_name] = logger.level
+                logger.setLevel(logging.INFO)
+    
+    try:
+        yield
+    finally:
+        # Restore original levels
+        for logger_name, original_level in original_levels.items():
+            logging.getLogger(logger_name).setLevel(original_level)

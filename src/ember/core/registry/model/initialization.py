@@ -178,7 +178,7 @@ def initialize_registry(
             for provider_name, provider_config in providers_dict.items():
                 # Skip disabled providers
                 if not provider_config.enabled:
-                    logger.info(f"Provider {provider_name} is disabled, skipping")
+                    logger.debug(f"Provider {provider_name} is disabled, skipping")
                     continue
 
                 # Get API key
@@ -248,7 +248,7 @@ def initialize_registry(
 
                         registry.register_model(model_info)
                         registered_models.append(model_id)
-                        logger.info(f"Registered model from config: {model_id}")
+                        logger.debug(f"Registered model from config: {model_id}")
 
                     except Exception as e:
                         logger.error(
@@ -256,16 +256,16 @@ def initialize_registry(
                         )
 
             if registered_models:
-                logger.info(
+                logger.debug(
                     f"Registered {len(registered_models)} models from configuration"
                 )
             else:
-                logger.info("No models registered from configuration")
+                logger.debug("No models registered from configuration")
 
         # Run model discovery if enabled or forced
         if discovery_enabled or force_discovery:
             logger.info(
-                "Execute model discovery (timeout: 30 seconds per provider, running in parallel)"
+                "Discovering available models..."
             )
             try:
                 import time
@@ -276,7 +276,7 @@ def initialize_registry(
 
                 if newly_discovered:
                     # Handle newly_discovered correctly, which is a list not a dict
-                    logger.info(
+                    logger.debug(
                         f"Discovered {len(newly_discovered)} new models in {duration:.2f}s: {newly_discovered[:10]}"
                         + (
                             f" and {len(newly_discovered) - 10} more"
@@ -285,12 +285,12 @@ def initialize_registry(
                         )
                     )
                 else:
-                    logger.info(
+                    logger.debug(
                         f"No new models discovered (discovery completed in {duration:.2f}s)"
                     )
             except Exception as e:
                 logger.error(f"Error during model discovery: {e}")
-                logger.info("Continuing with available models from configuration")
+                logger.debug("Continuing with available models from configuration")
 
         return registry
 

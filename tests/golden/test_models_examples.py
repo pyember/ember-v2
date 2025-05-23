@@ -14,43 +14,37 @@ class TestModelsExamples(GoldenTestBase):
     
     def test_model_api_example(self, capture_output, mock_models_api):
         """Test the simplified model API example."""
-        expected_patterns = [
-            r"=== Basic Invocation Example ===",
-            r"Direct invocation:",
-            r'models\("gpt-4", "What is the capital of France\?"\)',
-            r"=== Model Binding Example ===",
-            r"Binding a model for reuse:",
-            r"=== Model Listing Example ===",
-            r"=== Model Info Example ===",
-            r"=== Response Handling Example ===",
-            r"=== Error Handling Example ===",
-            r"All examples completed!",
-        ]
+        from pathlib import Path
         
+        # Get the file path
+        file_path = Path(__file__).parent.parent.parent / "src" / "ember" / "examples" / "models" / "model_api_example.py"
+        
+        # Run with proper mocks
         extra_patches = [
             patch("ember.api.models", mock_models_api),
         ]
         
-        results = self.run_category_tests(
-            "models",
-            {"model_api_example.py": expected_patterns},
+        result = self.run_example_with_mocks(
+            file_path,
             capture_output=capture_output,
             extra_patches=extra_patches
         )
         
-        result = results.get("model_api_example.py")
-        assert result is not None, "model_api_example.py not found"
         assert result["success"], f"Example failed: {result.get('error')}"
         
-        if "missing_patterns" in result:
-            # Some patterns might vary based on mock data
-            output = result["output"]
-            assert "Basic Invocation Example" in output
-            assert "Model Binding Example" in output
-            assert "All examples completed!" in output
+        # Check output contains expected content
+        output = result["output"]
+        assert "Basic Invocation Example" in output
+        assert "Model Binding Example" in output
+        assert "All examples completed!" in output
     
     def test_list_models(self, capture_output):
         """Test the list models example."""
+        from pathlib import Path
+        
+        # Get the file path
+        file_path = Path(__file__).parent.parent.parent / "src" / "ember" / "examples" / "models" / "list_models.py"
+        
         # Mock models.list()
         mock_models = MagicMock()
         mock_models.list.return_value = [
@@ -59,82 +53,94 @@ class TestModelsExamples(GoldenTestBase):
             "anthropic:claude-3-sonnet",
             "anthropic:claude-3-opus"
         ]
+        mock_models.info.return_value = {
+            "id": "openai:gpt-4",
+            "provider": "openai",
+            "context_window": 8192,
+            "pricing": {"input": 0.03, "output": 0.06}
+        }
         
         extra_patches = [
             patch("ember.api.models", mock_models),
         ]
         
-        results = self.run_category_tests(
-            "models",
-            {},
+        result = self.run_example_with_mocks(
+            file_path,
             capture_output=capture_output,
             extra_patches=extra_patches
         )
         
-        result = results.get("list_models.py")
-        if result and result["success"]:
-            output = result["output"]
-            # Verify it lists some models
-            assert "model" in output.lower() or len(output) > 0
+        # list_models.py uses logger instead of print, so output might be empty
+        # Just check that it ran successfully
+        assert result["success"], f"Example failed: {result.get('error')}"
     
     def test_model_registry_example(self, capture_output):
         """Test the model registry example."""
-        # Mock the necessary components
-        mock_context = MagicMock()
+        from pathlib import Path
+        
+        # Get the file path
+        file_path = Path(__file__).parent.parent.parent / "src" / "ember" / "examples" / "models" / "model_registry_example.py"
+        
+        # Mock the models API
+        mock_models = MagicMock()
+        mock_response = MagicMock()
+        mock_response.data = "The capital of France is Paris."
+        mock_response.usage = MagicMock(total_tokens=50, cost=0.002)
+        
+        # Mock for direct call
+        mock_models.return_value = mock_response
+        
+        # Mock for registry access
         mock_registry = MagicMock()
         mock_registry.list_models.return_value = ["gpt-4", "claude-3"]
         mock_registry.get_model_info.return_value = MagicMock(
             id="gpt-4",
             name="GPT-4",
-            provider=MagicMock(name="OpenAI")
+            provider=MagicMock(name="OpenAI"),
+            cost=MagicMock(input_cost_per_thousand=0.03, output_cost_per_thousand=0.06),
+            context_window=8192
         )
-        mock_context.registry = mock_registry
-        
-        extra_patches = [
-            patch("ember.api.models.get_default_context", return_value=mock_context),
-        ]
-        
-        results = self.run_category_tests(
-            "models",
-            {},
-            capture_output=capture_output,
-            extra_patches=extra_patches
-        )
-        
-        result = results.get("model_registry_example.py")
-        if result:
-            # May need updates to new API
-            pass
-    
-    def test_function_style_api(self, capture_output):
-        """Test function style API example."""
-        # Mock the models function
-        mock_response = MagicMock()
-        mock_response.text = "This is a summary"
-        mock_response.usage = {"total_tokens": 100, "cost": 0.003}
-        
-        def mock_models_call(model, prompt, **kwargs):
-            return mock_response
-        
-        mock_models = MagicMock()
-        mock_models.side_effect = mock_models_call
-        mock_models.__call__ = mock_models_call
+        mock_registry.is_registered.return_value = False
+        mock_models.get_registry.return_value = mock_registry
         
         extra_patches = [
             patch("ember.api.models", mock_models),
         ]
         
-        results = self.run_category_tests(
-            "models",
-            {},
+        result = self.run_example_with_mocks(
+            file_path,
             capture_output=capture_output,
             extra_patches=extra_patches
         )
         
-        result = results.get("function_style_api.py")
-        if result:
-            # May need updates to new API
-            pass
+        # The example may need mock API keys
+        if not result["success"]:
+            # Check if it's just missing API keys
+            if "API key" in str(result.get("error", "")):
+                pytest.skip("Example requires API keys")
+    
+    def test_function_style_api(self, capture_output):
+        """Test function style API example."""
+        from pathlib import Path
+        
+        # Get the file path
+        file_path = Path(__file__).parent.parent.parent / "src" / "ember" / "examples" / "models" / "function_style_api.py"
+        
+        # This example just shows patterns, doesn't need complex mocks
+        result = self.run_example_with_mocks(
+            file_path,
+            capture_output=capture_output,
+            extra_patches=[]
+        )
+        
+        assert result["success"], f"Example failed: {result.get('error')}"
+        
+        # Check output contains expected patterns
+        output = result["output"]
+        assert "Function-Style Model API Examples" in output
+        assert "Basic Usage" in output
+        assert "Model Binding" in output
+        assert "Examples completed!" in output
     
     def test_all_models_examples_syntax(self):
         """Verify all models examples have valid syntax."""

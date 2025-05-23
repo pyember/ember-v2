@@ -54,6 +54,8 @@ class LoggingConfig:
         buffer_size: Size of in-memory log buffer (0 = immediate processing)
         trace_all_operations: Whether to trace all operations or only slow ones
         max_context_data_size: Maximum size in bytes for context data
+        output_format: Output format ("json", "simple", "detailed")
+        use_colors: Whether to use color in terminal output
     """
 
     enabled: bool = True
@@ -63,6 +65,8 @@ class LoggingConfig:
     buffer_size: int = 0
     trace_all_operations: bool = True
     max_context_data_size: int = 10000
+    output_format: str = "simple"  # "json", "simple", "detailed"
+    use_colors: bool = sys.stdout.isatty()
 
     # Performance mode flags
     high_performance_mode: bool = False  # When True, minimizes logging
@@ -673,3 +677,188 @@ def enrich_exception(exception: Exception, **context: Any) -> Exception:
 
     # No need to wrap, just return the enriched exception
     return exception
+
+
+# User-friendly formatters
+
+class SimpleFormatter(logging.Formatter):
+    """Simple, clean formatter for interactive use."""
+    
+    def format(self, record: logging.LogRecord) -> str:
+        # Extract context data if available
+        context_data = getattr(record, 'context_data', {})
+        
+        # Build clean message
+        if LoggingConfig.use_colors and sys.stdout.isatty():
+            # Color codes
+            colors = {
+                logging.DEBUG: '\033[36m',    # Cyan
+                logging.INFO: '\033[32m',     # Green
+                logging.WARNING: '\033[33m',  # Yellow
+                logging.ERROR: '\033[31m',    # Red
+                logging.CRITICAL: '\033[35m', # Magenta
+            }
+            reset = '\033[0m'
+            color = colors.get(record.levelno, '')
+            
+            # Format with color
+            if context_data:
+                operation = context_data.get('operation_type', 'operation')
+                node_id = context_data.get('node_id', '')
+                if node_id:
+                    return f"{color}[{operation}:{node_id}] {record.getMessage()}{reset}"
+                else:
+                    return f"{color}[{operation}] {record.getMessage()}{reset}"
+            else:
+                return f"{color}{record.getMessage()}{reset}"
+        else:
+            # No color
+            if context_data:
+                operation = context_data.get('operation_type', 'operation')
+                node_id = context_data.get('node_id', '')
+                if node_id:
+                    return f"[{operation}:{node_id}] {record.getMessage()}"
+                else:
+                    return f"[{operation}] {record.getMessage()}"
+            else:
+                return record.getMessage()
+
+
+class DetailedFormatter(logging.Formatter):
+    """Detailed formatter with timing and context information."""
+    
+    def format(self, record: logging.LogRecord) -> str:
+        # Extract context data
+        context_data = getattr(record, 'context_data', {})
+        
+        # Build detailed message
+        parts = []
+        
+        # Timestamp
+        timestamp = self.formatTime(record, '%H:%M:%S')
+        parts.append(timestamp)
+        
+        # Level
+        parts.append(f"[{record.levelname:>8}]")
+        
+        # Logger name (shortened)
+        name_parts = record.name.split('.')
+        if len(name_parts) > 3:
+            short_name = '.'.join(name_parts[-2:])
+        else:
+            short_name = record.name
+        parts.append(f"[{short_name:>20}]")
+        
+        # Context info
+        if context_data:
+            operation = context_data.get('operation_type', '')
+            node_id = context_data.get('node_id', '')
+            duration = context_data.get('duration_ms', '')
+            
+            context_str = []
+            if operation:
+                context_str.append(operation)
+            if node_id:
+                context_str.append(f"node={node_id}")
+            if duration:
+                context_str.append(f"{duration:.1f}ms")
+            
+            if context_str:
+                parts.append(f"[{' '.join(context_str)}]")
+        
+        # Message
+        parts.append(record.getMessage())
+        
+        return ' '.join(parts)
+
+
+class JSONFormatter(logging.Formatter):
+    """JSON formatter for machine-readable output."""
+    
+    def format(self, record: logging.LogRecord) -> str:
+        import json
+        
+        # Build JSON structure
+        log_data = {
+            'timestamp': self.formatTime(record, '%Y-%m-%d %H:%M:%S.%f')[:-3],
+            'level': record.levelname,
+            'logger': record.name,
+            'message': record.getMessage(),
+        }
+        
+        # Add context data if available
+        context_data = getattr(record, 'context_data', {})
+        if context_data:
+            log_data['context'] = context_data
+        
+        # Add exception info if present
+        if record.exc_info:
+            log_data['exception'] = self.formatException(record.exc_info)
+        
+        return json.dumps(log_data, separators=(',', ':'))
+
+
+def get_formatter(format_type: Optional[str] = None) -> logging.Formatter:
+    """
+    Get a formatter based on the specified type.
+    
+    Args:
+        format_type: Type of formatter ("json", "simple", "detailed")
+                    If None, uses LoggingConfig.output_format
+    
+    Returns:
+        Appropriate formatter instance
+    """
+    format_type = format_type or LoggingConfig.output_format
+    
+    if format_type == "json":
+        return JSONFormatter()
+    elif format_type == "detailed":
+        return DetailedFormatter()
+    else:  # "simple" or default
+        return SimpleFormatter()
+
+
+def configure_xcs_logging(
+    format_type: str = "simple",
+    use_colors: Optional[bool] = None,
+    **config_kwargs
+):
+    """
+    Configure XCS structured logging with user-friendly defaults.
+    
+    Args:
+        format_type: Output format ("json", "simple", "detailed")
+        use_colors: Whether to use colors (None = auto-detect)
+        **config_kwargs: Additional LoggingConfig parameters
+    """
+    # Update configuration
+    LoggingConfig.output_format = format_type
+    if use_colors is not None:
+        LoggingConfig.use_colors = use_colors
+    
+    # Apply any additional config
+    if config_kwargs:
+        LoggingConfig.configure(**config_kwargs)
+    
+    # Set up formatters for XCS loggers
+    formatter = get_formatter(format_type)
+    
+    # Apply to XCS loggers
+    xcs_loggers = [
+        "ember.xcs",
+        "ember.xcs.engine",
+        "ember.xcs.graph",
+        "ember.xcs.jit",
+        "ember.xcs.tracer",
+    ]
+    
+    for logger_name in xcs_loggers:
+        logger = logging.getLogger(logger_name)
+        # Remove existing handlers to avoid duplicates
+        logger.handlers = []
+        # Add new handler with our formatter
+        handler = logging.StreamHandler()
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+        logger.propagate = False  # Don't propagate to root logger

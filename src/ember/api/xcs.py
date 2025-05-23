@@ -56,10 +56,14 @@ from ember.xcs import (
     TraceRecord,
     TransformOptions,
     XCSExecutionOptions,
+    XCSExecutionOptions as ExecutionOptions,  # Alias for compatibility
     autograph,
 )
+from ember.xcs import execute_graph
 from ember.xcs import execute_graph as execute
 from ember.xcs import execution_options, jit, mesh_sharded, pmap, vmap
+from ember.xcs.graph import XCSGraph
+from ember.xcs.engine.execution_options import get_execution_options
 
 
 __all__ = [
@@ -67,7 +71,9 @@ __all__ = [
     "jit",
     "autograph",
     "execute",
+    "execute_graph",
     "execution_options",
+    "get_execution_options",
     # Transforms
     "vmap",
     "pmap",
@@ -78,8 +84,11 @@ __all__ = [
     "TracerContext",
     "TraceRecord",
     "TraceContextData",
+    # Graph
+    "XCSGraph",
     # Types
     "XCSExecutionOptions",
+    "ExecutionOptions",  # Alias
     "ExecutionResult",
     "JITOptions",
     "TransformOptions",

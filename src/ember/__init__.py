@@ -61,6 +61,24 @@ from __future__ import annotations
 import importlib.metadata
 from typing import Any, Callable, Dict, Optional, TypeVar, Union
 
+# Early logging configuration to suppress HTTP library noise
+import logging
+import os
+
+# Suppress HTTP library logs before they're even imported
+_http_log_level = os.environ.get("EMBER_HTTP_LOG_LEVEL", "ERROR")
+try:
+    _http_level = getattr(logging, _http_log_level.upper())
+except AttributeError:
+    _http_level = logging.ERROR
+
+# Set levels for HTTP libraries that might be imported early
+for _lib in ["httpcore", "httpx", "urllib3", "openai", "anthropic", "requests"]:
+    _logger = logging.getLogger(_lib)
+    _logger.setLevel(_http_level)
+    if not _logger.handlers:
+        _logger.addHandler(logging.NullHandler())
+
 # Forward reference for return type
 ModelRegistryType = TypeVar("ModelRegistryType")
 

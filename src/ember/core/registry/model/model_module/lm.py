@@ -9,11 +9,14 @@ DEPRECATED: Use ember.api.models instead.
 
 import warnings
 import logging
-from typing import Any, Optional
+from typing import Any, Optional, Set
 
 from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
+
+# Track shown warnings to avoid repetition
+_shown_warnings: Set[str] = set()
 
 
 class LMModuleConfig(BaseModel):
@@ -72,13 +75,16 @@ class LMModule:
         simulate_api: bool = False,
     ) -> None:
         """Initialize compatibility wrapper with deprecation warning."""
-        warnings.warn(
-            "LMModule is deprecated and will be removed in v2.0. "
-            "Use models.bind() instead. "
-            "See LMMODULE_MIGRATION_GUIDE.md for migration instructions.",
-            DeprecationWarning,
-            stacklevel=2
-        )
+        # Show deprecation warning only once
+        if "lmmodule_deprecation" not in _shown_warnings:
+            warnings.warn(
+                "LMModule is deprecated and will be removed in v2.0. "
+                "Use models.bind() instead. "
+                "See LMMODULE_MIGRATION_GUIDE.md for migration instructions.",
+                DeprecationWarning,
+                stacklevel=2
+            )
+            _shown_warnings.add("lmmodule_deprecation")
         
         self.config = config
         self.simulate_api = simulate_api
@@ -92,11 +98,14 @@ class LMModule:
         self._persona = config.persona
         self._cot_prompt = config.cot_prompt
         
-        # Log migration suggestion
-        logger.info(
-            f"LMModule created for model '{config.id}'. "
-            f"Consider migrating to: models.bind('{config.id}', temperature={config.temperature})"
-        )
+        # Log migration suggestion only once per model
+        warning_key = f"lmmodule_migration_{config.id}"
+        if warning_key not in _shown_warnings:
+            logger.debug(
+                f"LMModule created for model '{config.id}'. "
+                f"Consider migrating to: models.bind('{config.id}', temperature={config.temperature})"
+            )
+            _shown_warnings.add(warning_key)
     
     def _get_model_service(self):
         """Lazily get the model service to avoid circular imports."""
@@ -181,12 +190,14 @@ def get_default_model_service():
     
     Returns a default ModelService for compatibility.
     """
-    warnings.warn(
-        "get_default_model_service() is deprecated. "
-        "The models API handles service creation automatically.",
-        DeprecationWarning,
-        stacklevel=2
-    )
+    if "get_default_model_service_deprecation" not in _shown_warnings:
+        warnings.warn(
+            "get_default_model_service() is deprecated. "
+            "The models API handles service creation automatically.",
+            DeprecationWarning,
+            stacklevel=2
+        )
+        _shown_warnings.add("get_default_model_service_deprecation")
     
     from ember.core.registry.model.initialization import initialize_registry
     from ember.core.registry.model.base.services.model_service import ModelService

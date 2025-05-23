@@ -21,17 +21,20 @@ class JudgeSynthesisOutputs(EmberModel):
 class JudgeSynthesisOperator:
     """Test operator implementation."""
 
-    def __init__(self, *, lm_module):
-        self.lm_module = lm_module
+    def __init__(self, *, model):
+        self.model = model
 
     def __call__(self, *, inputs):
         return self.forward(inputs=inputs)
 
     def forward(self, *, inputs):
         """Process the synthesis."""
-        raw_output = self.lm_module(
-            prompt=f"Query: {inputs.query}\nResponses: {inputs.responses}"
+        response = self.model(
+            f"Query: {inputs.query}\nResponses: {inputs.responses}"
         )
+        
+        # Extract text from response
+        raw_output = response.text if hasattr(response, 'text') else str(response)
 
         # Parse the response
         final_answer = "Unknown"
@@ -46,16 +49,22 @@ class JudgeSynthesisOperator:
         return JudgeSynthesisOutputs(final_answer=final_answer, reasoning=reasoning)
 
 
-class CustomLMModule:
+class MockResponse:
+    """Mock response with text attribute."""
+    def __init__(self, text):
+        self.text = text
+
+
+class MockModel:
     """Returns reasoning plus a final answer line."""
 
-    def __call__(self, *, prompt: str) -> str:
-        return "Reasoning: Some reasoning here.\nFinal Answer: Synthesized Answer"
+    def __call__(self, prompt: str):
+        return MockResponse("Reasoning: Some reasoning here.\nFinal Answer: Synthesized Answer")
 
 
 def test_judge_synthesis_operator_forward() -> None:
-    custom_lm = CustomLMModule()
-    op = JudgeSynthesisOperator(lm_module=custom_lm)
+    mock_model = MockModel()
+    op = JudgeSynthesisOperator(model=mock_model)
 
     inputs = JudgeSynthesisInputs(query="synthesize?", responses=["Ans1", "Ans2"])
     result: Dict[str, Any] = op(inputs=inputs)

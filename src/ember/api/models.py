@@ -268,6 +268,56 @@ class ModelsAPI:
             "Use the synchronous API: models(model, prompt)"
         )
     
+    def list(self, provider: Optional[str] = None) -> List[str]:
+        """List available models.
+        
+        Args:
+            provider: Optional provider filter (e.g., "openai", "anthropic")
+            
+        Returns:
+            List of model identifiers
+        """
+        ctx = self._context or get_default_context()
+        all_models = ctx.registry.list_models()
+        
+        if provider:
+            return [m for m in all_models if m.startswith(f"{provider}:")]
+        return all_models
+    
+    def info(self, model_id: str) -> Dict[str, Any]:
+        """Get information about a specific model.
+        
+        Args:
+            model_id: The model identifier
+            
+        Returns:
+            Dictionary with model information
+        """
+        ctx = self._context or get_default_context()
+        model_info = ctx.registry.get_model_info(model_id)
+        
+        if not model_info:
+            raise ValueError(f"Model not found: {model_id}")
+        
+        return {
+            "id": model_info.id,
+            "provider": model_info.provider.name,
+            "context_window": model_info.context_window,
+            "pricing": {
+                "input": model_info.cost.input_cost_per_thousand,
+                "output": model_info.cost.output_cost_per_thousand,
+            }
+        }
+    
+    def get_registry(self):
+        """Get the underlying model registry.
+        
+        Returns:
+            The model registry instance
+        """
+        ctx = self._context or get_default_context()
+        return ctx.registry
+    
     def __repr__(self) -> str:
         """String representation for debugging."""
         return "ModelsAPI(simplified=True)"

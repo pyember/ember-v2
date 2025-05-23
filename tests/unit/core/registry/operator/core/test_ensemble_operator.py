@@ -48,8 +48,8 @@ class EnsembleOperator:
         input_model=EnsembleOperatorInputs, structured_output=EnsembleOperatorOutputs
     )
 
-    def __init__(self, *, lm_modules):
-        self.lm_modules = lm_modules
+    def __init__(self, *, models):
+        self.models = models
 
     def __call__(self, *, inputs):
         return self.forward(inputs=inputs)
@@ -57,27 +57,40 @@ class EnsembleOperator:
     def forward(self, *, inputs):
         """Execute the ensemble operation."""
         rendered_prompt = self.specification.render_prompt(inputs=inputs)
-        responses = [lm(prompt=rendered_prompt) for lm in self.lm_modules]
+        responses = []
+        for model in self.models:
+            response = model(rendered_prompt)
+            # Extract text from response
+            if hasattr(response, 'text'):
+                responses.append(response.text)
+            else:
+                responses.append(str(response))
         return {"responses": responses}
 
 
-class DummyLMModule:
-    """Simple mock LM module that returns a standardized response."""
+class MockResponse:
+    """Mock response object with text attribute."""
+    def __init__(self, text):
+        self.text = text
 
-    def __call__(self, *, prompt: str) -> str:
-        return f"LM response to: {prompt}"
+
+class MockModel:
+    """Simple mock model that returns a response object."""
+
+    def __call__(self, prompt: str):
+        return MockResponse(f"LM response to: {prompt}")
 
 
 def test_ensemble_operator_forward() -> None:
-    dummy_lm1 = DummyLMModule()
-    dummy_lm2 = DummyLMModule()
+    mock_model1 = MockModel()
+    mock_model2 = MockModel()
 
     # Optionally customize the operator's specification:
     custom_specification = Specification(
         input_model=EnsembleOperatorInputs, prompt_template="Ensemble Prompt: {query}"
     )
 
-    op = EnsembleOperator(lm_modules=[dummy_lm1, dummy_lm2])
+    op = EnsembleOperator(models=[mock_model1, mock_model2])
     # Override the default specification:
     op.specification = custom_specification
 
@@ -87,8 +100,8 @@ def test_ensemble_operator_forward() -> None:
     # Verify the aggregated responses:
     rendered_prompt = custom_specification.render_prompt(inputs=inputs)
     expected_responses = [
-        dummy_lm1(prompt=rendered_prompt),
-        dummy_lm2(prompt=rendered_prompt),
+        mock_model1(rendered_prompt).text,
+        mock_model2(rendered_prompt).text,
     ]
 
     assert isinstance(
