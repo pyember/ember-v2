@@ -28,6 +28,7 @@ if src_path not in sys.path:
 # Import with careful error handling
 try:
     from ember.api import models
+    # Import internals only for diagnostic purposes
     from ember.core.registry.model.base.registry.discovery import ModelDiscoveryService
     from ember.core.registry.model.base.registry.model_registry import ModelRegistry
     from ember.core.registry.model.providers.base_discovery import BaseDiscoveryProvider
@@ -228,19 +229,20 @@ def test_model_registry_initialization():
 
     try:
         # First check the API approach
-        logger.debug("Testing models.initialize_registry with auto_discover=True...")
+        logger.debug("Testing models.list() to check auto-discovery...")
         try:
-            registry = models.initialize_registry(auto_discover=True)
-            logger.debug(f"Registry initialized: {registry}")
+            # The new API auto-discovers on first access
+            available_models = models.list()
+            logger.debug(f"Available models through API: {available_models}")
 
-            # Check which models were discovered
-            model_ids = registry.list_models()
-            logger.debug(f"Discovered models: {model_ids}")
-
-            if not model_ids:
+            if not available_models:
                 logger.warning("❌ No models were discovered automatically")
+            else:
+                logger.info(f"✅ Discovered {len(available_models)} models through API")
+                for model_id in available_models[:5]:  # Show first 5
+                    logger.info(f"  - {model_id}")
         except Exception as e:
-            logger.error(f"❌ Error initializing registry through API: {e}")
+            logger.error(f"❌ Error accessing models through API: {e}")
 
         # Test direct instantiation
         logger.debug("Testing direct ModelRegistry instantiation...")
@@ -269,7 +271,24 @@ def check_model_registry_implementation():
     logger.info("Examining ModelRegistry implementation...")
 
     try:
-        # Get source for discover_models method
+        # Test the simplified API first
+        logger.debug("Testing simplified models API...")
+        
+        # Test models.get()
+        try:
+            model = models.get("openai:gpt-4")
+            logger.info(f"✅ Successfully retrieved model: {model}")
+        except Exception as e:
+            logger.warning(f"Could not get specific model: {e}")
+        
+        # Test models() direct invocation
+        try:
+            result = models("openai:gpt-4", "Hello world")
+            logger.info("✅ Direct model invocation works")
+        except Exception as e:
+            logger.warning(f"Direct invocation failed: {e}")
+            
+        # Get source for discover_models method (for diagnostic purposes)
         from ember.core.registry.model.base.registry.model_registry import ModelRegistry
 
         discover_method = ModelRegistry.discover_models
@@ -277,20 +296,7 @@ def check_model_registry_implementation():
         if hasattr(discover_method, "__code__"):
             source_lines, line_no = inspect.getsourcelines(discover_method)
             logger.debug(
-                f"discover_models source (line {line_no}):\n{''.join(source_lines)}"
-            )
-
-        # Check the factory implementation
-        from ember.core.registry.model.base.registry.factory import (
-            create_provider_instance,
-        )
-
-        factory_method = create_provider_instance
-
-        if hasattr(factory_method, "__code__"):
-            source_lines, line_no = inspect.getsourcelines(factory_method)
-            logger.debug(
-                f"create_provider_instance source (line {line_no}):\n{''.join(source_lines)}"
+                f"discover_models source (line {line_no}):\n{''.join(source_lines[:10])}..."
             )
     except Exception as e:
         logger.error(f"❌ Error examining ModelRegistry implementation: {e}")

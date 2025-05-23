@@ -25,15 +25,9 @@ from rich.panel import Panel
 from rich.table import Table
 
 # Import necessary modules
-from ember.api.operators import Operator
-from ember.core.registry.model.model_module.lm import LMModule, LMModuleConfig
-from ember.core.registry.operator.base.operator_base import Specification
-from ember.core.registry.specification.specification import (
-    Specification as CoreSpecification,
-)
-from ember.core.types.ember_model import EmberModel
-from ember.xcs import jit
-from ember.xcs.engine.execution_options import execution_options
+from ember.api.models import models
+from ember.api.operators import Operator, Specification, EmberModel, Field
+from ember.api.xcs import jit, execution_options
 
 # Set up console for rich output
 console = Console()
@@ -59,7 +53,7 @@ class BenchmarkEnsembleOutput(EmberModel):
     results: List[BenchmarkOutput]
 
 
-class BenchmarkSpecification(CoreSpecification):
+class BenchmarkSpecification(Specification):
     """Specification for benchmark operator."""
 
     # Define both input and output models explicitly
@@ -81,7 +75,7 @@ class SingleModelOperator(Operator[BenchmarkInput, BenchmarkOutput]):
     model_name: str
     temperature: float
     max_tokens: int
-    lm_module: LMModule
+    model: Any  # Bound model function
 
     def __init__(
         self,
@@ -94,11 +88,9 @@ class SingleModelOperator(Operator[BenchmarkInput, BenchmarkOutput]):
         self.temperature = temperature
         self.max_tokens = max_tokens
 
-        # Initialize the LM module
-        self.lm_module = LMModule(
-            config=LMModuleConfig(
-                model_name=model_name, temperature=temperature, max_tokens=max_tokens
-            )
+        # Bind the model with specific configuration
+        self.model = models.bind(
+            model_name, temperature=temperature, max_tokens=max_tokens
         )
 
     def forward(self, *, inputs: BenchmarkInput) -> BenchmarkOutput:
@@ -110,12 +102,12 @@ class SingleModelOperator(Operator[BenchmarkInput, BenchmarkOutput]):
         prompt = self.specification.prompt_template.format(**template_vars)
 
         # Get model response
-        response = self.lm_module(prompt=prompt)
+        response = self.model(prompt)
 
         return BenchmarkOutput(result=response, model_name=self.model_name)
 
 
-class EnsembleSpecification(CoreSpecification):
+class EnsembleSpecification(Specification):
     """Specification for ensemble operator."""
 
     # Explicit models for proper type handling

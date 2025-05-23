@@ -41,16 +41,10 @@ from rich.table import Table
 logger = logging.getLogger(__name__)
 
 # Import necessary modules
-from ember.api import DatasetBuilder
-from ember.api.operators import Operator
-from ember.core.registry.model.model_module.lm import LMModule, LMModuleConfig
-from ember.core.registry.operator.base.operator_base import Specification
-from ember.core.registry.specification.specification import (
-    Specification as CoreSpecification,
-)
-from ember.core.types.ember_model import EmberModel
-from ember.xcs import jit
-from ember.xcs.engine.execution_options import execution_options
+from ember.api.data import data, DatasetBuilder
+from ember.api.models import models
+from ember.api.operators import Operator, Specification, EmberModel, Field
+from ember.api.xcs import jit, execution_options
 
 # Set up console for rich output
 console = Console()
@@ -124,19 +118,18 @@ class MMLUDataset:
             List of question dictionaries formatted for operators
         """
         try:
-            # Use the standard DatasetBuilder pattern to load MMLU data
-            dataset = (
-                DatasetBuilder()
-                .from_registry("mmlu")
-                .subset(self.subject)  # MMLU uses subset as the subject name
-                .split("test")  # Test split for evaluation
-                .sample(max_samples)  # Limit number of samples
-                .build()
+            # Use the simplified data API to load MMLU data
+            dataset_items = data(
+                "mmlu",
+                subset=self.subject,  # MMLU uses subset as the subject name
+                split="test",  # Test split for evaluation
+                sample_size=max_samples,  # Limit number of samples
+                streaming=False  # Load all data at once
             )
 
             # Convert DatasetEntry objects to our expected format
             result = []
-            for entry in dataset.entries:
+            for entry in dataset_items:
                 result.append(
                     {
                         "question": entry.query,
@@ -235,7 +228,7 @@ class MMLUDataset:
         return data[:max_samples]
 
 
-class BaselineMCQSpecification(CoreSpecification):
+class BaselineMCQSpecification(Specification):
     """Specification for baseline MCQ operator."""
 
     # Define both input and output models explicitly
@@ -266,7 +259,7 @@ class BaselineMCQOperator(Operator[MCQInput, MCQOutput]):
     model_name: str
     temperature: float
     max_tokens: int
-    lm_module: LMModule
+    model: Any  # Bound model function
 
     def __init__(
         self,
@@ -285,11 +278,9 @@ class BaselineMCQOperator(Operator[MCQInput, MCQOutput]):
         self.temperature = temperature
         self.max_tokens = max_tokens
 
-        # Initialize the LM module
-        self.lm_module = LMModule(
-            config=LMModuleConfig(
-                id=model_name, temperature=temperature, max_tokens=max_tokens
-            )
+        # Bind the model with specific configuration
+        self.model = models.bind(
+            model_name, temperature=temperature, max_tokens=max_tokens
         )
 
     def forward(self, *, inputs: MCQInput) -> MCQOutput:
@@ -315,8 +306,8 @@ class BaselineMCQOperator(Operator[MCQInput, MCQOutput]):
         # Fill in the template with standard Python format strings
         prompt = self.specification.prompt_template.format(**template_vars)
 
-        # Call LMModule with explicit named parameter to make it JIT-friendly
-        response = self.lm_module(prompt=prompt)
+        # Call model with explicit named parameter to make it JIT-friendly
+        response = self.model(prompt)
 
         # Parse the response to extract answer and reasoning
         answer, reasoning = self._parse_response(response, inputs.choices)
@@ -408,7 +399,7 @@ class BaselineMCQOperator(Operator[MCQInput, MCQOutput]):
         return answer, reasoning
 
 
-class VariedEnsembleSpecification(CoreSpecification):
+class VariedEnsembleSpecification(Specification):
     """Specification for varied ensemble MCQ operator."""
 
     # Explicit models for proper type handling
@@ -474,7 +465,7 @@ class VariedEnsembleMCQOperator(Operator[MCQInput, List[MCQOutput]]):
     """
 
     specification: ClassVar[Specification] = VariedEnsembleSpecification()
-    lm_modules: List[LMModule]
+    models: List[Any]  # List of bound model functions
 
     def __init__(
         self,
@@ -496,21 +487,19 @@ class VariedEnsembleMCQOperator(Operator[MCQInput, List[MCQOutput]]):
                 # Use only available models to ensure functionality
             ]
 
-        # Create LM modules for each configuration
-        self.lm_modules = []
+        # Create bound model functions for each configuration
+        self.models = []
         for config in model_configs:
-            self.lm_modules.append(
-                LMModule(
-                    config=LMModuleConfig(
-                        id=config["model_name"],
-                        temperature=config["temperature"],
-                        max_tokens=config.get("max_tokens", 1024),
-                    )
+            self.models.append(
+                models.bind(
+                    config["model_name"],
+                    temperature=config["temperature"],
+                    max_tokens=config.get("max_tokens", 1024),
                 )
             )
 
     def _process_with_model(
-        self, question: str, choices: Dict[str, str], lm_module: LMModule, template: str
+        self, question: str, choices: Dict[str, str], model: Any, template: str
     ) -> MCQOutput:
         """Process a question with a single model.
 
@@ -520,7 +509,7 @@ class VariedEnsembleMCQOperator(Operator[MCQInput, List[MCQOutput]]):
         Args:
             question: The question text
             choices: Original choices dictionary
-            lm_module: The language model module to use
+            model: The bound model function to use
             template: Prompt template to format
 
         Returns:
@@ -539,8 +528,8 @@ class VariedEnsembleMCQOperator(Operator[MCQInput, List[MCQOutput]]):
         # Fill in the template with standard Python format strings
         prompt = template.format(**template_vars)
 
-        # Call LMModule with explicit named parameter to make it JIT-friendly
-        response = lm_module(prompt=prompt)
+        # Call model with explicit named parameter to make it JIT-friendly
+        response = model(prompt)
 
         # Parse the response
         answer, reasoning = self._parse_response(response, choices)
@@ -567,7 +556,7 @@ class VariedEnsembleMCQOperator(Operator[MCQInput, List[MCQOutput]]):
 
         # Get responses from each model with different prompts
         responses = []
-        for i, lm_module in enumerate(self.lm_modules):
+        for i, model in enumerate(self.models):
             # Select a prompt template (cycling through available templates)
             template_idx = i % len(templates)
             template = templates[template_idx]
@@ -577,7 +566,7 @@ class VariedEnsembleMCQOperator(Operator[MCQInput, List[MCQOutput]]):
                 self._process_with_model(
                     question=inputs.question,
                     choices=inputs.choices,
-                    lm_module=lm_module,
+                    model=model,
                     template=template,
                 )
             )
@@ -646,7 +635,7 @@ class VariedEnsembleMCQOperator(Operator[MCQInput, List[MCQOutput]]):
         return answer, reasoning
 
 
-class JudgeOperatorSpecification(CoreSpecification):
+class JudgeOperatorSpecification(Specification):
     """Specification for MCQ judge operator."""
 
     # Explicit models for proper type handling
@@ -680,7 +669,7 @@ class JudgeOperator(Operator[EnsembleJudgeInput, EnsembleJudgeOutput]):
     """Judge operator that selects the best answer from ensemble responses."""
 
     specification: ClassVar[Specification] = JudgeOperatorSpecification()
-    lm_module: LMModule
+    model: Any  # Bound model function
 
     def __init__(
         self,
@@ -696,10 +685,8 @@ class JudgeOperator(Operator[EnsembleJudgeInput, EnsembleJudgeOutput]):
             max_tokens: Maximum tokens to generate
         """
         self.model_name = model_name
-        self.lm_module = LMModule(
-            config=LMModuleConfig(
-                id=model_name, temperature=temperature, max_tokens=max_tokens
-            )
+        self.model = models.bind(
+            model_name, temperature=temperature, max_tokens=max_tokens
         )
 
     def forward(self, *, inputs: EnsembleJudgeInput) -> EnsembleJudgeOutput:
@@ -733,8 +720,8 @@ class JudgeOperator(Operator[EnsembleJudgeInput, EnsembleJudgeOutput]):
         # Fill in the template with standard Python format strings
         prompt = self.specification.prompt_template.format(**template_vars)
 
-        # Call LMModule with explicit named parameter to make it JIT-friendly
-        response = self.lm_module(prompt=prompt)
+        # Call model with explicit named parameter to make it JIT-friendly
+        response = self.model(prompt)
 
         # Parse the judge's response
         selected_answer, confidence, justification = self._parse_judge_response(
@@ -813,7 +800,7 @@ class EnsembleJudgePipeline(Operator[MCQInput, EnsembleJudgeOutput]):
     """
 
     # Complete specification with input/output models
-    specification: ClassVar[Specification] = CoreSpecification(
+    specification: ClassVar[Specification] = Specification(
         input_model=MCQInput, structured_output=EnsembleJudgeOutput
     )
     ensemble_operator: VariedEnsembleMCQOperator
@@ -1010,7 +997,7 @@ class MMLUExperiment:
             with execution_options(
                 scheduler="wave",
                 max_workers=len(
-                    self.ensemble_judge_operator.ensemble_operator.lm_modules
+                    self.ensemble_judge_operator.ensemble_operator.models
                 ),
                 enable_caching=True,  # Enable caching for better performance
                 device_strategy="auto",  # Let system choose the best device strategy
@@ -1047,7 +1034,7 @@ class MMLUExperiment:
         )
 
         # Record the number of models used in the ensemble for reference
-        num_models = len(self.ensemble_judge_operator.ensemble_operator.lm_modules)
+        num_models = len(self.ensemble_judge_operator.ensemble_operator.models)
         results["num_models"] = num_models
 
         # We'll simply report the measured time for both approaches without
