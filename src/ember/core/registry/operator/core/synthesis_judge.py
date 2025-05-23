@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from typing import List, Optional, Type
+from typing import List, Optional, Type, Any
 
 from pydantic import Field
 
 from ember.core.exceptions import MissingLMModuleError
-from ember.core.registry.model.model_module.lm import LMModule
 from ember.core.registry.operator.base.operator_base import Operator
 from ember.core.registry.specification.specification import Specification
 from ember.core.types.ember_model import EmberModel
@@ -53,23 +52,46 @@ class JudgeSynthesisSpecification(Specification):
 
 
 class JudgeSynthesisOperator(Operator[JudgeSynthesisInputs, JudgeSynthesisOutputs]):
-    """Operator to synthesize a final answer and reasoning from multiple responses."""
+    """Operator to synthesize a final answer and reasoning from multiple responses.
+    
+    This operator takes multiple responses and synthesizes them into a single,
+    well-reasoned final answer. It's typically used after an ensemble operator
+    to combine diverse perspectives.
+    
+    Examples:
+        # Simple usage with model name
+        synthesizer = JudgeSynthesisOperator(model="gpt-4")
+        
+        # With custom temperature for creative synthesis
+        synthesizer = JudgeSynthesisOperator(model="gpt-4", temperature=0.7)
+    """
 
     specification: Specification = JudgeSynthesisSpecification()
-    lm_module: LMModule
 
-    def __init__(self, *, lm_module: LMModule) -> None:
-        """Initialize the synthesis judge with a language model module."""
-        self.lm_module = lm_module
+    def __init__(
+        self,
+        *,
+        model: Any,  # Callable model
+        **kwargs
+    ) -> None:
+        """Initialize the synthesis judge with a model.
+        
+        Args:
+            model: A callable model that accepts a prompt and returns a response
+            **kwargs: Additional parameters passed to the operator
+        """
+        super().__init__(**kwargs)
+        self.model = model
 
     def forward(self, *, inputs: JudgeSynthesisInputs) -> JudgeSynthesisOutputs:
-        if not self.lm_module:
+        if not self.model:
             raise MissingLMModuleError(
-                "No LM module attached to JudgeSynthesisOperator."
+                "No model attached to JudgeSynthesisOperator."
             )
 
         rendered_prompt: str = self.specification.render_prompt(inputs=inputs)
-        raw_output: str = self.lm_module(prompt=rendered_prompt).strip()
+        response = self.model(rendered_prompt)
+        raw_output: str = response.text.strip()
 
         # Parse the response to extract reasoning and final answer
         final_answer = "Unknown"

@@ -8,13 +8,11 @@ try:
     from ember.core import registry
     from ember.core.context import EmberContext, current_context
     from ember.core.exceptions import ConfigError, EmberError, ValidationError
-    from ember.core.non import Sequential
 except ImportError:
     # Fall back to src.ember if the regular imports fail
     from ember.core import registry
     from ember.core.context import EmberContext, current_context
     from ember.core.exceptions import ConfigError, EmberError, ValidationError
-    from ember.core.non import Sequential
 
 # Legacy alias for backward compatibility
 ConfigurationError = ConfigError
@@ -26,5 +24,4 @@ __all__ = [
     "ConfigError",
     "ConfigurationError",  # Legacy alias
     "registry",
-    "Sequential",
 ]

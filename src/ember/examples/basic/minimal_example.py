@@ -12,9 +12,7 @@ To run:
 
 from typing import Any, Dict, List, Optional, Type
 
-from ember.core.registry.operator.base.operator_base import Operator
-from ember.core.registry.specification.specification import Specification
-from ember.core.types.ember_model import EmberModel, Field
+from ember.api.operators import Operator, Specification, EmberModel, Field
 
 
 class MinimalInput(EmberModel):

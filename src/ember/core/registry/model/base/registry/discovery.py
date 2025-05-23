@@ -114,7 +114,7 @@ class ModelDiscoveryService:
                         init_error,
                     )
             else:
-                logger.info(
+                logger.debug(
                     "%s not found, skipping %s", env_var_name, provider_class.__name__
                 )
 
@@ -139,7 +139,7 @@ class ModelDiscoveryService:
         current_time: float = time.time()
         with self._lock:
             if self._cache and (current_time - self._last_update) < self.ttl:
-                logger.info("Returning cached discovery results.")
+                logger.debug("Returning cached discovery results.")
                 return self._cache.copy()
 
         aggregated_models: Dict[str, Dict[str, Any]] = {}
@@ -163,7 +163,7 @@ class ModelDiscoveryService:
                     start = time.time()
                     result = prov.fetch_models()
                     duration = time.time() - start
-                    logger.info(f"Provider {pname} completed in {duration:.2f}s")
+                    logger.debug(f"Provider {pname} completed in {duration:.2f}s")
                     res.append(result)
                 except Exception as e:
                     logger.error(f"Error fetching models from {pname}: {e}")
@@ -196,7 +196,7 @@ class ModelDiscoveryService:
                     errors.append(f"{provider_name}: No results returned")
                 else:
                     result = result_container[0]
-                    logger.info(
+                    logger.debug(
                         f"Successfully received {len(result)} models from {provider_name}"
                     )
                     aggregated_models.update(result)
@@ -209,7 +209,7 @@ class ModelDiscoveryService:
         with self._lock:
             self._cache = aggregated_models.copy()
             self._last_update = time.time()
-            logger.info(
+            logger.debug(
                 f"Discovered {len(aggregated_models)} models: {list(aggregated_models.keys())}"
             )
 
@@ -399,7 +399,7 @@ class ModelDiscoveryService:
                 self._cache.clear()
             # Reset the last update timestamp
             self._last_update = 0.0
-            logger.info("Cache invalidated; next discovery will fetch fresh data.")
+            logger.debug("Cache invalidated; next discovery will fetch fresh data.")
 
     async def discover_models_async(self) -> Dict[str, Dict[str, Any]]:
         """Asynchronously discover models using registered providers, with caching based on TTL."""
@@ -409,7 +409,7 @@ class ModelDiscoveryService:
         current_time: float = time.time()
         with self._lock:
             if self._cache and (current_time - self._last_update) < self.ttl:
-                logger.info("Returning cached discovery results.")
+                logger.debug("Returning cached discovery results.")
                 return self._cache.copy()
 
         aggregated_models: Dict[str, Dict[str, Any]] = {}
@@ -420,7 +420,7 @@ class ModelDiscoveryService:
         ) -> Dict[str, Any]:
             """Async wrapper for provider fetch with proper error handling."""
             provider_name = provider.__class__.__name__
-            logger.info(f"Starting async model discovery for: {provider_name}")
+            logger.debug(f"Starting async model discovery for: {provider_name}")
 
             try:
                 # Check if the provider has an async implementation
@@ -428,7 +428,7 @@ class ModelDiscoveryService:
                     provider.fetch_models_async
                 ):
                     # Use the async implementation directly with shorter timeout
-                    logger.info(
+                    logger.debug(
                         f"Using native async implementation for {provider_name}"
                     )
                     provider_models = await asyncio.wait_for(
@@ -436,7 +436,7 @@ class ModelDiscoveryService:
                     )
                 else:
                     # Fall back to running the sync version in a thread pool
-                    logger.info(f"Using thread pool for sync method of {provider_name}")
+                    logger.debug(f"Using thread pool for sync method of {provider_name}")
                     fetch_task = asyncio.create_task(
                         asyncio.get_event_loop().run_in_executor(
                             None, provider.fetch_models
@@ -444,7 +444,7 @@ class ModelDiscoveryService:
                     )
                     provider_models = await asyncio.wait_for(fetch_task, timeout=15)
 
-                logger.info(
+                logger.debug(
                     f"Successfully received {len(provider_models)} models from {provider_name}"
                 )
                 return {
@@ -521,10 +521,10 @@ class ModelDiscoveryService:
             self._cache = aggregated_models.copy()
             self._last_update = time.time()
             if aggregated_models:
-                logger.info(
+                logger.debug(
                     f"Discovered {len(aggregated_models)} models: {list(aggregated_models.keys())}"
                 )
             else:
-                logger.info("No valid models discovered during async discovery")
+                logger.debug("No valid models discovered during async discovery")
 
         return aggregated_models.copy()

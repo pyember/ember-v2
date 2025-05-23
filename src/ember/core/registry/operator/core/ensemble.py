@@ -15,9 +15,8 @@ and reliability-focused LLM applications.
 
 from __future__ import annotations
 
-from typing import List
+from typing import List, Union, Any, Optional
 
-from ember.core.registry.model.model_module.lm import LMModule
 from ember.core.registry.operator.base.operator_base import Operator
 from ember.core.registry.specification.specification import Specification
 from ember.core.types import EmberModel
@@ -59,7 +58,7 @@ class EnsembleOperatorOutputs(EmberModel):
         responses: Ordered list of text responses from the language models
                  in the ensemble. Each element corresponds to the output
                  from one model instance, preserving the original order of
-                 the LMModules provided to the operator.
+                 the models provided to the operator.
     """
 
     responses: List[str]
@@ -69,7 +68,7 @@ class EnsembleOperator(Operator[EnsembleOperatorInputs, EnsembleOperatorOutputs]
     """
     Executes the same query across multiple language models in parallel.
 
-    Sends an identical prompt to each LM in the ensemble and collects all responses.
+    Sends an identical prompt to each model in the ensemble and collects all responses.
     This enables multiple independent samples from language models, which can
     be used for robustness, consensus, or diversity of outputs.
 
@@ -80,27 +79,39 @@ class EnsembleOperator(Operator[EnsembleOperatorInputs, EnsembleOperatorOutputs]
     specification: Specification = Specification(
         input_model=EnsembleOperatorInputs, structured_output=EnsembleOperatorOutputs
     )
-    lm_modules: List[LMModule]
 
-    def __init__(self, *, lm_modules: List[LMModule]) -> None:
+    def __init__(
+        self, 
+        *, 
+        models: List[Any],  # List of callables
+        **kwargs
+    ) -> None:
         """
-        Initializes the ensemble with a collection of language model modules.
+        Initializes the ensemble with a collection of language models.
 
-        The constructor follows the Dependency Injection principle, accepting
-        pre-configured LMModule instances rather than creating them internally.
-        This approach provides maximum flexibility for ensemble configuration,
-        enabling diverse model combinations and specialized configurations.
+        The constructor accepts a list of callable models. Each model should be
+        a function or object that can be called with a prompt string and returns
+        a response object with a .text attribute.
 
-        The implementation preserves the order of the provided modules,
+        The implementation preserves the order of the provided models,
         ensuring deterministic execution and reproducible results.
 
         Args:
-            lm_modules: Collection of language model modules to execute in parallel.
-                      These modules must conform to the LMModule interface, but
-                      can represent different model providers, model versions, or
-                      configuration parameters.
+            models: Collection of callable models to execute in parallel.
+                   Each should accept a prompt string and return a response.
+            **kwargs: Additional parameters passed to the operator
+            
+        Examples:
+            # Usage with pre-configured models from the API layer
+            from ember.api import models
+            ensemble = EnsembleOperator(models=[
+                models.bind("gpt-4", temperature=0.7),
+                models.bind("claude-3", temperature=0.9),
+                models.bind("gpt-3.5-turbo", temperature=0.5)
+            ])
         """
-        self.lm_modules = lm_modules
+        super().__init__(**kwargs)
+        self.models = models
 
     def forward(self, *, inputs: EnsembleOperatorInputs) -> EnsembleOperatorOutputs:
         """
@@ -111,8 +122,14 @@ class EnsembleOperator(Operator[EnsembleOperatorInputs, EnsembleOperatorOutputs]
 
         Returns:
             Contains all model responses in an ordered list matching
-            the original lm_modules order.
+            the original models order.
         """
         rendered_prompt: str = self.specification.render_prompt(inputs=inputs)
-        responses: List[str] = [lm(prompt=rendered_prompt) for lm in self.lm_modules]
+        responses: List[str] = []
+        
+        # Execute each model and collect responses
+        for model in self.models:
+            response = model(rendered_prompt)
+            responses.append(response.text)
+            
         return {"responses": responses}

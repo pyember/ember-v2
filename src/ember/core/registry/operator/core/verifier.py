@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from typing import Optional, Type
+from typing import Optional, Type, Any
 
 from pydantic import Field
 
 from ember.core.exceptions import MissingLMModuleError
-from ember.core.registry.model.model_module.lm import LMModule
 from ember.core.registry.operator.base.operator_base import Operator
 from ember.core.registry.specification.specification import Specification
 from ember.core.types.ember_model import EmberModel
@@ -54,19 +53,47 @@ class VerifierSpecification(Specification):
 
 
 class VerifierOperator(Operator[VerifierOperatorInputs, VerifierOperatorOutputs]):
-    """Operator to verify a candidate answer and optionally suggest revisions."""
+    """Operator to verify a candidate answer and optionally suggest revisions.
+    
+    This operator now supports both string model IDs and ModelBinding instances,
+    optimizing for the common case of just passing a model name.
+    
+    Examples:
+        # Simple usage with model name
+        verifier = VerifierOperator(model="gpt-4")
+        
+        # With custom parameters
+        verifier = VerifierOperator(model="gpt-4", temperature=0.3)
+        
+        # With pre-configured binding
+        custom_model = models.bind("gpt-4", temperature=0.1, max_tokens=500)
+        verifier = VerifierOperator(model=custom_model)
+    """
 
     specification: Specification = VerifierSpecification()
-    lm_module: LMModule
 
-    def __init__(self, *, lm_module: LMModule) -> None:
-        self.lm_module = lm_module
+    def __init__(
+        self, 
+        *, 
+        model: Any,  # Callable model
+        **kwargs
+    ) -> None:
+        """Initialize the verifier with a model.
+        
+        Args:
+            model: A callable model that accepts a prompt and returns a response
+            **kwargs: Additional parameters passed to the operator
+        """
+        super().__init__(**kwargs)
+        self.model = model
 
     def forward(self, *, inputs: VerifierOperatorInputs) -> VerifierOperatorOutputs:
-        if not self.lm_module:
-            raise MissingLMModuleError("No LM module attached to VerifierOperator.")
+        if not self.model:
+            raise MissingLMModuleError("No model attached to VerifierOperator.")
+        
         rendered_prompt: str = self.specification.render_prompt(inputs=inputs)
-        raw_output: str = self.lm_module(prompt=rendered_prompt).strip()
+        response = self.model(rendered_prompt)
+        raw_output: str = response.text.strip()
 
         # Initialize default values
         verdict = 0

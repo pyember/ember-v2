@@ -38,7 +38,7 @@ from __future__ import annotations
 
 import abc
 import logging
-from typing import ClassVar, Generic, Optional, Type, cast
+from typing import ClassVar, Generic, Optional, Type, cast, Union, List
 
 from ember.core.exceptions import OperatorExecutionError, OperatorSpecificationError
 from ember.core.registry.operator.base._module import EmberModule
@@ -46,6 +46,14 @@ from ember.core.registry.specification.specification import Specification
 from ember.core.types import InputT, OutputT
 
 logger = logging.getLogger(__name__)
+
+# Import ModelBinding for type checking
+try:
+    from ember.api import models, ModelBinding
+except ImportError:
+    # Fallback for circular import issues
+    ModelBinding = None
+    models = None
 
 # Type aliases for backward compatibility
 T_in = InputT

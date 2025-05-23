@@ -1,25 +1,27 @@
+"""
+Compatibility wrapper for LMModule to ModelBinding migration.
+
+This module provides backward compatibility during the transition from LMModule
+to the models API. It will be removed in v2.0.
+
+DEPRECATED: Use ember.api.models instead.
+"""
+
+import warnings
 import logging
 from typing import Any, Optional
 
 from pydantic import BaseModel, Field
 
-from ember.core.registry.model.base.services.model_service import ModelService
-from ember.core.registry.model.base.services.usage_service import UsageService
-
-logger: logging.Logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class LMModuleConfig(BaseModel):
-    """Configuration settings for the Language Model module.
-
-    Attributes:
-        id (str): Identifier for selecting the underlying model provider.
-        temperature (float): Sampling temperature for model generation.
-        max_tokens (Optional[int]): Maximum tokens to generate in a single forward call.
-        cot_prompt (Optional[str]): Chain-of-thought prompt appended to the user's prompt.
-        persona (Optional[str]): Persona or role context prepended to the user query.
     """
-
+    DEPRECATED: Configuration for LMModule. Use models.bind() instead.
+    
+    This class is maintained for backward compatibility only.
+    """
     id: str = Field(
         default="openai:gpt-4o",
         description="Identifier for the underlying model provider.",
@@ -44,118 +46,152 @@ class LMModuleConfig(BaseModel):
     )
 
 
-def get_default_model_service() -> ModelService:
-    """Creates and returns a default ModelService instance using the new unified initializer.
-
-    Instead of relying on a global registry, we explicitly call initialize_ember()
-    so that the registry is built from the current configuration.
-    """
-    from ember.core.registry.model.initialization import initialize_registry
-
-    # Initialize the registry (with auto_discover enabled).
-    registry = initialize_registry(auto_discover=True, force_discovery=True)
-    usage_service = (
-        UsageService()
-    )  # Optionally, you might inject a custom usage service.
-    return ModelService(registry=registry, usage_service=usage_service)
-
-
 class LMModule:
-    """Language Model module that integrates with ModelService and optional usage tracking.
-
-    When the flag `simulate_api` is True, this module returns a dummy response rather than calling the real API.
-
-    This module is designed to generate text responses based on a user prompt. It merges
-    persona and chain-of-thought details into the prompt and delegates model invocation to
-    the ModelService.
-
-    Example:
-        lm_config = LMModuleConfig(model_id="provider:custom-model", temperature=0.7)
-        lm_module = LMModule(config=lm_config)
-        response_text = lm_module(prompt="Hello, world!")
     """
-
+    DEPRECATED: Compatibility wrapper for LMModule. Use models.bind() instead.
+    
+    This class provides backward compatibility for code using LMModule.
+    During the migration, it maintains the same interface while using
+    the underlying ModelService directly.
+    
+    Migration examples:
+        # Old way
+        lm_module = LMModule(config=LMModuleConfig(id="gpt-4", temperature=0.7))
+        response = lm_module(prompt="Hello")
+        
+        # New way
+        from ember.api import models
+        model = models.bind("gpt-4", temperature=0.7)
+        response = model("Hello").text
+    """
+    
     def __init__(
         self,
         config: LMModuleConfig,
-        model_service: Optional[ModelService] = None,
+        model_service: Optional[Any] = None,
         simulate_api: bool = False,
     ) -> None:
-        """Initializes the LMModule.
-
-        Args:
-            config (LMModuleConfig): Configuration for model settings such as model_id and temperature.
-            model_service (Optional[ModelService]): Service for model invocation. If None, a
-                default ModelService is created.
-            simulate_api (bool): Flag indicating whether to simulate API calls.
-        """
-        if model_service is None:
-            model_service = get_default_model_service()
-        self.config: LMModuleConfig = config
-        self.model_service: ModelService = model_service
-        self.simulate_api: bool = simulate_api
-        self._logger: logging.Logger = logging.getLogger(self.__class__.__name__)
-
+        """Initialize compatibility wrapper with deprecation warning."""
+        warnings.warn(
+            "LMModule is deprecated and will be removed in v2.0. "
+            "Use models.bind() instead. "
+            "See LMMODULE_MIGRATION_GUIDE.md for migration instructions.",
+            DeprecationWarning,
+            stacklevel=2
+        )
+        
+        self.config = config
+        self.simulate_api = simulate_api
+        self._logger = logger
+        
+        # Store the model service if provided, otherwise we'll get it lazily
+        self._model_service = model_service
+        self._cached_service = None
+        
+        # Store persona and cot_prompt for compatibility
+        self._persona = config.persona
+        self._cot_prompt = config.cot_prompt
+        
+        # Log migration suggestion
+        logger.info(
+            f"LMModule created for model '{config.id}'. "
+            f"Consider migrating to: models.bind('{config.id}', temperature={config.temperature})"
+        )
+    
+    def _get_model_service(self):
+        """Lazily get the model service to avoid circular imports."""
+        if self._model_service:
+            return self._model_service
+            
+        if not self._cached_service:
+            # Import here to avoid circular dependency
+            from ember.core.registry.model.initialization import initialize_registry
+            from ember.core.registry.model.base.services.model_service import ModelService
+            from ember.core.registry.model.base.services.usage_service import UsageService
+            
+            registry = initialize_registry(auto_discover=True, force_discovery=True)
+            usage_service = UsageService()
+            self._cached_service = ModelService(registry=registry, usage_service=usage_service)
+            
+        return self._cached_service
+    
     def __call__(self, prompt: str, **kwargs: Any) -> str:
-        """Enables the LMModule instance to be called like a function.
-
-        This method simply forwards the call to the forward() method.
-
-        Args:
-            prompt (str): The input prompt to generate text from.
-            **kwargs (Any): Additional keyword arguments for model invocation.
-
-        Returns:
-            str: The generated text response.
-        """
+        """Maintain compatibility with string return type."""
         return self.forward(prompt=prompt, **kwargs)
-
+    
     def forward(self, prompt: str, **kwargs: Any) -> str:
-        """Generates text from a prompt by delegating to the ModelService.
-
-        This method assembles a final prompt by merging persona information and a chain-of-thought
-        prompt (if provided) with the user's prompt, then calls the ModelService to generate
-        the response.
-
-        Args:
-            prompt (str): The user-provided prompt.
-            **kwargs (Any): Additional parameters for model invocation (e.g., temperature, max_tokens).
-
-        Returns:
-            str: The generated text response.
-            If the module is configured to simulate API calls and the flag simulate_api is True,
-            returns a dummy response immediately.
-
+        """
+        Generate text using the underlying model service.
+        
+        Returns string for backward compatibility.
         """
         if self.simulate_api:
             self._logger.debug("Simulating API call for prompt: %s", prompt)
             return f"SIMULATED_RESPONSE: {prompt}"
-        final_prompt: str = self._assemble_full_prompt(user_prompt=prompt)
-        response: Any = self.model_service.invoke_model(
-            model_id=self.config.id,
-            prompt=final_prompt,
-            temperature=kwargs.get("temperature", self.config.temperature),
-            max_tokens=kwargs.get("max_tokens", self.config.max_tokens),
-            **kwargs,
-        )
-        # Return response content if available; otherwise, convert response to string.
-        return response.data if hasattr(response, "data") else str(response)
-
-    def _assemble_full_prompt(self, user_prompt: str) -> str:
-        """Assembles the full prompt by merging persona and chain-of-thought details.
-
-        Args:
-            user_prompt (str): The base prompt provided by the user.
-
-        Returns:
-            str: The final prompt after merging additional context.
-        """
-        segments: list[str] = []
-        if self.config.persona:
-            segments.append(f"[Persona: {self.config.persona}]\n")
-        segments.append(user_prompt.strip())
-        if self.config.cot_prompt:
-            segments.append(
-                f"\n\n# Chain of Thought:\n{self.config.cot_prompt.strip()}"
+        
+        # Assemble full prompt with persona/cot if provided
+        final_prompt = self._assemble_full_prompt(prompt)
+        
+        # Merge kwargs with config values
+        merged_params = {
+            "temperature": kwargs.get("temperature", self.config.temperature),
+            "max_tokens": kwargs.get("max_tokens", self.config.max_tokens),
+        }
+        # Add any additional kwargs
+        for k, v in kwargs.items():
+            if k not in merged_params:
+                merged_params[k] = v
+        
+        try:
+            # Call the model using the underlying service
+            model_service = self._get_model_service()
+            response = model_service.invoke_model(
+                model_id=self.config.id,
+                prompt=final_prompt,
+                **merged_params
             )
+            
+            # Return just the text for backward compatibility
+            return response.data if hasattr(response, "data") else str(response)
+            
+        except Exception as e:
+            # Maintain similar error behavior
+            self._logger.error(f"Error calling model: {e}")
+            raise
+    
+    def _assemble_full_prompt(self, user_prompt: str) -> str:
+        """Maintain prompt assembly for compatibility."""
+        segments = []
+        
+        if self._persona:
+            segments.append(f"[Persona: {self._persona}]\n")
+        
+        segments.append(user_prompt.strip())
+        
+        if self._cot_prompt:
+            segments.append(f"\n\n# Chain of Thought:\n{self._cot_prompt.strip()}")
+        
         return "\n".join(segments).strip()
+
+
+# Maintain the same function for compatibility
+def get_default_model_service():
+    """
+    DEPRECATED: This function is no longer needed with the models API.
+    
+    Returns a default ModelService for compatibility.
+    """
+    warnings.warn(
+        "get_default_model_service() is deprecated. "
+        "The models API handles service creation automatically.",
+        DeprecationWarning,
+        stacklevel=2
+    )
+    
+    from ember.core.registry.model.initialization import initialize_registry
+    from ember.core.registry.model.base.services.model_service import ModelService
+    from ember.core.registry.model.base.services.usage_service import UsageService
+    
+    registry = initialize_registry(auto_discover=True, force_discovery=True)
+    usage_service = UsageService()
+    return ModelService(registry=registry, usage_service=usage_service)

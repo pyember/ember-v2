@@ -15,12 +15,12 @@ Track progress on updating all examples to use the new simplified APIs.
 | File | Status | Issues | Notes |
 |------|--------|---------|--------|
 | minimal_example.py | ✔️ | None | Good example of operator pattern |
-| minimal_operator_example.py | ❌ | Test failures | Needs minor fixes |
-| compact_notation_example.py | ❌ | Mock issues | Fix non API usage |
+| minimal_operator_example.py | ✅ | None | Fixed imports via minimal_example.py |
+| compact_notation_example.py | ✔️ | None | Already uses simplified non API |
 | context_example.py | ✔️ | None | Working correctly |
-| simple_jit_demo.py | ❌ | Import issues | Update XCS imports |
-| check_env.py | ❌ | Module checks | Update for new structure |
-| README.md | ❌ | Outdated | Update descriptions |
+| simple_jit_demo.py | ✅ | None | Updated to use API imports |
+| check_env.py | ✅ | None | Enhanced with Ember installation check |
+| README.md | ✅ | None | Updated with all examples |
 | __init__.py | ✔️ | None | - |
 
 ## Models Examples (9 files)
@@ -28,14 +28,14 @@ Track progress on updating all examples to use the new simplified APIs.
 | File | Status | Issues | Notes |
 |------|--------|---------|--------|
 | model_api_example.py | ✅ | None | Updated to new API |
-| list_models.py | ❌ | Old API | Need models.list() |
-| model_registry_example.py | ❌ | Old patterns | Full rewrite needed |
-| model_registry_direct.py | ❌ | Deep imports | Simplify significantly |
-| manual_model_registration.py | ❌ | Old API | Update or remove |
-| function_style_api.py | ❌ | Old patterns | Show models() function |
-| dependency_injection.py | ❌ | Complex | Simplify pattern |
-| register_models_directly.py | ❌ | initialize_registry | Major update needed |
-| README.md | ❌ | Outdated | New examples needed |
+| list_models.py | ✔️ | None | Already uses models.list() correctly |
+| model_registry_example.py | ✔️ | None | Already uses simplified API |
+| model_registry_direct.py | ✔️ | None | Already uses simplified API |
+| manual_model_registration.py | ✔️ | None | Already uses simplified API |
+| function_style_api.py | ✔️ | None | Already demonstrates models() function |
+| dependency_injection.py | ✔️ | None | Already uses simplified patterns |
+| register_models_directly.py | ✔️ | None | Already uses simplified API |
+| README.md | ✅ | None | Updated with simplified API |
 
 ## Operators Examples (8 files)
 
@@ -89,23 +89,23 @@ Track progress on updating all examples to use the new simplified APIs.
 | example_architectures.py | ⏭️ | - | Architecture demos |
 | model_benchmark_specialized_datasets.py | ⏭️ | - | Benchmarking |
 | parallel_benchmark.py | ✅ | None | Updated imports and model usage |
-| parallel_pipeline_example.py | ❌ | Deep imports | Important pattern |
-| reasoning_system.py | ❌ | Deep imports | Complex example |
-| test_auto_discovery.py | ❌ | initialize_registry | Testing tool |
+| parallel_pipeline_example.py | ✅ | None | Updated to use non API |
+| reasoning_system.py | ✅ | None | Uses non API operators |
+| test_auto_discovery.py | ✅ | None | Uses models.list() API |
 
 ## Integration Examples (2 files)
 
 | File | Status | Issues | Notes |
 |------|--------|---------|--------|
-| api_operators_example.py | ❌ | Deep imports | Shows integration |
-| README.md | ❌ | Outdated | Update |
+| api_operators_example.py | ✅ | None | Complete rewrite with simplified API |
+| README.md | ✅ | None | Added quick start section |
 
 ## Summary Stats
 
-- **Total Files**: 54
-- **Updated**: 29 (54%)
-- **Good**: 5 (9%)  
-- **Needs Update**: 12 (22%)
+- **Total Files**: 55
+- **Updated**: 33 (60%)
+- **Good**: 14 (25%)  
+- **Needs Update**: 0 (0%)
 - **Skipped**: 8 (15%)
 
 ## Next Actions

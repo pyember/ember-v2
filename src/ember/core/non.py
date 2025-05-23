@@ -33,9 +33,11 @@ Example usage:
 
 from __future__ import annotations
 
-from typing import Any, List, Optional, Type, TypeVar, cast
+from typing import Any, List, Optional, Type, TypeVar, cast, TYPE_CHECKING
 
-from ember.core.registry.model.model_module.lm import LMModule, LMModuleConfig
+# Lazy import to avoid circular dependency
+if TYPE_CHECKING:
+    from ember.api import models, ModelBinding
 
 # Import the actual Operator class and EmberModule
 from ember.core.registry.operator.base.operator_base import Operator
@@ -127,19 +129,17 @@ class UniformEnsemble(Operator[EnsembleInputs, EnsembleOperatorOutputs]):
         self.temperature = temperature
         self.max_tokens = max_tokens
 
-        # Construct LM modules based on the provided parameters.
-        lm_modules: List[LMModule] = [
-            LMModule(
-                config=LMModuleConfig(
-                    model_name=self.model_name,
-                    temperature=self.temperature,
-                    max_tokens=self.max_tokens,
-                )
-            )
+        # Import models API here to avoid circular import
+        from ember.api import models
+        
+        # Create a list of identical bound models
+        model_list = [
+            models.bind(self.model_name, temperature=self.temperature, max_tokens=self.max_tokens)
             for _ in range(self.num_units)
         ]
-        # Create the operator directly
-        self._ensemble_op = EnsembleOperator(lm_modules=lm_modules)
+        
+        # Create the operator with bound models
+        self._ensemble_op = EnsembleOperator(models=model_list)
 
     def forward(self, *, inputs: EnsembleInputs) -> EnsembleOperatorOutputs:
         """Delegates execution to the underlying EnsembleOperator."""
@@ -273,14 +273,13 @@ class JudgeSynthesis(Operator[JudgeSynthesisInputs, JudgeSynthesisOutputs]):
         self.temperature = temperature
         self.max_tokens = max_tokens
 
-        lm_module = LMModule(
-            config=LMModuleConfig(
-                model_name=model_name,
-                temperature=temperature,
-                max_tokens=max_tokens,
-            )
+        # Import models API here to avoid circular import
+        from ember.api import models
+        
+        # Create the operator with a bound model
+        self._judge_synthesis_op = JudgeSynthesisOperator(
+            model=models.bind(model_name, temperature=temperature, max_tokens=max_tokens)
         )
-        self._judge_synthesis_op = JudgeSynthesisOperator(lm_module=lm_module)
 
     def forward(self, *, inputs: JudgeSynthesisInputs) -> JudgeSynthesisOutputs:
         """Delegates execution to the underlying JudgeSynthesisOperator."""
@@ -357,14 +356,13 @@ class Verifier(Operator[VerifierInputs, VerifierOutputs]):
         self.temperature = temperature
         self.max_tokens = max_tokens
 
-        lm_module = LMModule(
-            config=LMModuleConfig(
-                model_name=model_name,
-                temperature=temperature,
-                max_tokens=max_tokens,
-            )
+        # Import models API here to avoid circular import
+        from ember.api import models
+        
+        # Create the operator with a bound model
+        self._verifier_op = VerifierOperator(
+            model=models.bind(model_name, temperature=temperature, max_tokens=max_tokens)
         )
-        self._verifier_op = VerifierOperator(lm_module=lm_module)
 
     def forward(self, *, inputs: VerifierInputs) -> VerifierOutputs:
         """Delegates execution to the underlying VerifierOperator."""
@@ -406,22 +404,38 @@ class VariedEnsembleSpecification(Specification):
 
 
 class VariedEnsemble(Operator[VariedEnsembleInputs, VariedEnsembleOutputs]):
-    """Wrapper around multiple LM modules that runs varied configurations and aggregates outputs.
+    """Wrapper around multiple models that runs varied configurations and aggregates outputs.
 
     Example:
-        varied_ensemble = VariedEnsemble(model_configs=[config1, config2])
+        # With list of (model_id, temperature, max_tokens) tuples
+        varied_ensemble = VariedEnsemble(model_configs=[
+            ("gpt-4", 0.3, 1000),
+            ("claude-3", 0.7, 2000),
+            ("gpt-3.5-turbo", 0.5, 1500)
+        ])
         outputs = varied_ensemble(inputs=VariedEnsembleInputs(query="Example query"))
     """
 
     specification: Specification = VariedEnsembleSpecification()
-    model_configs: List[LMModuleConfig]
-    lm_modules: List[LMModule]
     _varied_ensemble_op: Optional[EnsembleOperator] = None
 
-    def __init__(self, *, model_configs: List[LMModuleConfig]) -> None:
-        self.model_configs = model_configs
-        self.lm_modules = [LMModule(config=config) for config in model_configs]
-        self._varied_ensemble_op = EnsembleOperator(lm_modules=self.lm_modules)
+    def __init__(self, *, model_configs: List[tuple[str, float, Optional[int]]]) -> None:
+        """Initialize with varied model configurations.
+        
+        Args:
+            model_configs: List of (model_id, temperature, max_tokens) tuples
+        """
+        # Import models here to avoid circular import
+        from ember.api import models
+        
+        # Create ModelBinding instances from the configurations
+        model_bindings = []
+        for model_id, temperature, max_tokens in model_configs:
+            model_bindings.append(
+                models.bind(model_id, temperature=temperature, max_tokens=max_tokens)
+            )
+        
+        self._varied_ensemble_op = EnsembleOperator(models=model_bindings)
 
     def build_prompt(self, *, inputs: VariedEnsembleInputs) -> str:
         """Builds a prompt from the input model.

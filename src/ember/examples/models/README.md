@@ -1,15 +1,17 @@
 # Ember Model Examples
 
-This directory contains examples demonstrating how to use Ember's model registry system to work with various LLM providers.
+This directory contains examples demonstrating how to use Ember's simplified models API to work with various LLM providers.
 
 ## Examples
 
-- `model_registry_example.py` - General usage patterns for the model registry
+- `function_style_api.py` - **Start here!** Demonstrates the simplified models() function API
+- `model_api_example.py` - Basic model invocation patterns with the simplified API
 - `list_models.py` - How to list available models and their capabilities
-- `model_registry_direct.py` - Direct usage of the model registry API
-- `model_api_example.py` - Using the model API for inference
-- `manual_model_registration.py` - Manually registering custom models
-- `register_models_directly.py` - Direct model registration example
+- `model_registry_example.py` - Advanced patterns including binding, batching, and custom models
+- `model_registry_direct.py` - Direct model usage with environment variables
+- `dependency_injection.py` - Configuration patterns and model binding for different use cases
+- `manual_model_registration.py` - Registering custom models with specific configurations
+- `register_models_directly.py` - Custom model registration without environment variables
 
 ## Running Examples
 
@@ -45,79 +47,95 @@ export ANTHROPIC_API_KEY="sk_ant_xxxxxxxxxxxxx"
 
 Some examples (like `register_models_directly.py` and `model_registry_direct.py`) allow you to set API keys directly in the code as an alternative to environment variables.
 
-## Best Practices
+## Best Practices with the Simplified API
 
-### 1. Accessing the Registry
-
-```python
-from ember.api import models
-
-# Get the registry
-registry = models.get_registry()
-```
-
-### 2. Using Provider Namespaces
+### 1. Direct Model Invocation
 
 ```python
 from ember.api import models
 
-# Direct invocation with namespace
-response = models.openai.gpt4o("What is the capital of France?")
-response = models.anthropic.claude("Tell me about quantum physics")
+# The simplest way - direct invocation
+response = models("gpt-4", "What is the capital of France?")
+print(response.text)
+
+# With parameters
+response = models("claude-3", "Write a haiku", temperature=0.7, max_tokens=50)
 ```
 
-### 3. Getting and Using Model Instances
+### 2. Model Binding for Reuse
 
 ```python
 from ember.api import models
 
-# Get model service
-model_service = models.get_model_service()
+# Create reusable model configurations
+factual_model = models.bind("gpt-4", temperature=0.1)
+creative_model = models.bind("gpt-4", temperature=0.9)
 
-# Get a model instance
-model = model_service.get_model("openai:gpt-4o")
-
-# Use the model instance
-response = model(prompt="What is the capital of France?")
-print(response.data)
-
-# Alternative: direct invocation
-response = model_service.invoke_model("openai:gpt-4o", "What is the capital of France?")
+# Use them repeatedly
+response1 = factual_model("What is gravity?")
+response2 = creative_model("Write a story about gravity")
 ```
 
-### 4. Model Registration with ProviderInfo
+### 3. Listing and Discovering Models
 
 ```python
-from ember.api.models import ModelInfo, ProviderInfo, ModelCost, RateLimit
+from ember.api import models
 
-model_info = ModelInfo(
-    id="provider:model-name",
-    name="Human-Readable Name",
+# List all available models
+available = models.list()
+print(f"Found {len(available)} models")
+
+# List by provider
+openai_models = models.list(provider='openai')
+
+# Get model information
+info = models.info('gpt-4')
+print(f"Context window: {info['context_window']} tokens")
+```
+
+### 4. Custom Model Registration
+
+```python
+from ember.api import models
+from ember.api.models import ModelInfo, ModelCost, RateLimit
+
+# Define custom model
+custom_model = ModelInfo(
+    id="custom:my-model",
+    name="My Custom Model",
     context_window=32000,
     cost=ModelCost(
         input_cost_per_thousand=0.001,
         output_cost_per_thousand=0.002,
     ),
-    provider=ProviderInfo(
-        name="Provider Name",
-        default_api_key="${PROVIDER_API_KEY}",  # Reference environment variable
-        base_url="https://api.provider.com",
+    rate_limit=RateLimit(
+        tokens_per_minute=100000,
+        requests_per_minute=1000
     ),
+    provider={
+        "name": "MyProvider",
+        "default_api_key": "${MY_API_KEY}",
+        "base_url": "https://api.myprovider.com/v1"
+    }
 )
 
 # Register the model
 registry = models.get_registry()
-registry.register_model(model_info=model_info)
+registry.register_model(model_info=custom_model)
+
+# Use it
+response = models("custom:my-model", "Hello!")
 ```
 
-## Example-specific Instructions
+## Quick Start
 
-- **list_models.py**: Lists all available models in the registry and shows their details.
-- **model_registry_example.py**: Demonstrates multiple patterns for working with the model registry.
-- **model_api_example.py**: Shows how to initialize and interact with models from different providers.
-- **manual_model_registration.py**: Demonstrates how to manually register models with the registry.
-- **model_registry_direct.py**: Example of using the registry with manually specified API keys.
-- **register_models_directly.py**: Registers models directly without environment variables.
+```python
+from ember.api import models
+
+# Just call models() with a model name and prompt
+response = models("gpt-4", "What is the meaning of life?")
+print(response.text)
+```
 
 ## Next Steps
 

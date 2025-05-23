@@ -20,17 +20,16 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, ClassVar, Dict, List, Optional, Tuple, Type, Union
 
-from ember.core.registry.operator.base.operator_base import Operator, Specification
-from ember.core.types.ember_model import EmberModel, Field
-from ember.xcs import (
+from ember.api.operators import Operator, Specification, EmberModel, Field
+from ember.api.xcs import (
     ExecutionOptions,
     TracerContext,
     XCSGraph,
     execute_graph,
     execution_options,
     jit,
+    get_execution_options,
 )
-from ember.xcs.engine.execution_options import get_execution_options
 
 # Configure logging
 logging.basicConfig(

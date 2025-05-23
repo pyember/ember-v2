@@ -5,9 +5,11 @@ This directory contains basic examples demonstrating core Ember concepts with mi
 ## Examples
 
 - `minimal_example.py` - The simplest possible Ember operator with proper typing and structure
-- `check_env.py` - Verify your environment is set up correctly for Ember
+- `check_env.py` - Verify your environment is set up correctly for Ember (checks API keys and imports)
 - `minimal_operator_example.py` - Basic example of creating and using an operator
-- `simple_jit_demo.py` - Introduction to using the JIT system
+- `simple_jit_demo.py` - Introduction to using the JIT system with performance comparisons
+- `compact_notation_example.py` - Demonstrates compact notation patterns for operators
+- `context_example.py` - Shows how to use the Ember context system for configuration
 
 ## Running Examples
 
