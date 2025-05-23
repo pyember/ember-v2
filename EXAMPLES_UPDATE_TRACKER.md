@@ -68,14 +68,14 @@ Track progress on updating all examples to use the new simplified APIs.
 
 | File | Status | Issues | Notes |
 |------|--------|---------|--------|
-| jit_example.py | ❌ | Test failures | Update imports |
-| example_simplified_xcs.py | ❌ | Poetry ref | Good patterns otherwise |
-| auto_graph_example.py | ❌ | Test failures | Review graph API |
-| auto_graph_simplified.py | ❌ | Test failures | Simpler version |
-| enhanced_jit_example.py | ❌ | Complex | Performance focused |
+| jit_example.py | ✅ | None | Updated imports |
+| example_simplified_xcs.py | ✅ | None | Fixed Poetry ref and imports |
+| auto_graph_example.py | ✅ | None | Updated operator imports |
+| auto_graph_simplified.py | ✅ | None | Updated Field import |
+| enhanced_jit_example.py | ⏭️ | Internal APIs | Kept for internal mechanics demo |
 | simple_autograph_example.py | ✔️ | None | Working |
-| transforms_integration_example.py | ❌ | Test failures | Update transforms |
-| README.md | ❌ | Outdated | Update |
+| transforms_integration_example.py | ✅ | None | Updated all imports |
+| README.md | ✅ | None | Added quick start section |
 
 ## Advanced Examples (11 files)
 
@@ -84,11 +84,11 @@ Track progress on updating all examples to use the new simplified APIs.
 | clean_jit_example.py | ⏭️ | - | Review later |
 | context_performance_example.py | ⏭️ | - | Performance focused |
 | custom_component_example.py | ⏭️ | - | Advanced pattern |
-| diagnose_model_discovery.py | ❌ | Old API | Debugging tool |
-| ensemble_judge_mmlu.py | ❌ | Deep imports | Real use case |
+| diagnose_model_discovery.py | ✅ | None | Updated to use models API |
+| ensemble_judge_mmlu.py | ✅ | None | Replaced LMModule with models.bind() |
 | example_architectures.py | ⏭️ | - | Architecture demos |
 | model_benchmark_specialized_datasets.py | ⏭️ | - | Benchmarking |
-| parallel_benchmark.py | ❌ | Deep imports | Performance test |
+| parallel_benchmark.py | ✅ | None | Updated imports and model usage |
 | parallel_pipeline_example.py | ❌ | Deep imports | Important pattern |
 | reasoning_system.py | ❌ | Deep imports | Complex example |
 | test_auto_discovery.py | ❌ | initialize_registry | Testing tool |

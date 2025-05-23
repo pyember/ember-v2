@@ -15,18 +15,16 @@ import logging
 import time
 from typing import Any, Dict, Optional
 
-# Use direct non import for ensemble
-from ember.core.non import UniformEnsemble
-
-# ember imports
-from ember.core.registry.model.model_module.lm import LMModule, LMModuleConfig
-from ember.core.registry.operator.core.synthesis_judge import JudgeSynthesisOperator
+# Use simplified imports
+from ember.api.models import models
+from ember.api.non import non
+from ember.api.xcs import jit
+# Import internals only when needed for advanced usage
 from ember.xcs.engine.xcs_engine import (
     TopologicalSchedulerWithParallelDispatch,
     execute_graph,
 )
 from ember.xcs.graph.xcs_graph import XCSGraph
-from ember.xcs.tracer.tracer_decorator import jit
 
 ###############################################################################
 # JIT-Decorated Ensemble Operators
@@ -34,21 +32,21 @@ from ember.xcs.tracer.tracer_decorator import jit
 
 
 @jit()
-class FactEnsemble(UniformEnsemble):
+class FactEnsemble(non.UniformEnsemble):
     """Ensemble focused on factual information."""
 
     pass
 
 
 @jit()
-class CreativeEnsemble(UniformEnsemble):
+class CreativeEnsemble(non.UniformEnsemble):
     """Ensemble focused on creative responses."""
 
     pass
 
 
 @jit()
-class DetailedEnsemble(UniformEnsemble):
+class DetailedEnsemble(non.UniformEnsemble):
     """Ensemble focused on detailed explanations."""
 
     pass
@@ -91,14 +89,11 @@ def build_multi_branch_pipeline(
         temperature=0.5,  # Medium temperature
     )
 
-    # Create the judge operator directly from core implementation
-    lm_module = LMModule(
-        config=LMModuleConfig(
-            model_name="openai:gpt-4o",
-            temperature=0.0,
-        )
+    # Create the judge operator using non API
+    judge = non.JudgeSynthesisOperator(
+        model_name="openai:gpt-4o",
+        temperature=0.0,
     )
-    judge = JudgeSynthesisOperator(lm_module=lm_module)
 
     # Build the graph
     graph = XCSGraph()
