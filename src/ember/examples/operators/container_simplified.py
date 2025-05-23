@@ -4,19 +4,16 @@ This example demonstrates how to create a container operator that encapsulates
 a simple processing pipeline, using JIT for tracing.
 
 To run:
-    uv run python src/ember/examples/container_simplified.py
+    uv run python src/ember/examples/operators/container_simplified.py
 """
 
 import logging
 import time
 from typing import ClassVar, Type
 
-from pydantic import Field
-
-from ember.core.registry.operator.base.operator_base import Operator
-from ember.core.registry.specification.specification import Specification
-from ember.core.types.ember_model import EmberModel
-from ember.xcs.tracer.tracer_decorator import jit
+# ember API imports
+from ember.api.operators import Operator, Specification, EmberModel, Field
+from ember.api.xcs import jit
 
 ###############################################################################
 # Custom Input/Output Models

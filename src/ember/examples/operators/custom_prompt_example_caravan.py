@@ -23,8 +23,8 @@ import os
 import sys
 from typing import ClassVar, Type
 
-from ember.core.context import current_context
-from ember.core.types.ember_model import EmberModel, Field
+from ember.api import EmberContext, models
+from ember.api.operators import EmberModel, Field
 
 # ------------------------------------------------------------------------------------
 # Logging Setup
@@ -84,41 +84,45 @@ def check_env() -> None:
 # ------------------------------------------------------------------------------------
 # Model Registration
 # ------------------------------------------------------------------------------------
-from ember.core.registry.model.base.schemas.cost import ModelCost, RateLimit
-from ember.core.registry.model.base.schemas.model_info import ModelInfo
-from ember.core.registry.model.base.schemas.provider_info import ProviderInfo
-from ember.core.registry.specification.specification import Specification
+from ember.api.operators import Specification
 
 
-def register_custom_model() -> ModelInfo:
+def register_custom_model() -> None:
     """
-    Registers the user-specified custom model with the global context's registry.
-    This must be done before creating any LMModule referencing `AVIOR_CUSTOM_MODEL`.
+    Registers the user-specified custom model with the models API.
+    This must be done before using the custom model.
     """
     custom_model = os.getenv("AVIOR_CUSTOM_MODEL", "")
     base_url = os.getenv("AVIOR_BASE_URL", "")
     api_key = os.getenv("AVIOR_API_KEY", "")
 
-    # Get the registry from the global context
-    context = current_context()
-    registry = context.registry
+    # Get the registry from the models API
+    registry = models.get_registry()
+    
+    # Check if already registered
+    if registry.is_registered(custom_model):
+        logger.info(f"Model '{custom_model}' already registered")
+        return
 
+    # Import necessary types from models API
+    from ember.api.models import ModelInfo, ModelCost, RateLimit
+    
     model_info = ModelInfo(
-        model_id=custom_model,
-        model_name=custom_model,
+        id=custom_model,
+        name=custom_model,
+        context_window=8192,  # Default context window
         cost=ModelCost(input_cost_per_thousand=0.0, output_cost_per_thousand=0.0),
         rate_limit=RateLimit(tokens_per_minute=0, requests_per_minute=0),
-        provider=ProviderInfo(
-            name="foundry", default_api_key=api_key, base_url=base_url
-        ),
-        api_key=api_key,
+        provider={
+            "name": "foundry",
+            "default_api_key": api_key,
+            "base_url": base_url
+        }
     )
-    registry.register_model(model_info)
+    registry.register_model(model_info=model_info)
     logger.info(
-        f"Registered custom model '{custom_model}' with base_url='{base_url}'. "
-        f"Models now in registry: {registry.list_models()}"
+        f"Registered custom model '{custom_model}' with base_url='{base_url}'"
     )
-    return model_info
 
 
 # ------------------------------------------------------------------------------------
@@ -231,12 +235,8 @@ class SimplePromptSpecification(Specification):
     )
 
 
-from ember.core.non import JudgeSynthesis, UniformEnsemble
-
-# ------------------------------------------------------------------------------------
-# Operators (Single-step LM calls using these specifications)
-# ------------------------------------------------------------------------------------
-from ember.core.registry.operator.base.operator_base import Operator
+from ember.api import non
+from ember.api.operators import Operator
 
 
 class SimplePromptOperator(Operator[SimplePromptInputs, SimplePromptOutput]):
@@ -259,7 +259,7 @@ class SimplePromptOperator(Operator[SimplePromptInputs, SimplePromptOutput]):
         Args:
             model_name: Name of the model to use for answering.
         """
-        self.ensemble = UniformEnsemble(
+        self.ensemble = non.UniformEnsemble(
             num_units=1, model_name=model_name, temperature=0.2, max_tokens=64
         )
 
@@ -307,10 +307,10 @@ class CaravanLabelingOperator(Operator[CaravanLabelingInputs, CaravanLabelingOut
         Args:
             model_name: Name of the model to use for labeling.
         """
-        self.ensemble = UniformEnsemble(
+        self.ensemble = non.UniformEnsemble(
             num_units=3, model_name=model_name, temperature=0.0, max_tokens=256
         )
-        self.judge = JudgeSynthesis(
+        self.judge = non.JudgeSynthesis(
             model_name=model_name, temperature=0.0, max_tokens=256
         )
 

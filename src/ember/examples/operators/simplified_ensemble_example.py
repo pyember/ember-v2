@@ -12,9 +12,7 @@ import logging
 import random
 from typing import Any, ClassVar, List, Type
 
-from ember.core.registry.operator.base.operator_base import Operator
-from ember.core.registry.specification.specification import Specification
-from ember.core.types.ember_model import EmberModel, Field
+from ember.api.operators import Operator, Specification, EmberModel, Field
 
 ###############################################################################
 # Custom Input/Output Models

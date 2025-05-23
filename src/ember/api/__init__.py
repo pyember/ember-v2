@@ -57,9 +57,6 @@ data_api = DataAPI(EmberContext.current())
 register_dataset = data_api.register
 from ember.api.eval import EvaluationPipeline  # Pipeline for batch evaluation
 from ember.api.eval import Evaluator  # Evaluator for model outputs
-from ember.api.models import ModelAPI  # High-level model API
-from ember.api.models import ModelBuilder  # Builder pattern for model configuration
-from ember.api.models import ModelEnum  # Type-safe model references
 
 # Public interface - export facades, modules, and direct API components
 __all__ = [

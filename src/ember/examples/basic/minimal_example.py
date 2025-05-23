@@ -7,7 +7,7 @@ foundation that can be used for language-model transformations or to wrap
 arbitrary function logic.
 
 To run:
-    poetry run python src/ember/examples/basic/minimal_example.py
+    uv run python src/ember/examples/basic/minimal_example.py
 """
 
 from typing import Any, Dict, List, Optional, Type

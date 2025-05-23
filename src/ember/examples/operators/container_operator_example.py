@@ -9,20 +9,17 @@ and parallel execution, you'd still need to use XCSGraph and execute_graph
 (shown in the other examples).
 
 To run:
-    poetry run python src/ember/examples/container_operator_example.py
+    uv run python src/ember/examples/operators/container_operator_example.py
 """
 
 import logging
 import time
 from typing import ClassVar, List, Type
 
-from ember.core import non
-
-# ember imports
-from ember.core.registry.operator.base.operator_base import Operator
-from ember.core.registry.specification.specification import Specification
-from ember.core.types.ember_model import EmberModel
-from ember.xcs.tracer.tracer_decorator import jit
+# ember API imports
+from ember.api import non
+from ember.api.operators import Operator, Specification, EmberModel
+from ember.api.xcs import jit
 
 
 ###############################################################################

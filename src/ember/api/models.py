@@ -29,12 +29,22 @@ from ember.core.registry.model.base.context import (
     ModelContext,
     get_default_context,
 )
-from ember.core.registry.model.base.errors import (
-    ModelError,
-    AuthenticationError,
-    RateLimitError,
-    ModelNotFoundError,
-)
+# Define model-specific errors
+class ModelError(Exception):
+    """Base exception for model-related errors."""
+    pass
+
+class AuthenticationError(ModelError):
+    """Raised when authentication fails."""
+    pass
+
+class RateLimitError(ModelError):
+    """Raised when rate limit is exceeded."""
+    pass
+
+class ModelNotFoundError(ModelError):
+    """Raised when a model is not found."""
+    pass
 
 if TYPE_CHECKING:
     from ember.core.registry.model.base.schemas.chat_schemas import ChatResponse

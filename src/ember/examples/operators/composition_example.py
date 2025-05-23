@@ -20,13 +20,9 @@ from typing import Any, Callable, ClassVar, Dict, List, Type, TypeVar
 from prettytable import PrettyTable
 
 # ember API imports
-from ember.core import non
-from ember.core.registry.model.model_module.lm import LMModule, LMModuleConfig
-from ember.core.registry.operator.base.operator_base import Operator
-from ember.core.registry.specification.specification import Specification
-from ember.core.types.ember_model import EmberModel
-from ember.xcs.engine.execution_options import execution_options
-from ember.xcs.tracer.tracer_decorator import jit
+from ember.api import models, non, xcs
+from ember.api.operators import Operator, Specification, EmberModel
+from ember.api.xcs import jit, execution_options
 
 T = TypeVar("T")
 U = TypeVar("U")
@@ -88,30 +84,23 @@ class QuestionRefinement(Operator[QuestionRefinementInputs, QuestionRefinementOu
     specification: ClassVar[Specification] = QuestionRefinementSpecification()
     model_name: str
     temperature: float
-    lm_module: LMModule
+    model: Any  # Bound model instance
 
     def __init__(self, *, model_name: str, temperature: float = 0.3) -> None:
         self.model_name = model_name
         self.temperature = temperature
-
-        # Configure internal LM module
-        self.lm_module = LMModule(
-            config=LMModuleConfig(
-                id=model_name,  # Fixed: using "id" instead of "model_name"
-                temperature=temperature,
-            )
-        )
+        # Use the simplified models API to bind a model
+        self.model = models.bind(model_name, temperature=temperature)
 
     def forward(self, *, inputs: QuestionRefinementInputs) -> QuestionRefinementOutputs:
         prompt = self.specification.render_prompt(inputs=inputs)
 
         try:
-            response = self.lm_module(prompt=prompt)
+            # Use the bound model directly
+            response = self.model(prompt)
 
             # Get text from response
-            refined_query = (
-                response.strip() if isinstance(response, str) else str(response).strip()
-            )
+            refined_query = response.text.strip() if hasattr(response, 'text') else str(response).strip()
 
             return QuestionRefinementOutputs(refined_query=refined_query)
         except Exception as e:

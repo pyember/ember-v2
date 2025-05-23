@@ -41,13 +41,13 @@ Track progress on updating all examples to use the new simplified APIs.
 
 | File | Status | Issues | Notes |
 |------|--------|---------|--------|
-| simplified_ensemble_example.py | ❌ | Mock issues | Fix test mocks |
-| composition_example.py | ❌ | Deep imports | Use API imports |
-| container_operator_example.py | ❌ | Poetry ref | Minor fixes |
-| container_simplified.py | ❌ | Test failures | Debug issues |
-| custom_prompt_example_caravan.py | ❌ | lm imports | Use models API |
-| diverse_ensemble_operator_example.py | ❌ | Deep imports | Update imports |
-| README.md | ❌ | Outdated | Update patterns |
+| simplified_ensemble_example.py | ✅ | None | Updated to API imports |
+| composition_example.py | ✅ | None | Updated to simplified API |
+| container_operator_example.py | ✅ | None | Fixed imports and path |
+| container_simplified.py | ✅ | None | Updated imports |
+| custom_prompt_example_caravan.py | ✅ | None | Updated to models API |
+| diverse_ensemble_operator_example.py | ✅ | None | Updated imports |
+| README.md | ✅ | None | Updated with new API patterns |
 | __init__.py | ✔️ | None | - |
 
 ## Data Examples (10 files)

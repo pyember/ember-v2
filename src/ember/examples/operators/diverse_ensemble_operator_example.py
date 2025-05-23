@@ -8,12 +8,10 @@ To run:
 """
 
 from random import sample
-from typing import ClassVar, List, Type
+from typing import Any, ClassVar, List, Type
 
-from ember.core.registry.model.model_module.lm import LMModule, LMModuleConfig
-from ember.core.registry.operator.base.operator_base import Operator
-from ember.core.registry.specification.specification import Specification
-from ember.core.types.ember_model import EmberModel, Field
+from ember.api import models
+from ember.api.operators import Operator, Specification, EmberModel, Field
 
 
 def usage_example() -> None:
@@ -33,23 +31,11 @@ def usage_example() -> None:
         "Provide a practical approach to:",
     ]
 
-    # Create LM modules with different models for diversity
+    # Create bound models with different configurations for diversity
     lm_modules = [
-        LMModule(
-            config=LMModuleConfig(
-                model_name="anthropic:claude-3-opus", temperature=0.5, max_tokens=256
-            )
-        ),
-        LMModule(
-            config=LMModuleConfig(
-                model_name="openai:gpt-4", temperature=0.7, max_tokens=256
-            )
-        ),
-        LMModule(
-            config=LMModuleConfig(
-                model_name="anthropic:claude-3-haiku", temperature=0.3, max_tokens=256
-            )
-        ),
+        models.bind("anthropic:claude-3-opus", temperature=0.5, max_tokens=256),
+        models.bind("openai:gpt-4", temperature=0.7, max_tokens=256),
+        models.bind("anthropic:claude-3-haiku", temperature=0.3, max_tokens=256),
     ]
 
     # Instantiate the operator with named parameters.
@@ -121,12 +107,12 @@ class MultiPrefixEnsembleOperator(
     """
 
     specification: ClassVar[Specification] = MultiPrefixEnsembleSpecification()
-    lm_modules: List[LMModule]
+    lm_modules: List[Any]  # List of bound model instances
     prefixes: List[str]
 
     def __init__(
         self,
-        lm_modules: List[LMModule],
+        lm_modules: List[Any],
         prefixes: List[str],
         name: str = "MultiPrefixEnsemble",
     ) -> None:
@@ -160,11 +146,11 @@ class MultiPrefixEnsembleOperator(
             # Generate prompt with prefix
             prompt = f"{prefix}\n{inputs.query}"
 
-            # Call LM module
-            response = lm(prompt=prompt)
+            # Call bound model
+            response = lm(prompt)
 
             # Get text from response
-            text = response if isinstance(response, str) else str(response)
+            text = response.text if hasattr(response, 'text') else str(response)
 
             # Ensure we have a valid string
             text = text.strip() if text else ""
