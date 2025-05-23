@@ -5,15 +5,13 @@ This example shows how to use the new top-level imports for XCS functionality
 with the ember.api package.
 
 To run:
-    poetry run python src/ember/examples/example_simplified_xcs.py
+    uv run python src/ember/examples/xcs/example_simplified_xcs.py
 """
 
 from typing import ClassVar, Optional, Type
 
 from ember.api.xcs import jit, pmap, vmap
-from ember.core.registry.operator.base.operator_base import Operator
-from ember.core.registry.specification.specification import Specification
-from ember.core.types.ember_model import EmberModel
+from ember.api.operators import Operator, Specification, EmberModel
 
 # Import the API for advanced configuration
 

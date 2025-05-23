@@ -19,9 +19,7 @@ from ember.api.xcs import execution_options, jit
 from ember.core import non
 
 # ember imports
-from ember.core.registry.operator.base.operator_base import Operator
-from ember.core.registry.specification.specification import Specification
-from ember.core.types.ember_model import EmberModel
+from ember.api.operators import Operator, Specification, EmberModel
 
 ###############################################################################
 # Input/Output Models

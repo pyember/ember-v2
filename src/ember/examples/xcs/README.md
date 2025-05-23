@@ -2,6 +2,28 @@
 
 This directory contains examples demonstrating the XCS (Accelerated Compound Systems execution engine) capabilities of Ember, which provide performance optimization and advanced execution features.
 
+## Quick Start with Simplified API
+
+```python
+from ember.api.xcs import jit, vmap, pmap, execution_options
+from ember.api.operators import Operator, Specification, EmberModel, Field
+
+# Apply JIT to optimize operator execution
+@jit
+class MyOperator(Operator):
+    def forward(self, *, inputs):
+        # Your operator logic here
+        return result
+
+# Use transforms for batch processing
+batch_process = vmap(my_function)
+parallel_process = pmap(my_function)
+
+# Control execution behavior
+with execution_options(scheduler="parallel"):
+    result = my_operator(inputs=data)
+```
+
 ## Example Guide by Concept
 
 ### JIT Compilation Systems

@@ -25,13 +25,9 @@ import random
 import time
 from typing import Any, ClassVar, Dict
 
-from ember.core.registry.operator.base.operator_base import Operator
-
 # Import Ember APIs
-from ember.core.registry.specification.specification import Specification
-from ember.xcs.engine import execution_options
-from ember.xcs.jit import jit
-from ember.xcs.transforms import pmap, vmap
+from ember.api.operators import Operator, Specification
+from ember.api.xcs import execution_options, jit, pmap, vmap
 
 # Use the structural JIT strategy directly
 structural_jit = jit.structural
