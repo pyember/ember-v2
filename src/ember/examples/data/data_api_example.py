@@ -8,16 +8,14 @@ with proper configuration and error handling.
 import logging
 from typing import Dict, Any, List, Optional
 
-from ember.core.utils.data.context.data_context import DataContext
-from ember.core.utils.data import load_dataset_entries
-from ember.core.utils.data.base.models import DatasetEntry
-from ember.core.utils.data.datasets_registry.mmlu import MMLUConfig
+from ember.api import data
+from ember.api.data import DatasetEntry
 
 
 def load_mmlu_questions(subject: str = "high_school_mathematics", 
                        split: str = "test",
                        num_samples: int = 5) -> List[DatasetEntry]:
-    """Load questions from MMLU dataset with proper configuration.
+    """Load questions from MMLU dataset using the simplified API.
     
     Args:
         subject: Subject area to load
@@ -30,20 +28,19 @@ def load_mmlu_questions(subject: str = "high_school_mathematics",
     Raises:
         RuntimeError: If dataset loading fails
     """
-    # Create data context
-    context = DataContext(auto_discover=True)
-    
     try:
-        # MMLU requires specific config_name and split parameters
-        config = MMLUConfig(config_name=subject, split=split)
-        
-        entries = load_dataset_entries(
-            dataset_name="mmlu",
-            config=config,
-            num_samples=num_samples,
-            context=context
+        # Use the builder pattern for more control
+        dataset = (
+            data.builder()
+            .from_registry("mmlu")
+            .subset(subject)
+            .split(split)
+            .sample(num_samples)
+            .build()
         )
-        return entries
+        
+        # Convert to list of entries
+        return list(dataset)
     except Exception as e:
         logging.error(f"Failed to load MMLU dataset: {e}")
         raise RuntimeError(f"Dataset loading failed: {e}") from e

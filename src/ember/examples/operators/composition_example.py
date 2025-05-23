@@ -20,7 +20,7 @@ from typing import Any, Callable, ClassVar, Dict, List, Type, TypeVar
 from prettytable import PrettyTable
 
 # ember API imports
-from ember.api import models, non, xcs
+from ember.api import models, non
 from ember.api.operators import Operator, Specification, EmberModel
 from ember.api.xcs import jit, execution_options
 

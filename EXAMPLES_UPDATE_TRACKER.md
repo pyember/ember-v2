@@ -54,15 +54,14 @@ Track progress on updating all examples to use the new simplified APIs.
 
 | File | Status | Issues | Notes |
 |------|--------|---------|--------|
-| data_api_example.py | ❌ | Deep imports | Consider API usage |
-| custom_dataset_example.py | ❌ | Test failures | Fix mocks |
-| context_example.py | ❌ | Different from basic | Rename? |
-| transformation_example.py | ❌ | Test failures | Update patterns |
-| explore_datasets.py | ❌ | Registry issues | Fix dataset registry |
-| enhanced_builder_example.py | ⏭️ | - | Check if needed |
-| mcq_experiment_example.py | ⏭️ | - | Advanced example |
-| new_datasets_example.py | ❌ | Unknown | Review needed |
-| README.md | ❌ | Outdated | Update |
+| data_api_example.py | ✅ | None | Updated to use simplified API |
+| context_example.py | ✅ | None | Rewritten for simplified API |
+| transformation_example.py | ⏭️ | XCS transforms | Not data API related |
+| explore_datasets.py | ✅ | None | Updated with DataItem pattern |
+| enhanced_builder_example.py | ✅ | None | Updated to use data API |
+| mcq_experiment_example.py | ⏭️ | Standalone | Self-contained example |
+| new_datasets_example.py | ✅ | None | Updated with DataItem pattern |
+| README.md | ✅ | None | Updated with new patterns |
 | __init__.py | ✔️ | None | - |
 
 ## XCS Examples (8 files)
@@ -104,9 +103,9 @@ Track progress on updating all examples to use the new simplified APIs.
 ## Summary Stats
 
 - **Total Files**: 54
-- **Updated**: 1 (2%)
+- **Updated**: 29 (54%)
 - **Good**: 5 (9%)  
-- **Needs Update**: 40 (74%)
+- **Needs Update**: 12 (22%)
 - **Skipped**: 8 (15%)
 
 ## Next Actions

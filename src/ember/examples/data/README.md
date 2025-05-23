@@ -51,33 +51,47 @@ Command-line options:
 --seed N          Random seed for reproducibility (default: 42)
 ```
 
-### Connecting to the Full Ember Data API
+### Using the Simplified Ember Data API
 
-While these examples are designed to run independently, the real Ember Data API provides additional capabilities:
+The Ember Data API provides a clean interface for working with datasets:
 
-- Access to standard benchmarks like MMLU, TruthfulQA, and HaluEval
+- Access to standard benchmarks like MMLU, TruthfulQA, AIME, GPQA, and Codeforces
 - Integration with the Hugging Face datasets library
-- Advanced sampling and filtering
+- Advanced sampling and filtering with builder pattern
 - Dataset registration and discovery
-- Integration with model execution pipelines
+- Memory-efficient streaming
+- Clean attribute access with DataItem wrapper
 
-To use the actual Ember Data API once you have set up the required environment:
+To use the Ember Data API:
 
 ```python
-from ember.api import datasets, DatasetBuilder
+from ember.api import data
+from ember.api.data import DataItem
 
-# Simple loading
-mmlu_data = datasets("mmlu")
+# Simple loading with streaming
+for item in data("mmlu", streaming=True, limit=10):
+    print(f"Question: {item.question}")
+    print(f"Answer: {item.answer}")
 
 # Advanced configuration with builder pattern
-custom_dataset = (
-    DatasetBuilder()
+dataset = (
+    data.builder()
+    .from_registry("mmlu")
+    .subset("abstract_algebra")
     .split("test")
     .sample(100)
-    .seed(42)
-    .config(config_name="abstract_algebra")
-    .build("mmlu")
+    .transform(lambda x: {"query": f"Q: {x['question']}"})
+    .build()
 )
+
+# Clean access with DataItem
+items = [DataItem(item) for item in dataset]
+for item in items[:5]:
+    # Direct property access - no getattr needed!
+    print(f"Q: {item.question}")
+    if item.options:
+        for key, value in item.options.items():
+            print(f"  {key}: {value}")
 ```
 
 ## Next Steps

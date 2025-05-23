@@ -14,8 +14,7 @@ To run:
 import time
 from typing import Any, Dict
 
-from ember.api.data import DatasetBuilder, data, list_available_datasets
-from ember.core.utils.data.context.data_context import get_default_context
+from ember.api import data
 
 
 def uppercase_transformer(item: Dict[str, Any]) -> Dict[str, Any]:
@@ -89,23 +88,23 @@ def demonstrate_performance() -> None:
     print("\nDemonstrating performance optimizations:")
     print("======================================")
 
-    # Get or create the thread-local DataContext
-    context = get_default_context()
-    print(f"Using thread-local DataContext at {id(context)}")
+    # The simplified API handles context management internally
+    print("Using internally managed data context")
 
-    # Measure DataContext lookup performance
+    # Measure data API access performance
     iterations = 10000
     start = time.time()
     for _ in range(iterations):
-        # This should be extremely fast due to our optimizations
-        ctx = get_default_context()
+        # Access the data API which internally manages context
+        # This demonstrates the API's performance characteristics
+        _ = data.list()  # Fast metadata access
     duration = time.time() - start
 
     print(
-        f"Context lookup performance: {duration * 1e6 / iterations:.2f}ns per operation"
+        f"API access performance: {duration * 1e6 / iterations:.2f}ns per operation"
     )
-    print(f"  - Zero-overhead access to context in {iterations} iterations")
-    print("  - Thread-local access with no locking")
+    print(f"  - Fast access to metadata in {iterations} iterations")
+    print("  - Thread-safe internal context management")
 
     # Demonstrate streaming dataset access
     print("\nDemonstrating streaming dataset access:")
@@ -149,9 +148,11 @@ def main() -> None:
 
     # List available datasets
     print("\nAvailable datasets in registry:")
-    datasets = list_available_datasets()
-    for dataset in datasets:
+    datasets = data.list()
+    for dataset in datasets[:10]:  # Show first 10
         print(f"  • {dataset}")
+    if len(datasets) > 10:
+        print(f"  ... and {len(datasets) - 10} more")
 
     # Use the enhanced builder pattern
     print("\nLoading dataset with builder pattern...")
@@ -162,7 +163,7 @@ def main() -> None:
 
         # Chain multiple configuration and transformation steps
         dataset = (
-            DatasetBuilder()
+            data.builder()
             .from_registry("mmlu")  # Use a registered dataset
             .subset("high_school_mathematics")  # Select a specific subset
             .split("test")  # Choose the test split

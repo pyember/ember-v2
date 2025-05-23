@@ -1,20 +1,15 @@
-"""Example demonstrating the use of DataContext.
+"""Example demonstrating the simplified data API.
 
-This example shows how to create and use a DataContext with custom configuration
-for efficient and thread-safe management of dataset operations.
+This example shows how to use the simplified data API for loading,
+transforming, and working with datasets without managing contexts.
 """
 
 import logging
+import threading
 from typing import Any, Dict, List
 
-from ember.api.data import DataAPI
-from ember.core.utils.data.base.models import TaskType
-from ember.core.utils.data.context.data_context import (
-    DataConfig,
-    DataContext,
-    get_default_context,
-    set_default_context,
-)
+from ember.api import data
+from ember.api.data import TaskType
 
 
 def setup_logging():
@@ -25,130 +20,127 @@ def setup_logging():
     )
 
 
-def create_custom_context() -> DataContext:
-    """Create a custom DataContext with specific configuration.
+def demonstrate_basic_loading() -> List[Dict[str, Any]]:
+    """Demonstrate basic data loading with the simplified API.
 
-    This demonstrates how to create a DataContext with custom settings
-    for memory usage and caching behavior.
-
-    Returns:
-        Custom DataContext
-    """
-    # Create custom configuration
-    config = DataConfig(
-        cache_dir="/tmp/ember_cache",  # Use local cache directory
-        batch_size=64,  # Process data in larger batches
-        cache_ttl=7200,  # Cache data for 2 hours
-    )
-
-    # Create context with auto-discovery
-    context = DataContext(config=config, auto_discover=True)
-
-    return context
-
-
-def register_custom_dataset(context: DataContext) -> None:
-    """Register a custom dataset with the context.
-
-    This demonstrates how to register a custom dataset with metadata
-    without needing to modify global state.
-
-    Args:
-        context: DataContext to register with
-    """
-    # Register a simple custom dataset
-    context.register_dataset(
-        name="example_dataset",
-        source="example/source",
-        task_type=TaskType.MULTIPLE_CHOICE,
-        description="Example dataset for DataContext demo",
-    )
-
-    # Log available datasets
-    logging.info("Available datasets: %s", context.registry.list_datasets())
-
-
-def process_data_with_context(context: DataContext) -> List[Dict[str, Any]]:
-    """Process data using the DataContext.
-
-    This demonstrates how to use the DataContext for data operations
-    with explicit dependency management.
-
-    Args:
-        context: DataContext for dataset operations
+    Shows how to load datasets using the data API which handles
+    context management automatically.
 
     Returns:
         List of processed data items
     """
-    # Create API with explicit context
-    api = DataAPI(context=context)
+    results = []
+    
+    # Direct loading with streaming
+    logging.info("Loading MMLU dataset with streaming...")
+    for i, item in enumerate(data("mmlu", streaming=True, limit=5)):
+        results.append({
+            "id": i,
+            "question": item.question if hasattr(item, "question") else "",
+            "answer": item.answer if hasattr(item, "answer") else ""
+        })
+    
+    logging.info(f"Loaded {len(results)} items")
+    return results
 
+
+def demonstrate_builder_pattern() -> List[Dict[str, Any]]:
+    """Demonstrate using the builder pattern for advanced configuration.
+
+    Shows how to use the data API builder for complex data processing
+    pipelines with transformations.
+
+    Returns:
+        List of transformed data items
+    """
     # Create a custom data processing pipeline
     pipeline = (
-        api.builder()
+        data.builder()
         .from_registry("mmlu")  # Use a standard dataset
-        .split("validation")  # Select validation split
-        .sample(10)  # Get 10 samples
-        .transform(
-            lambda x: {  # Transform data format
-                "question": f"Question: {x.get('question', '')}",
+        .split("validation")    # Select validation split
+        .subset("high_school_physics")  # Select specific subject
+        .sample(10)            # Get 10 samples
+        .transform(            # Transform data format
+            lambda x: {
+                "formatted_question": f"Q: {x.get('question', '')}",
                 "options": x.get("choices", {}),
-                "answer": x.get("answer", None),
+                "correct_answer": x.get("answer", None),
+                "subject": "physics"
             }
         )
     )
 
-    # Check if custom dataset is available
-    available_datasets = api.list()
-    if "example_dataset" in available_datasets:
-        # Also process custom dataset
-        custom_pipeline = api.builder().from_registry("example_dataset").limit(5)
-
-        # Collect data
-        custom_data = list(custom_pipeline.build())
-        logging.info("Processed %d items from custom dataset", len(custom_data))
-
-    # Collect data from main pipeline
+    # Build and collect results
     results = list(pipeline.build())
-    logging.info("Processed %d items", len(results))
+    logging.info(f"Processed {len(results)} items with builder pattern")
+    
+    # Show sample transformed item
+    if results:
+        logging.info("Sample transformed item: %s", results[0])
+    
+    return results
 
-    # Return processed items
-    return [
-        {
-            "id": i,
-            "question": item.question if hasattr(item, "question") else "",
-            "options": item.options if hasattr(item, "options") else {},
-        }
-        for i, item in enumerate(results)
-    ]
+
+def demonstrate_dataset_info():
+    """Demonstrate getting dataset information."""
+    # List available datasets
+    available = data.list()
+    logging.info(f"Available datasets: {available[:5]}...")  # Show first 5
+    
+    # Get detailed info about a dataset
+    if "mmlu" in available:
+        info = data.info("mmlu")
+        logging.info(f"MMLU Dataset Info:")
+        logging.info(f"  Description: {info.description[:100]}...")
+        logging.info(f"  Task Type: {info.task_type}")
+        logging.info(f"  Available splits: {info.splits}")
+        if hasattr(info, "subjects"):
+            logging.info(f"  Subjects: {info.subjects[:5]}...")  # Show first 5
+
+
+def demonstrate_streaming_efficiency():
+    """Demonstrate memory-efficient streaming."""
+    logging.info("\nDemonstrating streaming efficiency...")
+    
+    # Process large dataset without loading all into memory
+    processed_count = 0
+    total_length = 0
+    
+    for item in data("mmlu", streaming=True, limit=100):
+        # Process each item individually
+        if hasattr(item, "question"):
+            total_length += len(item.question)
+        processed_count += 1
+        
+        # Show progress every 25 items
+        if processed_count % 25 == 0:
+            logging.info(f"Processed {processed_count} items...")
+    
+    logging.info(f"Processed {processed_count} items with average question length: {total_length/processed_count:.1f}")
 
 
 def demonstrate_thread_safety():
-    """Demonstrate that DataContext is thread-safe.
+    """Demonstrate that the data API is thread-safe.
 
-    This shows how the DataContext can be used safely in a
-    multi-threaded environment without race conditions.
+    Shows how the API can be used safely in multi-threaded
+    environments without explicit context management.
     """
-    import threading
-
-    # Create shared context
-    shared_context = create_custom_context()
-
-    # Set as default for all threads
-    set_default_context(shared_context)
-
-    # Thread function that uses the default context
+    logging.info("\nDemonstrating thread safety...")
+    
     def thread_function(thread_id: int):
-        # Get default context (should be our shared context)
-        context = get_default_context()
-
-        # Log available datasets
-        datasets = context.registry.list_datasets()
-        logging.info("Thread %d sees datasets: %s", thread_id, datasets)
-
-        # Process some data
-        results = process_data_with_context(context)
-        logging.info("Thread %d processed %d items", thread_id, len(results))
+        """Function run by each thread."""
+        # Each thread can use the data API independently
+        items = list(data("mmlu", streaming=True, limit=3))
+        logging.info(f"Thread {thread_id} loaded {len(items)} items")
+        
+        # Also test builder pattern in threads
+        builder_items = list(
+            data.builder()
+            .from_registry("mmlu")
+            .sample(2)
+            .build()
+        )
+        logging.info(f"Thread {thread_id} built {len(builder_items)} items")
 
     # Create and start threads
     threads = []
@@ -164,26 +156,61 @@ def demonstrate_thread_safety():
     logging.info("All threads completed successfully")
 
 
+def register_and_use_custom_dataset():
+    """Demonstrate registering a custom dataset.
+    
+    Note: This would typically require actual data source implementation.
+    This is shown for API demonstration purposes.
+    """
+    try:
+        # Register a custom dataset
+        data.register(
+            name="my_custom_dataset",
+            source="path/to/custom/data",
+            task_type=TaskType.QUESTION_ANSWERING,
+            description="Custom QA dataset for demo"
+        )
+        logging.info("Custom dataset registered successfully")
+        
+        # Check if it appears in the list
+        if "my_custom_dataset" in data.list():
+            logging.info("Custom dataset is now available")
+    except Exception as e:
+        logging.warning(f"Custom dataset registration failed (expected in demo): {e}")
+
+
 def run_example():
-    """Run the DataContext example."""
+    """Run all data API examples."""
     # Set up logging
     setup_logging()
-
-    # Create custom context
-    context = create_custom_context()
-
-    # Register custom dataset
-    register_custom_dataset(context)
-
-    # Process data with context
-    results = process_data_with_context(context)
-
-    # Show results
-    for item in results[:3]:  # Show first 3 items
-        logging.info("Processed item: %s", item)
-
-    # Demonstrate thread safety
+    
+    logging.info("=== EMBER DATA API EXAMPLES ===\n")
+    
+    # Basic loading
+    logging.info("1. Basic Data Loading")
+    demonstrate_basic_loading()
+    
+    # Builder pattern
+    logging.info("\n2. Builder Pattern")
+    demonstrate_builder_pattern()
+    
+    # Dataset information
+    logging.info("\n3. Dataset Information")
+    demonstrate_dataset_info()
+    
+    # Streaming efficiency
+    logging.info("\n4. Streaming Efficiency")
+    demonstrate_streaming_efficiency()
+    
+    # Thread safety
+    logging.info("\n5. Thread Safety")
     demonstrate_thread_safety()
+    
+    # Custom datasets
+    logging.info("\n6. Custom Dataset Registration")
+    register_and_use_custom_dataset()
+    
+    logging.info("\n=== Examples completed successfully ===")
 
 
 if __name__ == "__main__":
