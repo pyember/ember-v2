@@ -1,0 +1,1 @@
+"""Practical patterns for common real-world use cases."""

@@ -1,46 +1,63 @@
-"""Runner for golden tests.
+#!/usr/bin/env python3
+"""Runner script for golden tests.
 
-This script runs all golden tests for Ember examples and generates a report.
+This script runs all golden tests for Ember examples, including both
+legacy and new structured examples.
 """
 
-import sys
+import argparse
 import subprocess
+import sys
 from pathlib import Path
+from typing import List, Tuple
+
+# Test files for new structure
+NEW_STRUCTURE_TESTS = [
+    "test_01_getting_started.py",
+    "test_02_core_concepts.py",
+    "test_03_operators.py",
+    "test_04_compound_ai.py",
+    "test_05_data_processing.py",
+    "test_06_performance.py",
+    "test_07_advanced_patterns.py",
+    "test_08_integrations.py",
+    "test_09_practical_patterns.py",
+    "test_10_evaluation_suite.py",
+]
+
+# Legacy test files
+LEGACY_TESTS = [
+    "test_basic_examples.py",
+    "test_data_examples.py",
+    "test_models_examples.py",
+    "test_operators_examples.py",
+    "test_xcs_examples.py",
+]
 
 
-def run_golden_tests():
-    """Run all golden tests and report results."""
-    print("=" * 60)
-    print("Running Ember Examples Golden Tests")
-    print("=" * 60)
+def run_test_file(test_file: Path, verbose: bool = False) -> Tuple[bool, str]:
+    """Run a single test file and return success status and output."""
+    cmd = [sys.executable, "-m", "pytest", str(test_file)]
+    if verbose:
+        cmd.append("-v")
     
-    # Find test directory
-    test_dir = Path(__file__).parent
-    
-    # Run pytest with coverage for golden tests
-    cmd = [
-        sys.executable, "-m", "pytest",
-        str(test_dir),
-        "-v",
-        "--tb=short",
-        "-k", "golden",
-        "--no-header"
-    ]
-    
-    print(f"\nRunning: {' '.join(cmd)}\n")
-    
-    result = subprocess.run(cmd, capture_output=False)
-    
-    if result.returncode == 0:
-        print("\n✅ All golden tests passed!")
-    else:
-        print("\n❌ Some golden tests failed.")
-        print("Please review the output above for details.")
-    
-    return result.returncode
+    try:
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=300  # 5 minute timeout
+        )
+        success = result.returncode == 0
+        output = result.stdout if success else result.stderr
+        return success, output
+    except subprocess.TimeoutExpired:
+        return False, f"Test file {test_file.name} timed out"
+    except Exception as e:
+        return False, f"Error running {test_file.name}: {e}"
 
 
-def check_example_updates():
+def check_example_updates(legacy_only: bool = False):
     """Check which examples might need updates."""
     print("\n" + "=" * 60)
     print("Checking Examples for Needed Updates")
@@ -58,7 +75,14 @@ def check_example_updates():
     
     issues_found = []
     
-    for category in ["basic", "models", "operators", "data", "xcs", "advanced", "integration"]:
+    # Check legacy examples
+    if legacy_only or (examples_dir / "legacy").exists():
+        search_dirs = ["legacy/basic", "legacy/models", "legacy/operators", 
+                      "legacy/data", "legacy/xcs", "legacy/advanced", "legacy/integration"]
+    else:
+        search_dirs = ["basic", "models", "operators", "data", "xcs", "advanced", "integration"]
+    
+    for category in search_dirs:
         category_dir = examples_dir / category
         if not category_dir.exists():
             continue
@@ -91,32 +115,111 @@ def check_example_updates():
 
 
 def main():
-    """Main entry point."""
+    parser = argparse.ArgumentParser(description="Run Ember golden tests")
+    parser.add_argument(
+        "--legacy-only",
+        action="store_true",
+        help="Run only legacy tests"
+    )
+    parser.add_argument(
+        "--new-only",
+        action="store_true",
+        help="Run only new structure tests"
+    )
+    parser.add_argument(
+        "--verbose", "-v",
+        action="store_true",
+        help="Verbose output"
+    )
+    parser.add_argument(
+        "--specific",
+        help="Run only a specific test file"
+    )
+    parser.add_argument(
+        "--check-updates",
+        action="store_true",
+        help="Check for outdated patterns in examples"
+    )
+    
+    args = parser.parse_args()
+    
+    # If only checking updates
+    if args.check_updates:
+        update_count = check_example_updates(args.legacy_only)
+        return 0 if update_count == 0 else 1
+    
+    # Determine which tests to run
+    tests_to_run: List[str] = []
+    
+    if args.specific:
+        tests_to_run = [args.specific]
+    elif args.legacy_only:
+        tests_to_run = LEGACY_TESTS
+    elif args.new_only:
+        tests_to_run = NEW_STRUCTURE_TESTS
+    else:
+        # Run all tests
+        tests_to_run = NEW_STRUCTURE_TESTS + LEGACY_TESTS
+    
     # Run tests
-    test_result = run_golden_tests()
+    golden_dir = Path(__file__).parent
+    failed_tests = []
+    passed_tests = []
+    skipped_tests = []
     
-    # Check for needed updates
-    update_count = check_example_updates()
+    print("=" * 60)
+    print("Running Ember Golden Tests")
+    print("=" * 60)
     
+    for test_name in tests_to_run:
+        test_path = golden_dir / test_name
+        
+        # Skip if test doesn't exist yet
+        if not test_path.exists():
+            skipped_tests.append(test_name)
+            if args.verbose:
+                print(f"⏭️  Skipping {test_name} (not implemented yet)")
+            continue
+        
+        print(f"\n▶️  Running {test_name}...", end="", flush=True)
+        success, output = run_test_file(test_path, args.verbose)
+        
+        if success:
+            print(" ✅ PASSED")
+            passed_tests.append(test_name)
+        else:
+            print(" ❌ FAILED")
+            failed_tests.append(test_name)
+            if args.verbose:
+                print(f"\nOutput:\n{output}\n")
+    
+    # Check for updates if not in new-only mode
+    update_count = 0
+    if not args.new_only:
+        update_count = check_example_updates(args.legacy_only)
+    
+    # Summary
     print("\n" + "=" * 60)
     print("Summary")
     print("=" * 60)
-    
-    if test_result == 0:
-        print("✅ Golden tests: PASSED")
-    else:
-        print("❌ Golden tests: FAILED")
+    print(f"Total tests available: {len(tests_to_run)}")
+    print(f"Tests run: {len(passed_tests) + len(failed_tests)}")
+    print(f"Passed: {len(passed_tests)}")
+    print(f"Failed: {len(failed_tests)}")
+    print(f"Skipped: {len(skipped_tests)}")
     
     if update_count > 0:
-        print(f"⚠️  Found {update_count} examples that may need updates")
+        print(f"\n⚠️  Found {update_count} examples that may need updates")
+    
+    if failed_tests:
+        print("\nFailed tests:")
+        for test in failed_tests:
+            print(f"  - {test}")
+        return 1
     else:
-        print("✅ Examples appear up to date")
-    
-    print("=" * 60)
-    
-    # Exit with test result code
-    sys.exit(test_result)
+        print("\n🎉 All tests passed!")
+        return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
