@@ -52,7 +52,7 @@ def model_binding_example():
     try:
         # Bind a model with default parameters
         print("Binding a model for reuse:")
-        gpt4 = models.bind("gpt-4", temperature=0.5)
+        gpt4 = models.instance("gpt-4", temperature=0.5)
         print(f"Created binding: {gpt4}")
         
         # Show how to use the bound model

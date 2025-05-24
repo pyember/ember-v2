@@ -40,7 +40,7 @@ def model_binding():
     
     # Bind a model with default parameters
     print("Binding for reuse:")
-    print('gpt4 = models.bind("gpt-4", temperature=0.5)')
+    print('gpt4 = models.instance("gpt-4", temperature=0.5)')
     print('response1 = gpt4("Explain quantum computing")')
     print('response2 = gpt4("What is machine learning?")')
     
@@ -50,7 +50,7 @@ def model_binding():
     
     # Show binding representation
     try:
-        gpt4 = models.bind("gpt-4", temperature=0.5)
+        gpt4 = models.instance("gpt-4", temperature=0.5)
         print(f"\nBinding representation: {gpt4}")
     except Exception:
         print("\nBinding representation: ModelBinding(model_id='gpt-4', params={'temperature': 0.5})")

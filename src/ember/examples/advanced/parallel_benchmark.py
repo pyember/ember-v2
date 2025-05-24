@@ -89,7 +89,7 @@ class SingleModelOperator(Operator[BenchmarkInput, BenchmarkOutput]):
         self.max_tokens = max_tokens
 
         # Bind the model with specific configuration
-        self.model = models.bind(
+        self.model = models.instance(
             model_name, temperature=temperature, max_tokens=max_tokens
         )
 

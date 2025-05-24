@@ -13,6 +13,10 @@ Usage:
     # Basic usage (2 subjects, 2 samples each, 2 models)
     python -m ember.examples.advanced.ensemble_judge_mmlu
     
+    # With verbosity control
+    python -m ember.examples.advanced.ensemble_judge_mmlu --verbose
+    python -m ember.examples.advanced.ensemble_judge_mmlu --quiet
+    
     # Custom configuration through environment variables
     SAMPLE_SIZE=5 MMLU_SUBJECTS="high_school_mathematics,philosophy" MODEL_COUNT=3 \
         python -m ember.examples.advanced.ensemble_judge_mmlu
@@ -27,7 +31,6 @@ Environment variables:
     MODEL_COUNT: Number of models to use in the ensemble (default: 2)
 """
 
-import logging
 import time
 from typing import Any, ClassVar, Dict, List, Optional, Tuple, Type
 
@@ -37,14 +40,20 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-# Set up logger for this module
-logger = logging.getLogger(__name__)
-
-# Import necessary modules
+# Import Ember modules
 from ember.api.data import data, DatasetBuilder
 from ember.api.models import models
 from ember.api.operators import Operator, Specification, EmberModel, Field
 from ember.api.xcs import jit, execution_options
+
+# Import our logging utilities
+from ember.core.utils.output import (
+    print_header, print_summary, print_metrics, print_table,
+    print_success, print_warning, print_info
+)
+from ember.core.utils.progress import ProgressReporter
+from ember.core.utils.verbosity import create_argument_parser, setup_verbosity_from_args, vprint
+from ember.core.utils.logging import suppress_logs, configure_logging
 
 # Set up console for rich output
 console = Console()
@@ -279,7 +288,7 @@ class BaselineMCQOperator(Operator[MCQInput, MCQOutput]):
         self.max_tokens = max_tokens
 
         # Bind the model with specific configuration
-        self.model = models.bind(
+        self.model = models.instance(
             model_name, temperature=temperature, max_tokens=max_tokens
         )
 
@@ -491,7 +500,7 @@ class VariedEnsembleMCQOperator(Operator[MCQInput, List[MCQOutput]]):
         self.models = []
         for config in model_configs:
             self.models.append(
-                models.bind(
+                models.instance(
                     config["model_name"],
                     temperature=config["temperature"],
                     max_tokens=config.get("max_tokens", 1024),
@@ -685,7 +694,7 @@ class JudgeOperator(Operator[EnsembleJudgeInput, EnsembleJudgeOutput]):
             max_tokens: Maximum tokens to generate
         """
         self.model_name = model_name
-        self.model = models.bind(
+        self.model = models.instance(
             model_name, temperature=temperature, max_tokens=max_tokens
         )
 
@@ -1504,18 +1513,25 @@ def main() -> None:
       SAMPLE_SIZE: Number of samples per subject (default: 2)
       MMLU_SUBJECTS: Comma-separated list of subjects (default: first 2)
     """
+    # Set up argument parser
+    parser = create_argument_parser(
+        "MMLU Evaluation: Baseline vs. Ensemble+Judge Pipeline with Enhanced JIT"
+    )
+    args = parser.parse_args()
+    setup_verbosity_from_args(args)
+    
+    # Configure logging based on verbosity
+    if not args.verbose:
+        configure_logging(verbose=False)
+    
     # Get configuration from environment variables
     import os
 
     sample_size = int(os.environ.get("SAMPLE_SIZE", "2"))
-    console.print(
-        Panel.fit(
-            "MMLU Evaluation: Baseline vs. Ensemble+Judge Pipeline with Enhanced JIT Optimization",
-            title="Ember Advanced Example",
-            subtitle="Demonstrating LLM Ensemble Techniques and Enhanced Parallelization",
-            style="bold green",
-        )
-    )
+    
+    if not args.quiet:
+        print_header("MMLU Evaluation Example", width=70)
+        print_info("Demonstrating LLM Ensemble Techniques and Enhanced Parallelization")
 
     # Check if API keys are set
     import os

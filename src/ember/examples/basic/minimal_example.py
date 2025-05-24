@@ -8,11 +8,15 @@ arbitrary function logic.
 
 To run:
     uv run python src/ember/examples/basic/minimal_example.py
+    uv run python src/ember/examples/basic/minimal_example.py --verbose
+    uv run python src/ember/examples/basic/minimal_example.py --quiet
 """
 
 from typing import Any, Dict, List, Optional, Type
 
 from ember.api.operators import Operator, Specification, EmberModel, Field
+from ember.core.utils.output import print_header, print_summary, print_success
+from ember.core.utils.verbosity import create_argument_parser, setup_verbosity_from_args, vprint
 
 
 class MinimalInput(EmberModel):
@@ -132,10 +136,16 @@ class MinimalOperator(Operator[MinimalInput, MinimalOutput]):
 
 def main() -> None:
     """Run a simple demonstration of the MinimalOperator."""
-    print("\n=== Minimal Operator Example ===\n")
+    # Set up argument parser with verbosity controls
+    parser = create_argument_parser("Demonstrate the MinimalOperator")
+    args = parser.parse_args()
+    setup_verbosity_from_args(args)
+    
+    print_header("Minimal Operator Example")
 
     # Create the operator
     op = MinimalOperator(increment=5, multiplier=2)
+    vprint("Created MinimalOperator with increment=5, multiplier=2")
 
     # Create input with basic value
     basic_input = MinimalInput(value=10)
@@ -143,12 +153,19 @@ def main() -> None:
     # Process with only the basic configuration
     basic_result = op(inputs=basic_input)
 
-    print("Basic Example:")
-    print(f"  Input: {basic_input.value}")
-    print(f"  Result: {basic_result.value}")
-    print("  Steps:")
-    for step in basic_result.steps:
-        print(f"    {step}")
+    # Display results using clean formatting
+    print_summary({
+        "Input": basic_input.value,
+        "Result": basic_result.value,
+        "Operations": len(basic_result.steps)
+    }, title="Basic Example")
+    
+    # Show steps in verbose mode
+    if args.verbose:
+        print("Processing steps:")
+        for i, step in enumerate(basic_result.steps, 1):
+            print(f"  {i}. {step}")
+        print()
 
     # Create input with advanced options
     advanced_input = MinimalInput(value=7, options={"square": True, "add": 3})
@@ -156,27 +173,37 @@ def main() -> None:
     # Process with advanced options
     advanced_result = op(inputs=advanced_input)
 
-    print("\nAdvanced Example:")
-    print(f"  Input: {advanced_input.value} with options {advanced_input.options}")
-    print(f"  Result: {advanced_result.value}")
-    print("  Steps:")
-    for step in advanced_result.steps:
-        print(f"    {step}")
+    print_summary({
+        "Input": advanced_input.value,
+        "Options": str(advanced_input.options),
+        "Result": advanced_result.value,
+        "Operations": len(advanced_result.steps)
+    }, title="Advanced Example")
+    
+    # Show steps in verbose mode
+    if args.verbose:
+        print("Processing steps:")
+        for i, step in enumerate(advanced_result.steps, 1):
+            print(f"  {i}. {step}")
+        print()
 
     # Alternative invocation patterns
-    print("\nAlternative Invocation Patterns:")
-
+    vprint("\nTesting alternative invocation patterns...")
+    
     # Using dict input
     dict_result = op(inputs={"value": 3})
-    print(f"  Dict input result: {dict_result.value}")
+    vprint(f"Dict input result: {dict_result.value}")
 
     # Using keyword arguments
     kwargs_result = op(value=4)
-    print(f"  Keyword args result: {kwargs_result.value}")
+    vprint(f"Keyword args result: {kwargs_result.value}")
 
-    print("\nSummary using model method:")
-    print(advanced_result.summarize())
-    print()
+    # Final summary
+    if not args.quiet:
+        print("\nFinal Summary:")
+        print(advanced_result.summarize())
+    
+    print_success("Example completed successfully!")
 
 
 if __name__ == "__main__":

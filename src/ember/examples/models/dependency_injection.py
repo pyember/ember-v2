@@ -46,9 +46,9 @@ def model_binding_patterns():
     
     # Create bound models with different configs
     print("\n# Create specialized models")
-    print('factual_model = models.bind("gpt-4", temperature=0.1)')
-    print('creative_model = models.bind("gpt-4", temperature=0.9)')
-    print('summary_model = models.bind("gpt-4", max_tokens=100)')
+    print('factual_model = models.instance("gpt-4", temperature=0.1)')
+    print('creative_model = models.instance("gpt-4", temperature=0.9)')
+    print('summary_model = models.instance("gpt-4", max_tokens=100)')
     
     print("\n# Use them repeatedly")
     print('factual_model("What is gravity?")')
@@ -58,7 +58,7 @@ def model_binding_patterns():
     # Show actual binding if API is available
     if os.environ.get("OPENAI_API_KEY"):
         try:
-            factual = models.bind("gpt-4", temperature=0.1)
+            factual = models.instance("gpt-4", temperature=0.1)
             print(f"\nActual binding created: {factual}")
         except Exception as e:
             print(f"\n(Skipping actual binding: {e})")
@@ -146,7 +146,7 @@ def configuration_hierarchy():
     print('   models("gpt-4", "Hello", temperature=0.9)')
     
     print("\n2. Bound model parameters:")
-    print('   gpt4 = models.bind("gpt-4", temperature=0.7)')
+    print('   gpt4 = models.instance("gpt-4", temperature=0.7)')
     print('   gpt4("Hello")  # Uses temperature=0.7')
     
     print("\n3. Context configuration:")

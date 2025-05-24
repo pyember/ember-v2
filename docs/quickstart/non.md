@@ -170,30 +170,32 @@ print(f"Explanation: {result.explanation}")
 Combine different model types with automatic parallelization:
 
 ```python
-from ember.core.non import VariedEnsemble, JudgeSynthesis
-from ember.core.registry.model.model_module import LMModuleConfig
+from ember.core.non import JudgeSynthesis
+from ember.api import models
 from ember.xcs.engine.execution_options import execution_options
 
-# Define varied model configurations
-model_configs = [
-    LMModuleConfig(model_name="openai:gpt-4o", temperature=0.3),
-    LMModuleConfig(model_name="anthropic:claude-3-haiku", temperature=0.4),
-    LMModuleConfig(model_name="openai:gpt-4o-mini", temperature=0.5)
+# Create varied model instances with different configurations
+model_instances = [
+    models.instance("openai:gpt-4o", temperature=0.3),
+    models.instance("anthropic:claude-3-haiku", temperature=0.4),
+    models.instance("openai:gpt-4o-mini", temperature=0.5)
 ]
 
 # Create operators
-varied_ensemble = VariedEnsemble(model_configs=model_configs)
 judge = JudgeSynthesis(model_name="anthropic:claude-3-sonnet")
 
 # Execute with auto-parallelization
-with execution_options(scheduler="wave", max_workers=len(model_configs)):
-    # Get responses from the diverse models
-    ensemble_result = varied_ensemble(inputs={"query": "Explain quantum computing."})
+with execution_options(scheduler="wave", max_workers=len(model_instances)):
+    # Get responses from the diverse models in parallel
+    responses = []
+    for model in model_instances:
+        response = model("Explain quantum computing.")
+        responses.append(response.text)
     
     # Synthesize into a single answer
     final_result = judge(inputs={
         "query": "Explain quantum computing.",
-        "responses": ensemble_result.responses
+        "responses": responses
     })
 
 print(f"Final answer: {final_result.final_answer}")

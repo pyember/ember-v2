@@ -1,11 +1,15 @@
 """
 Unit tests for LMModule in the LM (language model) module.
 These tests check that LMModule:
+  - Shows deprecation warnings when used
   - returns a simulated response when simulate_api is True.
   - properly calls the underlying ModelService when simulate_api is False.
+  - Works as a compatibility wrapper for the new models API
 """
 
 from typing import Any
+
+import warnings
 
 import pytest
 
@@ -28,11 +32,24 @@ def dummy_service() -> DummyModelService:
     return DummyModelService()
 
 
+def test_lm_module_deprecation_warning() -> None:
+    """Test that LMModule shows deprecation warning when instantiated."""
+    config = LMModuleConfig(id="openai:gpt-4o", temperature=0.8)
+    
+    with pytest.warns(DeprecationWarning, match="LMModule is deprecated"):
+        lm = LMModule(config=config, simulate_api=True)
+
+
 def test_lm_module_simulate(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test that LMModule returns a simulated response when simulate_api is True."""
     config = LMModuleConfig(id="openai:gpt-4o", temperature=0.8)
     # simulate_api=True should bypass model_service.invoke_model
-    lm = LMModule(config=config, simulate_api=True)
+    
+    # Suppress deprecation warning for this test
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        lm = LMModule(config=config, simulate_api=True)
+        
     prompt = "Simulated test prompt"
     result = lm(prompt)
     expected = f"SIMULATED_RESPONSE: {prompt}"
@@ -45,7 +62,10 @@ def test_lm_module_forward_calls_service(dummy_service: DummyModelService) -> No
         id="openai:gpt-4o", temperature=0.8, cot_prompt="Think step-by-step"
     )
     # When simulate_api is False, LMModule should call the model service.
-    lm = LMModule(config=config, model_service=dummy_service, simulate_api=False)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        lm = LMModule(config=config, model_service=dummy_service, simulate_api=False)
+        
     prompt = "Test prompt"
     response = lm.forward(prompt)
     expected_fragment = "Dummy response for prompt:"
@@ -70,3 +90,5 @@ def test_lm_module_assemble_full_prompt() -> None:
     assert "[Persona: Friendly]" in full_prompt
     assert "What is AI?" in full_prompt
     assert "Chain of Thought" in full_prompt
+
+

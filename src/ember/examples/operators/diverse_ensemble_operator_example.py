@@ -33,9 +33,9 @@ def usage_example() -> None:
 
     # Create bound models with different configurations for diversity
     lm_modules = [
-        models.bind("anthropic:claude-3-opus", temperature=0.5, max_tokens=256),
-        models.bind("openai:gpt-4", temperature=0.7, max_tokens=256),
-        models.bind("anthropic:claude-3-haiku", temperature=0.3, max_tokens=256),
+        models.instance("anthropic:claude-3-opus", temperature=0.5, max_tokens=256),
+        models.instance("openai:gpt-4", temperature=0.7, max_tokens=256),
+        models.instance("anthropic:claude-3-haiku", temperature=0.3, max_tokens=256),
     ]
 
     # Instantiate the operator with named parameters.

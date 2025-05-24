@@ -219,16 +219,35 @@ class Operator(EmberModule, abc.ABC, Generic[InputT, OutputT]):
             operator_output: OutputT = self.forward(inputs=validated_inputs)
 
             # Ensure we have a proper model instance for the output
-            # If we got a dict, convert it to the appropriate model
-            if (
-                isinstance(operator_output, dict)
-                and hasattr(specification, "structured_output")
-                and specification.structured_output
-            ):
-                structured_output_type: Type[OutputT] = cast(
-                    Type[OutputT], specification.structured_output
-                )
-                operator_output = structured_output_type.model_validate(operator_output)
+            # This handles the JIT execution case where dicts are returned instead of models
+            if isinstance(operator_output, dict):
+                # Try to get the output type from specification
+                output_type = None
+                if hasattr(specification, "structured_output") and specification.structured_output:
+                    output_type = specification.structured_output
+                elif hasattr(specification, "output_model") and specification.output_model:
+                    output_type = specification.output_model
+                
+                # If we have an output type, convert the dict to the proper model
+                if output_type is not None:
+                    try:
+                        structured_output_type: Type[OutputT] = cast(Type[OutputT], output_type)
+                        if hasattr(structured_output_type, "model_validate"):
+                            # Pydantic v2 style
+                            operator_output = structured_output_type.model_validate(operator_output)
+                        elif hasattr(structured_output_type, "parse_obj"):
+                            # Pydantic v1 style
+                            operator_output = structured_output_type.parse_obj(operator_output)
+                        else:
+                            # Direct construction
+                            operator_output = structured_output_type(**operator_output)
+                    except Exception:
+                        # If conversion fails, log and continue with dict
+                        # This preserves backward compatibility
+                        logger.debug(
+                            f"Could not convert dict output to {output_type.__name__} for "
+                            f"operator {self.__class__.__name__}. Continuing with dict output."
+                        )
 
             # Final validation to ensure type consistency
             validated_output: OutputT = cast(

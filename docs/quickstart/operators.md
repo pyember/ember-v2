@@ -27,8 +27,8 @@ class ClassifierOutput(EmberModel):
 ## 2. Basic Implementation
 
 ```python
-from typing import ClassVar, Type
-from ember.core.registry.model.model_module.lm import LMModule, LMModuleConfig
+from typing import Any, ClassVar, Type
+from ember.api import models
 from ember.core.registry.specification.specification import Specification
 
 class ClassifierSpecification(Specification):
@@ -45,24 +45,23 @@ Respond with a JSON object with two keys:
 
 class TextClassifierOperator(Operator[ClassifierInput, ClassifierOutput]):
     specification: ClassVar[Specification] = ClassifierSpecification()
-    lm_module: LMModule
+    model: Any
     
     def __init__(self, *, model_name: str = "openai:gpt-4o", temperature: float = 0.0) -> None:
-        self.lm_module = LMModule(
-            config=LMModuleConfig(
-                model_name=model_name,
-                temperature=temperature,
-                response_format={"type": "json_object"}
-            )
+        # Bind a model with specific configuration
+        self.model = models.instance(
+            model_name,
+            temperature=temperature,
+            response_format={"type": "json_object"}
         )
     
     def forward(self, *, inputs: ClassifierInput) -> ClassifierOutput:
         prompt = self.specification.render_prompt(inputs=inputs)
-        response = self.lm_module(prompt=prompt)
+        response = self.model(prompt)
         
         try:
             import json
-            result = json.loads(response)
+            result = json.loads(response.text)
             return ClassifierOutput(
                 category=result["category"],
                 confidence=result["confidence"]

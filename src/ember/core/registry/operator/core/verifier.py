@@ -66,7 +66,7 @@ class VerifierOperator(Operator[VerifierOperatorInputs, VerifierOperatorOutputs]
         verifier = VerifierOperator(model="gpt-4", temperature=0.3)
         
         # With pre-configured binding
-        custom_model = models.bind("gpt-4", temperature=0.1, max_tokens=500)
+        custom_model = models.instance("gpt-4", temperature=0.1, max_tokens=500)
         verifier = VerifierOperator(model=custom_model)
     """
 
@@ -93,7 +93,9 @@ class VerifierOperator(Operator[VerifierOperatorInputs, VerifierOperatorOutputs]
         
         rendered_prompt: str = self.specification.render_prompt(inputs=inputs)
         response = self.model(rendered_prompt)
-        raw_output: str = response.text.strip()
+        # Handle both old LMModule (returns string) and new models API (returns object with .text)
+        response_text = response.text if hasattr(response, 'text') else response
+        raw_output: str = response_text.strip()
 
         # Initialize default values
         verdict = 0

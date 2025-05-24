@@ -1,3 +1,6 @@
+[console_scripts]
+ember = ember.cli.main:main
+
 [ember.dataset_preppers]
 commonsense_qa = ember.core.utils.data.datasets_registry.commonsense_qa:CommonsenseQAPrepper
 halueval = ember.core.utils.data.datasets_registry.halueval:HaluEvalPrepper

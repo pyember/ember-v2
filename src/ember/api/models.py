@@ -15,7 +15,7 @@ Examples:
     response = models("claude-3", "Write a haiku", temperature=0.7, max_tokens=50)
     
     # Explicit binding for reuse (performance optimization)
-    gpt4 = models.bind("gpt-4", temperature=0.5)
+    gpt4 = models.instance("gpt-4", temperature=0.5)
     response1 = gpt4("Explain quantum computing")
     response2 = gpt4("What is machine learning?")
 """
@@ -29,22 +29,12 @@ from ember.core.registry.model.base.context import (
     ModelContext,
     get_default_context,
 )
-# Define model-specific errors
-class ModelError(Exception):
-    """Base exception for model-related errors."""
-    pass
-
-class AuthenticationError(ModelError):
-    """Raised when authentication fails."""
-    pass
-
-class RateLimitError(ModelError):
-    """Raised when rate limit is exceeded."""
-    pass
-
-class ModelNotFoundError(ModelError):
-    """Raised when a model is not found."""
-    pass
+# Import model-specific errors from core
+from ember.core.exceptions import (
+    ModelError,
+    ModelNotFoundError,
+    ProviderAPIError,
+)
 
 if TYPE_CHECKING:
     from ember.core.registry.model.base.schemas.chat_schemas import ChatResponse
@@ -141,10 +131,12 @@ class ModelBinding:
                 available = self.service.list_models()
                 suggestions = self._find_similar_models(self.model_id, available)
                 raise ModelNotFoundError(
-                    f"Model '{self.model_id}' not found",
-                    model_id=self.model_id,
-                    suggestions=suggestions,
-                    available_models=available[:10]  # Show first 10
+                    f"Model '{self.model_id}' not found. Available models: {', '.join(available[:10])}",
+                    context={
+                        "model_id": self.model_id,
+                        "suggestions": suggestions,
+                        "available_models": available[:10]
+                    }
                 )
             raise
     
@@ -232,12 +224,12 @@ class ModelsAPI:
         """
         return _invoke_model(model, prompt, self.service, **params)
     
-    def bind(self, model: str, **params) -> ModelBinding:
-        """Create a reusable model binding with preset parameters.
+    def instance(self, model: str, **params) -> ModelBinding:
+        """Create a reusable model instance with preset parameters.
         
         Args:
             model: Model identifier
-            **params: Parameters to bind to the model
+            **params: Parameters to configure the model instance
             
         Returns:
             ModelBinding that can be called multiple times
@@ -246,14 +238,27 @@ class ModelsAPI:
             ModelNotFoundError: If the model doesn't exist
             
         Examples:
-            >>> gpt4 = models.bind("gpt-4", temperature=0.7)
+            >>> gpt4 = models.instance("gpt-4", temperature=0.7)
             >>> response1 = gpt4("First prompt")
             >>> response2 = gpt4("Second prompt")
             
-            >>> # Override bound parameters
+            >>> # Override instance parameters
             >>> response3 = gpt4("Third prompt", temperature=0.9)
         """
         return ModelBinding(model, self.service, **params)
+    
+    def bind(self, model: str, **params) -> ModelBinding:
+        """Deprecated: Use instance() instead.
+        
+        This method is kept for backward compatibility.
+        """
+        import warnings
+        warnings.warn(
+            "models.bind() is deprecated. Use models.instance() instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
+        return self.instance(model, **params)
     
     async def async_call(self, model: str, prompt: str, **params) -> Response:
         """Async version of model invocation.
@@ -376,7 +381,6 @@ __all__ = [
     'ModelBinding',     # Binding type
     # Re-export error types for convenience
     'ModelError',
-    'AuthenticationError', 
-    'RateLimitError',
     'ModelNotFoundError',
+    'ProviderAPIError',
 ]

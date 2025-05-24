@@ -31,7 +31,7 @@ Examples:
 
 # Import module namespaces
 import ember.api.eval as eval  # Evaluation module
-import ember.api.models as models  # Language model access
+from ember.api.models import models  # Import the singleton instance, not the module
 import ember.api.non as non  # Network of Networks patterns
 import ember.api.operators as operators  # Operator system
 import ember.api.types as types
@@ -54,6 +54,7 @@ from ember.api.data import TaskType  # Enum of dataset task types
 
 # Initialize DataAPI and expose its methods
 data_api = DataAPI(EmberContext.current())
+data = data_api  # Expose as 'data' for cleaner API usage
 register_dataset = data_api.register
 from ember.api.eval import EvaluationPipeline  # Pipeline for batch evaluation
 from ember.api.eval import Evaluator  # Evaluator for model outputs
@@ -62,6 +63,7 @@ from ember.api.eval import Evaluator  # Evaluator for model outputs
 __all__ = [
     # Main facade objects
     "models",  # Model access (models.openai.gpt4o, etc.)
+    "data",  # Data access (data("mmlu"), data.builder(), etc.)
     # Module namespaces
     "eval",  # Evaluation module
     "non",  # Network of Networks patterns

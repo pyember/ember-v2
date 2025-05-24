@@ -105,9 +105,9 @@ class EnsembleOperator(Operator[EnsembleOperatorInputs, EnsembleOperatorOutputs]
             # Usage with pre-configured models from the API layer
             from ember.api import models
             ensemble = EnsembleOperator(models=[
-                models.bind("gpt-4", temperature=0.7),
-                models.bind("claude-3", temperature=0.9),
-                models.bind("gpt-3.5-turbo", temperature=0.5)
+                models.instance("gpt-4", temperature=0.7),
+                models.instance("claude-3", temperature=0.9),
+                models.instance("gpt-3.5-turbo", temperature=0.5)
             ])
         """
         super().__init__(**kwargs)
@@ -130,6 +130,8 @@ class EnsembleOperator(Operator[EnsembleOperatorInputs, EnsembleOperatorOutputs]
         # Execute each model and collect responses
         for model in self.models:
             response = model(rendered_prompt)
-            responses.append(response.text)
+            # Handle both old LMModule (returns string) and new models API (returns object with .text)
+            response_text = response.text if hasattr(response, 'text') else response
+            responses.append(response_text)
             
         return {"responses": responses}

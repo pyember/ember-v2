@@ -1,16 +1,15 @@
-"""Operator Composition with Enhanced JIT API.
+"""Operator Composition Example.
 
-This example demonstrates how to create complex pipelines by composing operators
-with the enhanced JIT API. It shows three patterns:
+This example demonstrates clean operator composition using functional patterns.
+It shows how to build a pipeline that:
+1. Refines a user's question for clarity
+2. Gets multiple LLM responses via ensemble
+3. Aggregates responses to find consensus
 
-1. Functional composition with the `compose` utility
-2. Sequential operator chaining with explicit dependencies
-3. Nested operators within a container class
-
-All approaches benefit from automatic graph building and execution.
+The example uses functional composition for clean, testable code.
 
 To run:
-    uv run python src/ember/examples/composition_example.py
+    uv run python src/ember/examples/operators/composition_example.py
 """
 
 import logging
@@ -84,20 +83,17 @@ class QuestionRefinement(Operator[QuestionRefinementInputs, QuestionRefinementOu
     specification: ClassVar[Specification] = QuestionRefinementSpecification()
     model_name: str
     temperature: float
-    model: Any  # Bound model instance
 
     def __init__(self, *, model_name: str, temperature: float = 0.3) -> None:
         self.model_name = model_name
         self.temperature = temperature
-        # Use the simplified models API to bind a model
-        self.model = models.bind(model_name, temperature=temperature)
 
     def forward(self, *, inputs: QuestionRefinementInputs) -> QuestionRefinementOutputs:
         prompt = self.specification.render_prompt(inputs=inputs)
 
         try:
-            # Use the bound model directly
-            response = self.model(prompt)
+            # Use models API directly
+            response = models(self.model_name, prompt, temperature=self.temperature)
 
             # Get text from response
             refined_query = response.text.strip() if hasattr(response, 'text') else str(response).strip()
@@ -128,17 +124,18 @@ def create_functional_pipeline(*, model_name: str) -> Callable[[Dict[str, Any]],
     ensemble = non.UniformEnsemble(num_units=3, model_name=model_name, temperature=0.7)
     aggregator = non.MostCommon()
 
-    # Use partial application to adapt the interfaces
-    def adapt_refiner_output(inputs: Dict[str, Any]) -> Dict[str, Any]:
+    # Create clean adapter functions for functional composition
+    def adapt_refiner(inputs: Dict[str, Any]) -> Dict[str, Any]:
         result = refiner(inputs=QuestionRefinementInputs(**inputs))
+        # Operators now consistently return proper types thanks to framework fixes
         return {"query": result.refined_query}
 
-    def adapt_ensemble_output(inputs: Dict[str, Any]) -> Dict[str, Any]:
+    def adapt_ensemble(inputs: Dict[str, Any]) -> Dict[str, Any]:
         result = ensemble(inputs=inputs)
         return {"query": inputs["query"], "responses": result["responses"]}
 
     # Compose the pipeline
-    pipeline = compose(aggregator, compose(adapt_ensemble_output, adapt_refiner_output))
+    pipeline = compose(aggregator, compose(adapt_ensemble, adapt_refiner))
 
     return pipeline
 

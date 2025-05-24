@@ -132,10 +132,10 @@ class UniformEnsemble(Operator[EnsembleInputs, EnsembleOperatorOutputs]):
         # Import models API here to avoid circular import
         from ember.api import models
         
-        # Create a list of identical bound models
+        # Create a list of model functions with parameters
         model_list = [
-            models.models.bind(self.model_name, temperature=self.temperature, max_tokens=self.max_tokens)
-            for _ in range(self.num_units)
+            lambda prompt, i=i: models(self.model_name, prompt, temperature=self.temperature, max_tokens=self.max_tokens)
+            for i in range(self.num_units)
         ]
         
         # Create the operator with bound models
@@ -278,7 +278,7 @@ class JudgeSynthesis(Operator[JudgeSynthesisInputs, JudgeSynthesisOutputs]):
         
         # Create the operator with a bound model
         self._judge_synthesis_op = JudgeSynthesisOperator(
-            model=models.models.bind(model_name, temperature=temperature, max_tokens=max_tokens)
+            model=models.instance(model_name, temperature=temperature, max_tokens=max_tokens)
         )
 
     def forward(self, *, inputs: JudgeSynthesisInputs) -> JudgeSynthesisOutputs:
@@ -361,7 +361,7 @@ class Verifier(Operator[VerifierInputs, VerifierOutputs]):
         
         # Create the operator with a bound model
         self._verifier_op = VerifierOperator(
-            model=models.models.bind(model_name, temperature=temperature, max_tokens=max_tokens)
+            model=models.instance(model_name, temperature=temperature, max_tokens=max_tokens)
         )
 
     def forward(self, *, inputs: VerifierInputs) -> VerifierOutputs:
@@ -432,7 +432,7 @@ class VariedEnsemble(Operator[VariedEnsembleInputs, VariedEnsembleOutputs]):
         model_bindings = []
         for model_id, temperature, max_tokens in model_configs:
             model_bindings.append(
-                models.models.bind(model_id, temperature=temperature, max_tokens=max_tokens)
+                models.instance(model_id, temperature=temperature, max_tokens=max_tokens)
             )
         
         self._varied_ensemble_op = EnsembleOperator(models=model_bindings)

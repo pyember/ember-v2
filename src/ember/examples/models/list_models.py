@@ -5,99 +5,119 @@ the simplified Ember models API.
 
 To run:
     uv run python src/ember/examples/models/list_models.py
+    uv run python src/ember/examples/models/list_models.py --verbose
+    uv run python src/ember/examples/models/list_models.py --quiet
 
 Required environment variables:
     OPENAI_API_KEY (optional): Your OpenAI API key
     ANTHROPIC_API_KEY (optional): Your Anthropic API key
 """
 
-import logging
 import os
 
-from ember.api import models
-
-# Setup logging
-logging.basicConfig(level=logging.INFO, format="%(message)s")
-logger = logging.getLogger(__name__)
+from ember.api.models import models
+from ember.core.utils.output import (
+    print_header, print_models, print_summary, print_table,
+    print_warning, print_error, print_success, print_info
+)
+from ember.core.utils.progress import ProgressReporter
+from ember.core.utils.verbosity import create_argument_parser, setup_verbosity_from_args, vprint
+from ember.core.utils.logging import suppress_logs
 
 
 def main():
     """Run the list models example."""
-    logger.info("=== List Available Models Example ===\n")
+    # Set up argument parser
+    parser = create_argument_parser("List and inspect available Ember models")
+    args = parser.parse_args()
+    setup_verbosity_from_args(args)
+    
+    print_header("List Available Models Example")
     
     # Check if API keys are set
     openai_key = os.environ.get("OPENAI_API_KEY")
     anthropic_key = os.environ.get("ANTHROPIC_API_KEY")
     
     if not openai_key and not anthropic_key:
-        logger.warning("⚠️  No API keys set. Model discovery may be limited.")
-        logger.warning("Set OPENAI_API_KEY and/or ANTHROPIC_API_KEY for full functionality.\n")
+        print_warning("No API keys set. Model discovery may be limited.")
+        print_info("Set OPENAI_API_KEY and/or ANTHROPIC_API_KEY for full functionality.")
+    
+    # Initialize progress reporter
+    reporter = ProgressReporter(quiet=args.quiet)
     
     # List all available models
-    logger.info("Listing all available models:")
+    reporter.discovery_start()
     try:
-        available_models = models.list()
+        # Suppress model discovery logs
+        with suppress_logs(["ember.core.registry.model", "ember.core.registry.model.initialization"]):
+            available_models = models.list()
+        
+        reporter.discovery_complete(len(available_models))
         
         if not available_models:
-            logger.info("No models found. Make sure API keys are set.")
+            print_warning("No models found. Make sure API keys are set.")
             return
-            
-        logger.info(f"Found {len(available_models)} models:\n")
         
-        # Group by provider
-        by_provider = {}
-        for model_id in available_models:
-            provider = model_id.split(":")[0] if ":" in model_id else "unknown"
-            if provider not in by_provider:
-                by_provider[provider] = []
-            by_provider[provider].append(model_id)
-        
-        # Display by provider
-        for provider, model_list in sorted(by_provider.items()):
-            logger.info(f"{provider.upper()} ({len(model_list)} models):")
-            for model_id in sorted(model_list):
-                logger.info(f"  - {model_id}")
-            logger.info("")
+        # Display models using the clean formatter
+        print_models(available_models, group_by_provider=True)
         
     except Exception as e:
-        logger.error(f"Error listing models: {e}")
+        reporter.discovery_error(str(e))
         return
     
-    # List models by specific provider
-    logger.info("Listing models by provider:")
-    for provider in ["openai", "anthropic"]:
-        try:
-            provider_models = models.list(provider=provider)
-            logger.info(f"{provider}: {len(provider_models)} models")
-        except Exception as e:
-            logger.error(f"Error listing {provider} models: {e}")
-    
-    logger.info("")
+    # List models by specific provider (verbose mode)
+    if args.verbose:
+        print("\nModel counts by provider:")
+        provider_counts = {}
+        for provider in ["openai", "anthropic", "google"]:
+            try:
+                with suppress_logs(["ember.core.registry.model"]):
+                    provider_models = models.list(provider=provider)
+                provider_counts[provider] = len(provider_models)
+            except Exception:
+                provider_counts[provider] = 0
+        
+        print_summary(provider_counts, title="Provider Summary")
     
     # Get detailed info for specific models
-    logger.info("Getting model information:")
-    example_models = ["gpt-4", "claude-3-sonnet", "gpt-3.5-turbo"]
-    
-    for model_id in example_models:
-        try:
-            info = models.info(model_id)
-            logger.info(f"\n{model_id}:")
-            logger.info(f"  Full ID: {info['id']}")
-            logger.info(f"  Provider: {info['provider']}")
-            
-            if 'context_window' in info:
-                logger.info(f"  Context window: {info['context_window']:,} tokens")
-            
-            if 'pricing' in info:
-                pricing = info['pricing']
-                logger.info(f"  Pricing:")
-                logger.info(f"    Input: ${pricing.get('input', 0):.6f}/1K tokens")
-                logger.info(f"    Output: ${pricing.get('output', 0):.6f}/1K tokens")
+    if not args.quiet:
+        print("\nDetailed Model Information:")
+        example_models = ["gpt-4", "claude-3-sonnet", "gpt-3.5-turbo"]
+        
+        model_details = []
+        for model_id in example_models:
+            try:
+                with suppress_logs(["ember.core.registry.model"]):
+                    info = models.info(model_id)
                 
-        except Exception as e:
-            logger.info(f"\n{model_id}: Not available ({e})")
+                details = {
+                    "Model": model_id,
+                    "Full ID": info.get('id', 'N/A'),
+                    "Provider": info.get('provider', 'N/A'),
+                }
+                
+                if 'context_window' in info:
+                    details["Context"] = f"{info['context_window']:,}"
+                
+                if 'pricing' in info:
+                    pricing = info['pricing']
+                    details["Input $/1K"] = f"${pricing.get('input', 0):.6f}"
+                    details["Output $/1K"] = f"${pricing.get('output', 0):.6f}"
+                
+                model_details.append(details)
+                
+            except Exception as e:
+                vprint(f"Could not get info for {model_id}: {e}")
+                model_details.append({
+                    "Model": model_id,
+                    "Full ID": "Not available",
+                    "Provider": "Unknown",
+                })
+        
+        if model_details:
+            print_table(model_details, title="Model Details")
     
-    logger.info("\n=== Example completed! ===")
+    print_success("Example completed!")
 
 
 if __name__ == "__main__":

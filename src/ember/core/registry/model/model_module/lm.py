@@ -21,7 +21,7 @@ _shown_warnings: Set[str] = set()
 
 class LMModuleConfig(BaseModel):
     """
-    DEPRECATED: Configuration for LMModule. Use models.bind() instead.
+    DEPRECATED: Configuration for LMModule. Use models.instance() instead.
     
     This class is maintained for backward compatibility only.
     """
@@ -51,7 +51,7 @@ class LMModuleConfig(BaseModel):
 
 class LMModule:
     """
-    DEPRECATED: Compatibility wrapper for LMModule. Use models.bind() instead.
+    DEPRECATED: Compatibility wrapper for LMModule. Use models.instance() instead.
     
     This class provides backward compatibility for code using LMModule.
     During the migration, it maintains the same interface while using
@@ -64,7 +64,7 @@ class LMModule:
         
         # New way
         from ember.api import models
-        model = models.bind("gpt-4", temperature=0.7)
+        model = models.instance("gpt-4", temperature=0.7)
         response = model("Hello").text
     """
     
@@ -79,7 +79,7 @@ class LMModule:
         if "lmmodule_deprecation" not in _shown_warnings:
             warnings.warn(
                 "LMModule is deprecated and will be removed in v2.0. "
-                "Use models.bind() instead. "
+                "Use models.instance() instead. "
                 "See LMMODULE_MIGRATION_GUIDE.md for migration instructions.",
                 DeprecationWarning,
                 stacklevel=2
@@ -103,7 +103,7 @@ class LMModule:
         if warning_key not in _shown_warnings:
             logger.debug(
                 f"LMModule created for model '{config.id}'. "
-                f"Consider migrating to: models.bind('{config.id}', temperature={config.temperature})"
+                f"Consider migrating to: models.instance('{config.id}', temperature={config.temperature})"
             )
             _shown_warnings.add(warning_key)
     

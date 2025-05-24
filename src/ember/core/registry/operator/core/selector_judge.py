@@ -92,7 +92,9 @@ class SelectorJudgeOperator(
                 "No model attached to SelectorJudgeOperator."
             )
         response = self.model(rendered_prompt)
-        raw_output: str = response.text.strip()
+        # Handle both old LMModule (returns string) and new models API (returns object with .text)
+        response_text = response.text if hasattr(response, 'text') else response
+        raw_output: str = response_text.strip()
 
         # Parse the output for the final answer and reasoning, respectively
         final_answer: str = "Unknown"

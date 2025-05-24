@@ -22,17 +22,18 @@ class VerifierOperatorOutputs(EmberModel):
 class VerifierOperator:
     """Test operator implementation."""
 
-    def __init__(self, *, lm_module):
-        self.lm_module = lm_module
+    def __init__(self, *, model):
+        self.model = model
 
     def __call__(self, *, inputs):
         return self.forward(inputs=inputs)
 
     def forward(self, *, inputs):
         """Process the verification."""
-        raw_output = self.lm_module(
-            prompt=f"Query: {inputs.query}\nCandidate: {inputs.candidate_answer}"
+        response = self.model(
+            f"Query: {inputs.query}\nCandidate: {inputs.candidate_answer}"
         )
+        raw_output = response.text
 
         # Initialize default values
         verdict = 0
@@ -58,13 +59,18 @@ class VerifierOperator:
         )
 
 
-class CustomVerifierLM:
-    """Mimics a verifier that outputs verdict, explanation, optional revised answer lines."""
+class MockResponse:
+    """Mock response object with text attribute."""
+    def __init__(self, text: str):
+        self.text = text
 
-    def __call__(self, *, prompt: str) -> str:
-        """Dummy LM __call__ that returns a verification output."""
-        del prompt
-        return (
+
+class CustomVerifierModel:
+    """Mimics a verifier model that outputs verdict, explanation, optional revised answer lines."""
+
+    def __call__(self, prompt: str):
+        """Model call that returns a verification output."""
+        return MockResponse(
             "Verdict: 1\n"
             "Explanation: The answer is correct because...\n"
             "Revised Answer: \n"
@@ -72,8 +78,8 @@ class CustomVerifierLM:
 
 
 def test_verifier_operator_forward() -> None:
-    custom_lm = CustomVerifierLM()
-    op = VerifierOperator(lm_module=custom_lm)
+    custom_model = CustomVerifierModel()
+    op = VerifierOperator(model=custom_model)
 
     inputs = VerifierOperatorInputs(query="Verify this", candidate_answer="Answer")
     result: VerifierOperatorOutputs = op(inputs=inputs)

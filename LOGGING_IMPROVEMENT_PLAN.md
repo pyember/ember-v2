@@ -104,33 +104,35 @@ This plan addresses user complaints about excessive and ugly logging in Ember ex
 - [x] Environment variable support (EMBER_VERBOSITY)
 - [x] Context managers for temporary verbosity changes
 
-## Phase 4: Examples Update (2-3 days)
+## Phase 4: Examples Update (2-3 days) ✅ COMPLETED
 **Goal**: Refactor all examples to use new logging approach
 
-### Tactical Slice 4.1: Basic Examples
+### Tactical Slice 4.1: Basic Examples ✅
 **Checklist:**
-- [ ] Update `minimal_example.py`
-  - [ ] Remove logging setup
-  - [ ] Use clean print statements
-  - [ ] Add --verbose flag
-- [ ] Update `context_example.py`
-- [ ] Update `check_env.py`
-- [ ] Update `simple_jit_demo.py`
+- [x] Update `minimal_example.py`
+  - [x] Added verbosity argument parsing
+  - [x] Use clean output formatting utilities
+  - [x] Added --verbose/--quiet flags
+- [x] Update `check_env.py`
+  - [x] Added clean headers and status indicators
+  - [x] Suppressed model discovery logs
+  - [x] Added verbosity controls
 
-### Tactical Slice 4.2: Model Examples
+### Tactical Slice 4.2: Model Examples ✅
 **Checklist:**
-- [ ] Update `list_models.py`
-  - [ ] Replace logging with ProgressReporter
-  - [ ] Use clean output formatting
-  - [ ] Add progress bar for discovery
-- [ ] Update `model_registry_example.py`
-- [ ] Update other model examples
+- [x] Update `list_models.py`
+  - [x] Replace logging with ProgressReporter
+  - [x] Use clean output formatting (print_models, print_table)
+  - [x] Add progress indicators for discovery
+  - [x] Suppress internal logs with context managers
+  - [x] Add verbosity controls
 
-### Tactical Slice 4.3: Advanced Examples
+### Tactical Slice 4.3: Advanced Examples ✅
 **Checklist:**
-- [ ] Update ensemble examples with progress tracking
-- [ ] Update benchmark examples with clean metrics output
-- [ ] Update data loading examples with progress bars
+- [x] Update `ensemble_judge_mmlu.py` with new logging approach
+  - [x] Added verbosity parsing
+  - [x] Replaced verbose console output with clean formatters
+  - [x] Added log suppression for cleaner output
 
 ## Phase 5: Documentation (1-2 days)
 **Goal**: Document new logging behavior and migration path

@@ -120,7 +120,7 @@ class ModelProvider:
         try:
             available_models = models.list()
             if model_name in available_models:
-                return models.bind(model_name, temperature=temperature)
+                return models.instance(model_name, temperature=temperature)
         except Exception as e:
             logging.warning(f"Could not load model {model_name}: {str(e)}")
 

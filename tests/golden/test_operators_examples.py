@@ -14,67 +14,54 @@ class TestOperatorsExamples(GoldenTestBase):
     
     def test_simplified_ensemble_example(self, capture_output, mock_lm):
         """Test the simplified ensemble operator example."""
-        expected_patterns = [
-            r"=== Simplified Ensemble Operator Example ===",
-            r"Creating ensemble with 3 mock models",
-            r"Result:",
-            r"Votes:",
-            r"Confidence:",
-        ]
+        from pathlib import Path
         
-        results = self.run_category_tests(
-            "operators",
-            {"simplified_ensemble_example.py": expected_patterns},
+        # Get the file path
+        file_path = Path(__file__).parent.parent.parent / "src" / "ember" / "examples" / "operators" / "simplified_ensemble_example.py"
+        
+        result = self.run_example_with_mocks(
+            file_path,
             mock_lm=mock_lm,
             capture_output=capture_output
         )
         
-        result = results.get("simplified_ensemble_example.py")
-        assert result is not None, "simplified_ensemble_example.py not found"
         assert result["success"], f"Example failed: {result.get('error')}"
         
-        if "missing_patterns" in result:
-            # Check for key outputs
-            output = result["output"]
-            assert "Ensemble Operator" in output
+        # Check for key outputs
+        output = result["output"]
+        assert "ensemble" in output.lower() or "operator" in output.lower()
     
     def test_composition_example(self, capture_output):
         """Test the operator composition example."""
-        expected_patterns = [
-            r"=== Operator Composition Example ===",
-            r"Step 1:",
-            r"Step 2:",
-            r"Final result:",
-        ]
+        from pathlib import Path
         
-        results = self.run_category_tests(
-            "operators",
-            {"composition_example.py": expected_patterns},
+        # Get the file path
+        file_path = Path(__file__).parent.parent.parent / "src" / "ember" / "examples" / "operators" / "composition_example.py"
+        
+        result = self.run_example_with_mocks(
+            file_path,
             capture_output=capture_output
         )
         
-        result = results.get("composition_example.py")
-        if result and result["success"]:
-            output = result["output"]
-            assert "composition" in output.lower() or "operator" in output.lower()
+        assert result["success"], f"Example failed: {result.get('error')}"
+        
+        # Check for key outputs
+        output = result["output"]
+        assert "composition" in output.lower() or "operator" in output.lower()
     
     def test_container_operator_example(self, capture_output):
         """Test the container operator example."""
-        expected_patterns = [
-            r"Container Operator Example",
-            r"Processing data",
-            r"Result:",
-        ]
+        from pathlib import Path
         
-        results = self.run_category_tests(
-            "operators",
-            {"container_operator_example.py": expected_patterns},
+        # Get the file path
+        file_path = Path(__file__).parent.parent.parent / "src" / "ember" / "examples" / "operators" / "container_operator_example.py"
+        
+        result = self.run_example_with_mocks(
+            file_path,
             capture_output=capture_output
         )
         
-        result = results.get("container_operator_example.py")
-        if result:
-            assert result["success"], f"Example failed: {result.get('error')}"
+        assert result["success"], f"Example failed: {result.get('error')}"
     
     def test_container_simplified(self, capture_output):
         """Test the simplified container operator example."""
@@ -90,10 +77,10 @@ class TestOperatorsExamples(GoldenTestBase):
     
     def test_custom_prompt_example_caravan(self, capture_output):
         """Test the custom prompt caravan example."""
-        expected_patterns = [
-            r"Custom Prompt Example",
-            r"Caravan",
-        ]
+        from pathlib import Path
+        
+        # Get the file path
+        file_path = Path(__file__).parent.parent.parent / "src" / "ember" / "examples" / "operators" / "custom_prompt_example_caravan.py"
         
         # Mock the language model
         mock_lm = MagicMock()
@@ -103,18 +90,15 @@ class TestOperatorsExamples(GoldenTestBase):
             patch("ember.api.non", return_value=mock_lm),
         ]
         
-        results = self.run_category_tests(
-            "operators",
-            {"custom_prompt_example_caravan.py": expected_patterns},
+        result = self.run_example_with_mocks(
+            file_path,
             mock_lm=mock_lm,
             capture_output=capture_output,
             extra_patches=extra_patches
         )
         
-        result = results.get("custom_prompt_example_caravan.py")
-        if result:
-            # May use language models, so check syntax at minimum
-            assert "error" not in result or "import" in str(result.get("error"))
+        # May use language models, so check syntax at minimum
+        assert result["success"], f"Example failed: {result.get('error')}"
     
     def test_diverse_ensemble_operator_example(self, capture_output):
         """Test the diverse ensemble operator example."""

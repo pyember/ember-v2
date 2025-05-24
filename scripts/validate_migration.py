@@ -159,7 +159,7 @@ def validate_functionality(operator_class: str, module_path: str) -> Tuple[bool,
 
 def run_tests(test_pattern: str = None) -> Tuple[int, int]:
     """Run test suite and return pass/fail counts."""
-    cmd = ["python", "-m", "pytest", "-xvs"]
+    cmd = ["python3", "-m", "pytest", "-xvs"]
     if test_pattern:
         cmd.append(test_pattern)
     
@@ -208,7 +208,7 @@ def benchmark_performance() -> Dict[str, float]:
     if "import_time" in metrics and metrics["import_time"] > 0:
         start = time.time()
         for _ in range(100):
-            model = models.bind("gpt-3.5-turbo", temperature=0.7)
+            model = models.models.bind("gpt-3.5-turbo", temperature=0.7)
         metrics["binding_creation_per_100"] = time.time() - start
     
     # Benchmark 3: Memory usage (simplified)
