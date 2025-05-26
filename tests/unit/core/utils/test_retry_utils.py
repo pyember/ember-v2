@@ -13,8 +13,7 @@ import pytest
 from ember.core.utils.retry_utils import (
     ExponentialBackoffStrategy,
     IRetryStrategy,
-    run_with_backoff,
-)
+    run_with_backoff)
 
 
 class TestIRetryStrategy:
@@ -230,9 +229,7 @@ class TestIntegration:
         (0.01, 0.1, 2),
         (0.01, 0.1, 5),
         (0.1, 1, 3),
-        (0.5, 2, 2),
-    ],
-)
+        (0.5, 2, 2)])
 def test_property_retry_count_never_exceeds_max_attempts(
     min_wait, max_wait, max_attempts
 ):

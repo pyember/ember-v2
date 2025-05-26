@@ -39,8 +39,7 @@ class CommonsenseQAPrepper(IDatasetPrepper):
             DatasetEntry(
                 query=question,
                 choices=choices,
-                metadata={"correct_answer": correct_answer},
-            )
+                metadata={"correct_answer": correct_answer})
         ]
 
     def _parse_choices(self, *, choices_data: Any) -> Dict[str, str]:

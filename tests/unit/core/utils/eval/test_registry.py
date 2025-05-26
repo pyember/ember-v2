@@ -116,20 +116,17 @@ class TestEvaluatorRegistry(unittest.TestCase):
             evaluator.evaluate.return_value = EvaluationResult(
                 is_correct=True,
                 score=1.0,
-                metadata=kwargs,
-            )
+                metadata=kwargs)
             return evaluator
 
         def create_parametrized_evaluator(
-            threshold: float = 0.5,
-        ) -> IEvaluator[float, float]:
+            threshold: float = 0.5) -> IEvaluator[float, float]:
             """Create an evaluator with a configurable threshold."""
             evaluator = mock.MagicMock(spec=IEvaluator)
             evaluator.threshold = threshold
             evaluator.evaluate.return_value = EvaluationResult(
                 is_correct=True,
-                score=threshold,
-            )
+                score=threshold)
             return evaluator
 
         self.registry.register("mock_evaluator", create_mock_evaluator)

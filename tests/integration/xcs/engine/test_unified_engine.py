@@ -9,7 +9,7 @@ from typing import Any, ClassVar, Dict
 
 from ember.core.registry.operator.base.operator_base import Operator, Specification
 from ember.xcs.engine.unified_engine import execute_graph
-from ember.xcs.graph.xcs_graph import XCSGraph
+from ember.xcs.graph import Graph
 
 
 class SimpleOperator(Operator[Dict[str, Any], Dict[str, Any]]):
@@ -30,7 +30,7 @@ class SimpleOperator(Operator[Dict[str, Any], Dict[str, Any]]):
 def test_execute_graph_core_functionality():
     """Test the core functionality of execute_graph."""
     # Create a simple graph
-    graph = XCSGraph()
+    graph = Graph()
 
     # Add operators as nodes
     op1 = SimpleOperator(value=5)
@@ -50,7 +50,7 @@ def test_execute_graph_core_functionality():
     graph.add_edge(node1, node2)
 
     # Execute the graph with empty inputs (our input_fn doesn't use them)
-    result = execute_graph(graph, inputs={})
+    result = graph.run(inputs={})
 
     # Verify the result - node IDs are strings in the result dict
     assert isinstance(result, dict), f"Expected dict result, got {type(result)}"

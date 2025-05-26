@@ -102,7 +102,7 @@ While they evolved chronologically, they are **complementary** rather than compe
 
 - **AutoGraphBuilder** is a core class used by `jit` to build graphs from trace records
 - **structural_jit** uses its own graph building approach via `_build_xcs_graph_from_structure`
-- Both ultimately generate XCSGraph objects executed by the same engine
+- Both ultimately generate Graph objects executed by the same engine
 - **execution_options** context manager works with all approaches to control execution parameters
 
 ## Technical Integration Details
@@ -124,7 +124,7 @@ Different approaches to dependency identification:
 
 ### Graph Execution
 
-Both systems build XCSGraph objects that can be executed with different schedulers:
+Both systems build Graph objects that can be executed with different schedulers:
 
 - **TopologicalScheduler** - Serial execution following dependencies
 - **TopologicalSchedulerWithParallelDispatch** - Parallel execution where possible

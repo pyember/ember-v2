@@ -11,5 +11,4 @@ from ember.core.exceptions import SpecificationValidationError
 # Re-export specification exceptions for backward compatibility
 __all__ = [
     "PromptSpecificationError",
-    "SpecificationValidationError",
-]
+    "SpecificationValidationError"]

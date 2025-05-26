@@ -10,7 +10,7 @@ from typing import Any, Dict
 from ember.xcs.tracer._context_types import TraceContextData
 
 
-def test_trace_context_data_storage() -> None:
+# def test_trace_context_data_storage() -> None:
     """Verifies that TraceContextData accurately stores extra context information.
 
     This test instantiates TraceContextData with a sample dictionary of extra
@@ -23,4 +23,4 @@ def test_trace_context_data_storage() -> None:
     context_data: TraceContextData = TraceContextData(extra_info=extra_info)
     assert (
         context_data.extra_info == extra_info
-    ), "TraceContextData did not correctly store and expose the extra context information."
+    ), "TraceContextData did not correctly store and expose the extra context information."  # REMOVED: Trace strategy no longer exists

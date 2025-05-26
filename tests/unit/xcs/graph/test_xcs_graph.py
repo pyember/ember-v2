@@ -1,6 +1,6 @@
-"""Unit tests for XCSGraph functionality.
+"""Unit tests for Graph functionality.
 
-This module tests the functionality of the XCSGraph class, verifying:
+This module tests the functionality of the Graph class, verifying:
     - Proper management of nodes and edges,
     - Accurate topological sorting,
     - Detection of cycles, and
@@ -11,8 +11,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from ember.xcs.engine.xcs_engine import TopologicalScheduler, execute_graph
-from ember.xcs.graph.xcs_graph import XCSGraph, merge_xcs_graphs
+from ember.xcs.graph import Graph, merge_xcs_graphs
 
 
 def dummy_operator(*, inputs: Dict[str, Any]) -> Dict[str, Any]:
@@ -28,13 +27,13 @@ def dummy_operator(*, inputs: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def test_add_node_and_edge() -> None:
-    """Verify that nodes and edges are correctly added to an XCSGraph.
+    """Verify that nodes and edges are correctly added to an Graph.
 
     This test creates a graph with two nodes connected by an edge, then asserts that:
       - Both nodes are present in the graph's registry.
       - The outbound edge from the first node and inbound edge to the second node are set correctly.
     """
-    graph: XCSGraph = XCSGraph()
+    graph: Graph = Graph()
     graph.add_node(operator=dummy_operator, node_id="node1")
     graph.add_node(operator=dummy_operator, node_id="node2")
     graph.add_edge(from_id="node1", to_id="node2")
@@ -54,7 +53,7 @@ def test_duplicate_node_id_error() -> None:
     Attempts to add a node with an identifier that already exists in the graph should raise a ValueError,
     enforcing the uniqueness of node IDs.
     """
-    graph: XCSGraph = XCSGraph()
+    graph: Graph = Graph()
     graph.add_node(operator=dummy_operator, node_id="dup")
     with pytest.raises(ValueError, match="Node with ID 'dup' already exists."):
         graph.add_node(operator=dummy_operator, node_id="dup")
@@ -69,7 +68,7 @@ def test_topological_sort_linear() -> None:
     Raises:
         AssertionError: If the sorted order does not match the expected sequence.
     """
-    graph: XCSGraph = XCSGraph()
+    graph: Graph = Graph()
     graph.add_node(operator=dummy_operator, node_id="A")
     graph.add_node(operator=dummy_operator, node_id="B")
     graph.add_node(operator=dummy_operator, node_id="C")
@@ -79,8 +78,7 @@ def test_topological_sort_linear() -> None:
     assert order == [
         "A",
         "B",
-        "C",
-    ], "Topological sort should yield ['A', 'B', 'C'] for a linear graph."
+        "C"], "Topological sort should yield ['A', 'B', 'C'] for a linear graph."
 
 
 def test_topological_sort_diamond() -> None:
@@ -97,7 +95,7 @@ def test_topological_sort_diamond() -> None:
     Raises:
         AssertionError: If the sorted order does not comply with the diamond topology constraints.
     """
-    graph: XCSGraph = XCSGraph()
+    graph: Graph = Graph()
     graph.add_node(operator=dummy_operator, node_id="A")
     graph.add_node(operator=dummy_operator, node_id="B")
     graph.add_node(operator=dummy_operator, node_id="C")
@@ -121,7 +119,7 @@ def test_cycle_detection() -> None:
     Raises:
         ValueError: If the graph contains a cycle.
     """
-    graph: XCSGraph = XCSGraph()
+    graph: Graph = Graph()
     graph.add_node(operator=dummy_operator, node_id="1")
     graph.add_node(operator=dummy_operator, node_id="2")
     graph.add_edge(from_id="1", to_id="2")
@@ -136,11 +134,11 @@ def test_merge_xcs_graphs_namespace() -> None:
     Verifies that merging a base graph with an additional graph results in node IDs
     from the additional graph being correctly prefixed with the given namespace to avoid conflicts.
     """
-    base_graph: XCSGraph = XCSGraph()
-    additional_graph: XCSGraph = XCSGraph()
+    base_graph: Graph = Graph()
+    additional_graph: Graph = Graph()
     base_graph.add_node(operator=dummy_operator, node_id="base1")
     additional_graph.add_node(operator=dummy_operator, node_id="add1")
-    merged_graph: XCSGraph = merge_xcs_graphs(
+    merged_graph: Graph = merge_xcs_graphs(
         base=base_graph, additional=additional_graph, namespace="Test"
     )
     assert (
@@ -160,11 +158,11 @@ def test_merge_with_duplicates() -> None:
     Raises:
         AssertionError: If the merged graph does not include the correctly renamed node.
     """
-    base_graph: XCSGraph = XCSGraph()
-    additional_graph: XCSGraph = XCSGraph()
+    base_graph: Graph = Graph()
+    additional_graph: Graph = Graph()
     base_graph.add_node(operator=dummy_operator, node_id="shared")
     additional_graph.add_node(operator=dummy_operator, node_id="shared")
-    merged_graph: XCSGraph = merge_xcs_graphs(
+    merged_graph: Graph = merge_xcs_graphs(
         base=base_graph, additional=additional_graph, namespace="Ns"
     )
     assert (
@@ -182,7 +180,7 @@ def test_field_level_mapping() -> None:
     one node to specific inputs of another node.
     """
     # Create graph with three nodes
-    graph: XCSGraph = XCSGraph()
+    graph: Graph = Graph()
 
     # Define custom operators that will verify correct field mapping
     def producer_op(*, inputs: Dict[str, Any]) -> Dict[str, Any]:
@@ -256,7 +254,7 @@ def test_execute_graph_with_field_mapping() -> None:
     not just in preparation functions.
     """
     # Create graph with three nodes
-    graph: XCSGraph = XCSGraph()
+    graph: Graph = Graph()
 
     # Define custom operators with clear, trace-able behavior
     def split_op(*, inputs: Dict[str, Any]) -> Dict[str, Any]:

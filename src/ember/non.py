@@ -45,25 +45,19 @@ For more advanced usage, see the documentation.
 try:
     # Import type-related items first to avoid circular imports
     from ember.core.registry.operator.core.ensemble import (
-        EnsembleOperatorInputs as EnsembleInputs,
-    )
+        EnsembleOperatorInputs as EnsembleInputs)
     from ember.core.registry.operator.core.ensemble import EnsembleOperatorOutputs
     from ember.core.registry.operator.core.most_common import (
-        MostCommonAnswerSelectorOperatorInputs as MostCommonInputs,
-    )
+        MostCommonAnswerSelectorOperatorInputs as MostCommonInputs)
     from ember.core.registry.operator.core.most_common import (
-        MostCommonAnswerSelectorOutputs,
-    )
+        MostCommonAnswerSelectorOutputs)
     from ember.core.registry.operator.core.synthesis_judge import (
         JudgeSynthesisInputs,
-        JudgeSynthesisOutputs,
-    )
+        JudgeSynthesisOutputs)
     from ember.core.registry.operator.core.verifier import (
-        VerifierOperatorInputs as VerifierInputs,
-    )
+        VerifierOperatorInputs as VerifierInputs)
     from ember.core.registry.operator.core.verifier import (
-        VerifierOperatorOutputs as VerifierOutputs,
-    )
+        VerifierOperatorOutputs as VerifierOutputs)
 except ImportError:
     # For tests, define stub classes in case imports fail
     from typing import List
@@ -128,8 +122,7 @@ try:
         VariedEnsemble,
         VariedEnsembleInputs,
         VariedEnsembleOutputs,
-        Verifier,
-    )
+        Verifier)
 except ImportError:
     # Stub implementations for tests
     from typing import List
@@ -226,5 +219,4 @@ __all__ = [
     "VerifierInputs",
     "VerifierOutputs",
     "VariedEnsembleInputs",
-    "VariedEnsembleOutputs",
-]
+    "VariedEnsembleOutputs"]

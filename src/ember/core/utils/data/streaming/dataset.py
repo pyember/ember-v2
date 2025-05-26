@@ -54,8 +54,7 @@ class StreamingDataset:
         batch_size: int = 32,
         prepper: Optional[Any] = None,
         _limit: Optional[int] = None,
-        _data_context: Optional[DataContext] = None,
-    ):
+        _data_context: Optional[DataContext] = None):
         """Initialize with dataset source.
 
         Args:
@@ -222,8 +221,7 @@ class StreamingDataset:
             if not dataset_entry or not dataset_entry.info:
                 # Initialize registry
                 from ember.core.utils.data.initialization import (
-                    initialize_dataset_registry,
-                )
+                    initialize_dataset_registry)
 
                 initialize_dataset_registry(metadata_registry=registry)
 
@@ -279,8 +277,7 @@ class StreamingDataset:
         # Create loader with appropriate configuration
         return HuggingFaceDatasetLoader(
             cache_dir=config.cache_dir,
-            use_auth_token=getattr(config, "huggingface_token", None),
-        )
+            use_auth_token=getattr(config, "huggingface_token", None))
 
     def _create_entry(self, item: Dict[str, Any]) -> DatasetEntry:
         """Create dataset entry from item with flexible field mapping.
@@ -314,8 +311,7 @@ class StreamingDataset:
         entry = DatasetEntry(
             query=query,
             choices=choices or {},
-            metadata={"id": item_id, **item.get("metadata", {})},
-        )
+            metadata={"id": item_id, **item.get("metadata", {})})
 
         # Add additional fields from item
         for key, value in item.items():
@@ -343,8 +339,7 @@ class StreamingDataset:
             batch_size=self._batch_size,
             prepper=self._prepper,
             _limit=count,
-            _data_context=self._data_context,
-        )
+            _data_context=self._data_context)
 
     def filter(self, predicate: Callable[[Dict[str, Any]], bool]) -> "StreamingDataset":
         """Filter items based on predicate.
@@ -380,8 +375,7 @@ class StreamingDataset:
             batch_size=self._batch_size,
             prepper=self._prepper,
             _limit=self._limit,
-            _data_context=self._data_context,
-        )
+            _data_context=self._data_context)
 
     def transform(
         self, transform_fn: Callable[[Dict[str, Any]], Dict[str, Any]]
@@ -419,8 +413,7 @@ class StreamingDataset:
             batch_size=self._batch_size,
             prepper=self._prepper,
             _limit=self._limit,
-            _data_context=self._data_context,
-        )
+            _data_context=self._data_context)
 
     def collect(self) -> List[DatasetEntry]:
         """Collect all dataset entries into a list.
@@ -461,5 +454,4 @@ class StreamingDataset:
             source=iter(MappedIterator()),
             batch_size=self._batch_size,
             _limit=self._limit,
-            _data_context=self._data_context,
-        )
+            _data_context=self._data_context)

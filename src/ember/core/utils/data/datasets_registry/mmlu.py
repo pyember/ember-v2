@@ -95,6 +95,5 @@ class MMLUPrepper(IDatasetPrepper):
                 "correct_answer": correct_answer,
                 "subject": subject,
                 "config_name": self.config_name,
-            },
-        )
+            })
         return [entry]

@@ -69,8 +69,7 @@ class SummarizerOperator(Operator[SummarizeInput, SummarizeOutput]):
         
 Summary:""",
         input_model=SummarizeInput,
-        structured_output=SummarizeOutput,
-    )
+        structured_output=SummarizeOutput)
 
     # Define static operator fields
     model: Any = static_field()
@@ -104,8 +103,7 @@ Summary:""",
                 "calls": 0,
                 "total_tokens": 0,
                 "created_at": "2025-03-11",
-            },
-        )
+            })
 
     def forward(self, *, inputs: SummarizeInput) -> SummarizeOutput:
         """Summarize the text using the language model.
@@ -160,8 +158,7 @@ class TranslatorOperator(Operator[TranslateInput, TranslateOutput]):
         
 Translation:""",
         input_model=TranslateInput,
-        structured_output=TranslateOutput,
-    )
+        structured_output=TranslateOutput)
 
     # Define static fields for resources and configuration
     model: Any = static_field()  # Resource field
@@ -207,8 +204,7 @@ class SequentialPipeline:
     def __init__(
         self,
         operators: List[Operator],
-        input_mappings: Optional[List[Dict[str, Callable]]] = None,
-    ):
+        input_mappings: Optional[List[Dict[str, Callable]]] = None):
         """
         Initialize with a list of operators and optional input mappings.
 
@@ -289,8 +285,7 @@ class TestRealIntegration:
         models = [
             MockModel(model_id="openai:gpt-3.5-turbo", temperature=0.7),
             MockModel(model_id="anthropic:claude-3-haiku", temperature=0.5),
-            MockModel(model_id="anthropic:claude-3-sonnet", temperature=0.3),
-        ]
+            MockModel(model_id="anthropic:claude-3-sonnet", temperature=0.3)]
 
         for i, model in enumerate(models):
             response = model(f"Test prompt {i}")
@@ -304,8 +299,7 @@ class TestRealIntegration:
         messages = [
             "Hello, how are you?",
             "Can you help me with Python?",
-            "How do I sort a list in reverse order?",
-        ]
+            "How do I sort a list in reverse order?"]
 
         responses = []
         for message in messages:
@@ -343,8 +337,7 @@ class TestRealIntegration:
 
         input_data = TranslateInput(
             text="Hello, world! This is a test of the translation system.",
-            target_language="Spanish",
-        )
+            target_language="Spanish")
 
         result = translator(inputs=input_data)
 
@@ -413,8 +406,7 @@ class TestRealIntegration:
                     "text": lambda result: result.summary,
                     "target_language": lambda _: "Spanish",
                 }
-            ],
-        )
+            ])
 
         # Create the second pipeline - just summarize differently
         pipeline2 = SequentialPipeline(operators=[summarizer2])

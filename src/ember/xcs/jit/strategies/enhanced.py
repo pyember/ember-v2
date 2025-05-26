@@ -24,6 +24,15 @@ class EnhancedStrategy(BaseStrategy, JITFallbackMixin):
     Compiles operators using sophisticated analysis that identifies parallelization
     opportunities even within sequential execution patterns. This strategy is
     optimized for complex operators like ensembles.
+    
+    Scoring heuristic rationale:
+    - 40 points: Multiple loops (>1) - prime candidate for parallelization
+    - 30 points: Ensemble naming pattern - designed for parallel execution
+    - 20 points: Single loop - potential for optimization
+    - 20 points: Iteration capability - supports parallel processing
+    - 10 points: Base score - good general fallback
+    
+    Total max score: 100 points (typical range: 10-100)
     """
 
     def __init__(self) -> None:
@@ -37,26 +46,31 @@ class EnhancedStrategy(BaseStrategy, JITFallbackMixin):
             func: Function to analyze
 
         Returns:
-            Dictionary with analysis results
+            Dictionary with analysis results including score breakdown
         """
         import inspect
 
         features = self._extract_common_features(func)
         score = 0
         rationale = []
+        score_breakdown = {}
 
         # Check for ensemble patterns
+        # 30 points: Ensemble operators benefit most from parallelization
         ensemble_indicators = ["ensemble", "aggregate", "combine", "accumulate"]
         if features["is_class"]:
             # Check for common ensemble operator naming patterns
             class_name = func.__name__.lower()
             if any(indicator in class_name for indicator in ensemble_indicators):
                 score += 30
+                score_breakdown["ensemble_pattern"] = 30
                 rationale.append("Name suggests ensemble pattern")
 
             # Check for iteration methods/patterns
+            # 20 points: Iteration capability enables parallel processing
             if hasattr(func, "items") or hasattr(func, "__iter__"):
                 score += 20
+                score_breakdown["iteration_capability"] = 20
                 rationale.append("Has iteration capability")
 
         # Check for code patterns indicating nested loops
@@ -64,46 +78,55 @@ class EnhancedStrategy(BaseStrategy, JITFallbackMixin):
             try:
                 source = inspect.getsource(func)
                 loop_count = source.count("for ") + source.count("while ")
+                # 40 points: Multiple loops are prime candidates for parallelization
                 if loop_count > 1:
                     score += 40
+                    score_breakdown["multiple_loops"] = 40
                     rationale.append(f"Contains multiple loops ({loop_count})")
+                # 20 points: Single loops can still benefit from optimization
                 elif loop_count > 0:
                     score += 20
+                    score_breakdown["single_loop"] = 20
                     rationale.append("Contains loops")
             except Exception:
                 pass
 
         # Enhanced JIT is a good general-purpose fallback
+        # 10 points: Baseline score for any complex function
         score += 10
+        score_breakdown["base_score"] = 10
         rationale.append("Good general-purpose option")
+
+        # Log score breakdown for debugging
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug(
+                f"Enhanced strategy analysis for {func.__name__}: "
+                f"score={score}, breakdown={score_breakdown}"
+            )
 
         return {
             "score": score,
             "rationale": "; ".join(rationale),
             "features": features,
+            "score_breakdown": score_breakdown,
         }
 
     def compile(
         self,
         func: Callable[..., Any],
-        sample_input: Optional[Dict[str, Any]] = None,
         force_trace: bool = False,
         recursive: bool = True,
         cache: Optional[JITCache] = None,
-        preserve_stochasticity: bool = False,
-        **options: Any,
-    ) -> Callable[..., Any]:
+        preserve_stochasticity: bool = False) -> Callable[..., Any]:
         """Compile a function using enhanced JIT.
 
         Args:
             func: Function to compile
-            sample_input: Optional sample input for eager compilation
             force_trace: Whether to force tracing on every call
             recursive: Whether to JIT compile nested calls
             cache: JIT cache to use
             preserve_stochasticity: When True, always executes the original function
                 to maintain stochastic behavior (important for LLMs)
-            **options: Additional options
 
         Returns:
             Compiled function

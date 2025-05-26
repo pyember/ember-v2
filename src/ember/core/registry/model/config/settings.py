@@ -133,14 +133,12 @@ def _register_provider_models(
                 cost_output = getattr(model_config, "cost_output", 0.0)
                 cost = ModelCost(
                     input_cost_per_thousand=cost_input,
-                    output_cost_per_thousand=cost_output,
-                )
+                    output_cost_per_thousand=cost_output)
 
             # Create rate limit config
             rate_limit = RateLimit(
                 tokens_per_minute=getattr(model_config, "tokens_per_minute", 0),
-                requests_per_minute=getattr(model_config, "requests_per_minute", 0),
-            )
+                requests_per_minute=getattr(model_config, "requests_per_minute", 0))
 
             # Get model name from different schemas
             if hasattr(model_config, "model_name"):
@@ -154,8 +152,7 @@ def _register_provider_models(
             provider_info = ProviderInfo(
                 name=provider_name.capitalize(),
                 default_api_key=api_key,
-                base_url=base_url,
-            )
+                base_url=base_url)
 
             # Try to add custom provider arguments if model_dump exists
             if hasattr(provider, "model_dump") and callable(provider.model_dump):
@@ -176,8 +173,7 @@ def _register_provider_models(
                 cost=cost,
                 rate_limit=rate_limit,
                 provider=provider_info,
-                api_key=api_key,
-            )
+                api_key=api_key)
 
             # Register model if not already registered
             if not registry.is_registered(model_id):
@@ -229,8 +225,7 @@ def initialize_ember(
     config_path: Optional[str] = None,
     auto_discover: Optional[bool] = None,
     auto_register: Optional[bool] = None,
-    force_discovery: bool = False,
-) -> ModelRegistry:
+    force_discovery: bool = False) -> ModelRegistry:
     """Initialize Ember's model registry using the configuration system.
 
     DEPRECATED: This function is maintained for backward compatibility.
@@ -252,8 +247,7 @@ def initialize_ember(
         "initialize_ember() is deprecated. Use initialize_registry() from "
         "ember.core.registry.model.initialization instead.",
         DeprecationWarning,
-        stacklevel=2,
-    )
+        stacklevel=2)
 
     try:
         # Use the centralized configuration system
@@ -261,8 +255,7 @@ def initialize_ember(
         return initialize_registry(
             config_manager=config_manager,
             auto_discover=auto_discover,
-            force_discovery=force_discovery,
-        )
+            force_discovery=force_discovery)
     except Exception as e:
         logger.error(f"Error during initialization: {e}")
         raise EmberError(f"Failed to initialize Ember: {e}") from e
@@ -319,8 +312,7 @@ def initialize_ember(
                                     cost=cost,
                                     rate_limit=RateLimit(
                                         tokens_per_minute=model.get("rate_limit", {}).get("tokens_per_minute", 0),
-                                        requests_per_minute=model.get("rate_limit", {}).get("requests_per_minute", 0),
-                                    ),
+                                        requests_per_minute=model.get("rate_limit", {}).get("requests_per_minute", 0)),
                                     provider=provider_info,
                                     api_key=model.get("api_key", provider_dict.get("default_api_key", ""))
                                 )

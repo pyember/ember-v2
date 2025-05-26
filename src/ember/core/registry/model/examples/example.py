@@ -42,8 +42,7 @@ def main() -> None:
             "openai:gpt-4o-mini",
             "anthropic:claude-3-5-sonnet",
             "invalid:model",  # Expected to trigger an error
-            "deepmind:gemini-1.5-pro",
-        ]
+            "deepmind:gemini-1.5-pro"]
 
         for model_identifier in test_models:
             try:
@@ -54,8 +53,7 @@ def main() -> None:
                 service_response: ChatResponse = service.invoke_model(
                     model_id=model_identifier,
                     prompt="Explain quantum computing in 50 words",
-                    timeout=DEFAULT_TIMEOUT,
-                )
+                    timeout=DEFAULT_TIMEOUT)
                 print(
                     f"🛎️ Service response from {model_id}:\n{service_response.data}\n"
                 )
@@ -64,8 +62,7 @@ def main() -> None:
                 model = service.get_model(model_identifier)
                 direct_response: ChatResponse = model(
                     prompt="What's the capital of France?",
-                    timeout=DEFAULT_TIMEOUT,
-                )
+                    timeout=DEFAULT_TIMEOUT)
                 print(f"🎯 Direct response from {model_id}:\n{direct_response.data}\n")
 
             except Exception as error:

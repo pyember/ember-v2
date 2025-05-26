@@ -73,7 +73,7 @@ def test_explain_jit_selection():
         assert "rationale" in strategy_analysis
 
     # Check that trace gets a higher score for simple functions than enhanced
-    assert analysis["trace"]["score"] >= analysis["enhanced"]["score"]
+    assert analysis["structural"]["score"] >= analysis["enhanced"]["score"]
 
 
 def test_jit_decorator_with_auto_mode():
@@ -102,7 +102,7 @@ def test_jit_with_forced_strategy():
     """Test JIT with explicitly forced strategy."""
 
     # Force trace strategy
-    @jit(mode=JITMode.TRACE)
+    @jit(mode = JITMode.STRUCTURAL)
     def trace_function(*, inputs):
         return {"result": inputs["value"] * 2}
 

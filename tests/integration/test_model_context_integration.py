@@ -13,8 +13,7 @@ from ember.api.models import (
     ModelBuilder,
     create_context,
     get_default_context,
-    model,
-)
+    model)
 from ember.core.registry.model.base.context import ModelConfig, ModelContext
 
 

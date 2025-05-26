@@ -30,8 +30,7 @@ class ConfigComponent(Component):
         self,
         registry: Optional[Registry] = None,
         config_path: Optional[str] = None,
-        config_data: Optional[Dict[str, Any]] = None,
-    ):
+        config_data: Optional[Dict[str, Any]] = None):
         """Initialize with registry and optional config source.
 
         Args:

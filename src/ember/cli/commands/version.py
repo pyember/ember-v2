@@ -44,8 +44,7 @@ def execute(args: argparse.Namespace) -> int:
                 {"Component": "Ember", "Version": ember_version},
                 {"Component": "Python", "Version": platform.python_version()},
                 {"Component": "Platform", "Version": platform.platform()},
-                {"Component": "Architecture", "Version": f"{platform.machine()} ({platform.processor()})"},
-            ]
+                {"Component": "Architecture", "Version": f"{platform.machine()} ({platform.processor()})"}]
             
             # Try to get dependency versions
             try:

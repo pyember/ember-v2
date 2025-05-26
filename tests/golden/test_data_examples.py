@@ -36,8 +36,7 @@ class TestDataExamples(GoldenTestBase):
                 query="What is a cell?",
                 metadata={"correct_answer": "Basic unit of life", "subject": "biology"},
                 choices={"A": "Basic unit of life", "B": "A type of battery", "C": "A prison room", "D": "None of the above"}
-            ),
-        ]
+            )]
 
         # Mock the DatasetBuilder.build method
         mock_dataset = MagicMock()
@@ -58,8 +57,7 @@ class TestDataExamples(GoldenTestBase):
         mock_data.builder.return_value = mock_builder
         
         extra_patches = [
-            patch("ember.examples.data.data_api_example.data", mock_data),
-        ]
+            patch("ember.examples.data.data_api_example.data", mock_data)]
 
         result = self.run_example_with_mocks(
             file_path,
@@ -86,8 +84,7 @@ class TestDataExamples(GoldenTestBase):
         mock_registry.list_datasets.return_value = ["custom_dataset"]
         
         extra_patches = [
-            patch("ember.core.utils.data.registry.DATASET_REGISTRY", mock_registry),
-        ]
+            patch("ember.core.utils.data.registry.DATASET_REGISTRY", mock_registry)]
         
         result = self.run_example_with_mocks(
             file_path,
@@ -120,13 +117,11 @@ class TestDataExamples(GoldenTestBase):
         mock_streaming.limit.return_value = mock_streaming
         mock_streaming.__iter__.return_value = iter([
             {"question": "Q1", "answer": "A1"},
-            {"question": "Q2", "answer": "A2"},
-        ])
+            {"question": "Q2", "answer": "A2"}])
         mock_context.get_streaming_dataset.return_value = mock_streaming
         
         extra_patches = [
-            patch("ember.core.utils.data.context.data_context.DataContext.create_from_ember_context", return_value=mock_context),
-        ]
+            patch("ember.core.utils.data.context.data_context.DataContext.create_from_ember_context", return_value=mock_context)]
         
         result = self.run_example_with_mocks(
             file_path,
@@ -189,8 +184,7 @@ class TestDataExamples(GoldenTestBase):
                 
         mock_data_api.return_value = iter([
             MockDataItem("What is 2+2?", "4"),
-            MockDataItem("What is the capital of France?", "Paris"),
-        ])
+            MockDataItem("What is the capital of France?", "Paris")])
         
         # This example uses argparse, so we need to mock sys.argv
         import sys
@@ -201,8 +195,7 @@ class TestDataExamples(GoldenTestBase):
             sys.argv = ["explore_datasets.py"]  # No extra args needed
             
             extra_patches = [
-                patch("ember.api.data", mock_data_api),
-            ]
+                patch("ember.api.data", mock_data_api)]
             
             result = self.run_example_with_mocks(
                 file_path,

@@ -38,8 +38,7 @@ class DatasetRegistry:
         name: str,
         dataset_cls: Optional[Type[Any]] = None,
         info: Optional[DatasetInfo] = None,
-        prepper: Optional[IDatasetPrepper] = None,
-    ) -> None:
+        prepper: Optional[IDatasetPrepper] = None) -> None:
         """Register a dataset.
 
         Args:
@@ -51,14 +50,12 @@ class DatasetRegistry:
         if name in self._registry:
             logger.warning(
                 "Dataset %s is already registered; overwriting.",
-                name,
-            )
+                name)
         self._registry[name] = RegisteredDataset(
             name=name,
             dataset_cls=dataset_cls,
             info=info,
-            prepper=prepper,
-        )
+            prepper=prepper)
         logger.debug("Registered dataset: %s", name)
 
     def register_metadata(
@@ -68,8 +65,7 @@ class DatasetRegistry:
         description: str,
         source: str,
         task_type: TaskType,
-        prepper_class: Type[IDatasetPrepper],
-    ) -> None:
+        prepper_class: Type[IDatasetPrepper]) -> None:
         """Register dataset metadata with an associated prepper.
 
         Args:
@@ -156,8 +152,7 @@ class DatasetRegistry:
         name: str,
         source: str,
         task_type: TaskType,
-        description: str = "Custom dataset",
-    ) -> Callable[[Type[Any]], Type[Any]]:
+        description: str = "Custom dataset") -> Callable[[Type[Any]], Type[Any]]:
         """Decorator for registering a dataset class.
 
         Args:
@@ -184,8 +179,7 @@ class DatasetRegistry:
                     name=name,
                     source=source,
                     task_type=task_type,
-                    description=description,
-                )
+                    description=description)
             self.register(name=name, dataset_cls=cls, info=cls.info)
             return cls
 
@@ -233,8 +227,7 @@ def initialize_registry() -> None:
         halueval,
         mmlu,
         short_answer,
-        truthful_qa,
-    )
+        truthful_qa)
 
     # Register preppers from the core registry
     DATASET_REGISTRY.register_metadata(
@@ -242,40 +235,35 @@ def initialize_registry() -> None:
         description="TruthfulQA dataset",
         source="truthful_qa",
         task_type=TaskType.MULTIPLE_CHOICE,
-        prepper_class=truthful_qa.TruthfulQAPrepper,
-    )
+        prepper_class=truthful_qa.TruthfulQAPrepper)
 
     DATASET_REGISTRY.register_metadata(
         name="mmlu",
         description="Massive Multitask Language Understanding dataset",
         source="cais/mmlu",
         task_type=TaskType.MULTIPLE_CHOICE,
-        prepper_class=mmlu.MMLUPrepper,
-    )
+        prepper_class=mmlu.MMLUPrepper)
 
     DATASET_REGISTRY.register_metadata(
         name="commonsense_qa",
         description="CommonsenseQA dataset",
         source="commonsense_qa",
         task_type=TaskType.MULTIPLE_CHOICE,
-        prepper_class=commonsense_qa.CommonsenseQAPrepper,
-    )
+        prepper_class=commonsense_qa.CommonsenseQAPrepper)
 
     DATASET_REGISTRY.register_metadata(
         name="halueval",
         description="HaluEval dataset",
         source="pminervini/HaluEval",
         task_type=TaskType.MULTIPLE_CHOICE,
-        prepper_class=halueval.HaluEvalPrepper,
-    )
+        prepper_class=halueval.HaluEvalPrepper)
 
     DATASET_REGISTRY.register_metadata(
         name="my_shortanswer_ds",
         description="Short Answer dataset",
         source="short_answer",
         task_type=TaskType.SHORT_ANSWER,
-        prepper_class=short_answer.ShortAnswerPrepper,
-    )
+        prepper_class=short_answer.ShortAnswerPrepper)
 
     # Register new datasets
     DATASET_REGISTRY.register_metadata(
@@ -283,24 +271,21 @@ def initialize_registry() -> None:
         description="American Invitational Mathematics Examination",
         source="Maxwell-Jia/AIME_2024",
         task_type=TaskType.SHORT_ANSWER,
-        prepper_class=aime.AIMEPrepper,
-    )
+        prepper_class=aime.AIMEPrepper)
 
     DATASET_REGISTRY.register_metadata(
         name="gpqa",
         description="Graduate-level PhD science questions (Diamond subset)",
         source="Idavidrein/gpqa",
         task_type=TaskType.MULTIPLE_CHOICE,
-        prepper_class=gpqa.GPQAPrepper,
-    )
+        prepper_class=gpqa.GPQAPrepper)
 
     DATASET_REGISTRY.register_metadata(
         name="codeforces",
         description="Competitive programming problems",
         source="open-r1/codeforces",
         task_type=TaskType.CODE_COMPLETION,
-        prepper_class=codeforces.CodeForcesPrepper,
-    )
+        prepper_class=codeforces.CodeForcesPrepper)
 
     # Discover datasets in the ember.data.datasets package
     DATASET_REGISTRY.discover_datasets()

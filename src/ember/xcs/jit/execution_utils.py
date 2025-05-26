@@ -9,7 +9,7 @@ import logging
 import time
 from typing import Any, Callable, Dict, Optional
 
-from ember.xcs.engine.unified_engine import ExecutionOptions, execute_graph
+from ember.xcs.graph import Graph
 from ember.xcs.jit.cache import JITCache
 
 logger = logging.getLogger(__name__)
@@ -20,8 +20,7 @@ def execute_compiled_graph(
     inputs: Dict[str, Any],
     cache: JITCache,
     func: Optional[Callable] = None,
-    options: Optional[Dict[str, Any]] = None,
-) -> Dict[str, Any]:
+    options: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """Execute a compiled graph with provided inputs.
 
     Args:
@@ -37,19 +36,31 @@ def execute_compiled_graph(
     execution_start = time.time()
 
     try:
-        # If graph has a specific execution mode attached, use it
-        if hasattr(graph, "execution_mode") and hasattr(graph, "execution_options"):
+        # Extract execution parameters from graph metadata or options
+        parallel = True
+        timeout = None
+        
+        if hasattr(graph, "execution_mode"):
             mode = getattr(graph, "execution_mode", "auto")
-            mode_options = getattr(graph, "execution_options", {})
+            if mode == "sequential":
+                parallel = False
+            elif hasattr(graph, "execution_options"):
+                mode_options = getattr(graph, "execution_options", {})
+                if "max_workers" in mode_options:
+                    parallel = mode_options["max_workers"]
+                if "timeout_seconds" in mode_options:
+                    timeout = mode_options["timeout_seconds"]
+        elif options:
+            # Extract from provided options dict
+            parallel = options.get("use_parallel", True)
+            if options.get("scheduler") == "sequential":
+                parallel = False
+            elif options.get("max_workers"):
+                parallel = options["max_workers"]
+            timeout = options.get("timeout_seconds")
 
-            # Create execution options
-            exec_options = ExecutionOptions(scheduler_type=mode, **mode_options)
-        else:
-            # Use default options or provided options
-            exec_options = ExecutionOptions(**(options or {}))
-
-        # Execute the graph
-        result_dict = execute_graph(graph, inputs, options=exec_options)
+        # Execute the graph with simplified API
+        result_dict = graph.run(inputs, parallel=parallel, timeout=timeout)
 
         # Determine root node or output node
         root_id = None

@@ -272,14 +272,14 @@ def explore_codeforces(count: int = 3) -> None:
 
 
 def main() -> None:
+    """Example demonstrating the simplified XCS architecture."""
     """Explore specialized datasets in Ember."""
     parser = argparse.ArgumentParser(description="Explore Ember's specialized datasets")
     parser.add_argument(
         "--dataset",
         choices=["aime", "gpqa", "codeforces", "all"],
         default="all",
-        help="Dataset to explore",
-    )
+        help="Dataset to explore")
     parser.add_argument(
         "--count", type=int, default=3, help="Number of examples to show"
     )

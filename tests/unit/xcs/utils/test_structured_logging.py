@@ -17,8 +17,7 @@ from ember.xcs.utils.structured_logging import (
     log_context,
     set_context_value,
     time_operation,
-    with_context,
-)
+    with_context)
 
 
 @pytest.fixture

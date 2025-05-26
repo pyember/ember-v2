@@ -47,7 +47,7 @@ def test_thread_local_isolation():
     # Create and start threads
     threads = []
     for i in range(3):
-        thread = threading.Thread(target=thread_function, args=(i,))
+        thread = threading.Thread(target=thread_function, args=(i))
         threads.append(thread)
         thread.start()
 

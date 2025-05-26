@@ -100,15 +100,13 @@ class GoldenTestBase:
         if mock_registry and any("model" in imp for imp in result["imports"]):
             patches.extend([
                 patch("ember.api.models.initialize_registry", return_value=mock_registry),
-                patch("ember.core.registry.model.initialization.initialize_registry", return_value=mock_registry),
-            ])
+                patch("ember.core.registry.model.initialization.initialize_registry", return_value=mock_registry)])
         
         # Mock language model if needed
         if mock_lm and any("non" in imp or "lm" in imp for imp in result["imports"]):
             patches.extend([
                 patch("ember.api.non", return_value=mock_lm),
-                patch("ember.core.non", return_value=mock_lm),
-            ])
+                patch("ember.core.non", return_value=mock_lm)])
         
         # Add any extra patches
         if extra_patches:

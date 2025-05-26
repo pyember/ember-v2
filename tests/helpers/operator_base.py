@@ -23,8 +23,7 @@ from typing import (
     TypeVar,
     Union,
     cast,
-    runtime_checkable,
-)
+    runtime_checkable)
 
 # Import the EmberModel instead of BaseModel
 from tests.helpers.ember_model import EmberModel
@@ -69,8 +68,7 @@ class Specification:
         self,
         input_model=None,
         structured_output=None,
-        prompt_template=None,
-    ):
+        prompt_template=None):
         """Initialize with optional models and templates.
 
         Args:

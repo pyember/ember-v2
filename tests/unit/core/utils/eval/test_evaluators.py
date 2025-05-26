@@ -23,16 +23,14 @@ try:
         ComposedEvaluator,
         ExactMatchEvaluator,
         NumericToleranceEvaluator,
-        PartialRegexEvaluator,
-    )
+        PartialRegexEvaluator)
 except ImportError:
     from ember.core.utils.eval.evaluators import (
         CodeExecutionEvaluator,
         ComposedEvaluator,
         ExactMatchEvaluator,
         NumericToleranceEvaluator,
-        PartialRegexEvaluator,
-    )
+        PartialRegexEvaluator)
 
 try:
     from ember.core.utils.eval.extractors import RegexExtractor
@@ -54,8 +52,7 @@ class TestComposedEvaluator(unittest.TestCase):
         # Create the composed evaluator with the mocks
         self.evaluator = ComposedEvaluator(
             extractor=self.mock_extractor,
-            base_evaluator=self.mock_base_evaluator,
-        )
+            base_evaluator=self.mock_base_evaluator)
 
     def test_evaluate_calls_extractor_and_evaluator(self) -> None:
         """Test that evaluate calls both the extractor and the base evaluator."""
@@ -68,8 +65,7 @@ class TestComposedEvaluator(unittest.TestCase):
         result = self.evaluator.evaluate(
             system_output="raw_output",
             correct_answer="expected_answer",
-            custom_param=True,
-        )
+            custom_param=True)
 
         # Assert
         self.mock_extractor.extract.assert_called_once_with(
@@ -93,8 +89,7 @@ class TestComposedEvaluator(unittest.TestCase):
         exact_evaluator = ExactMatchEvaluator()
         composed = ComposedEvaluator(
             extractor=SimpleExtractor(),
-            base_evaluator=exact_evaluator,
-        )
+            base_evaluator=exact_evaluator)
 
         # Act
         result = composed.evaluate("Hello world", "Hello")
@@ -296,8 +291,7 @@ class TestCodeExecutionEvaluator(unittest.TestCase):
             args=["python", "-c", 'print("Hello, World!")'],
             capture_output=True,
             text=True,
-            timeout=5.0,
-        )
+            timeout=5.0)
 
     @mock.patch("subprocess.run")
     def test_successful_execution_non_matching_output(
@@ -321,8 +315,7 @@ class TestCodeExecutionEvaluator(unittest.TestCase):
         self.assertEqual(0.0, result.score)
         self.assertEqual(
             {"stdout": "Incorrect output\n", "stderr": "", "exit_code": 0},
-            result.metadata,
-        )
+            result.metadata)
 
     @mock.patch("subprocess.run")
     def test_execution_error(self, mock_run: mock.MagicMock) -> None:
@@ -337,16 +330,14 @@ class TestCodeExecutionEvaluator(unittest.TestCase):
         # Act
         result = self.evaluator.evaluate(
             system_output='print("Hello, World!"',  # Missing closing parenthesis
-            correct_answer="Hello, World!",
-        )
+            correct_answer="Hello, World!")
 
         # Assert
         self.assertFalse(result.is_correct)
         self.assertEqual(0.0, result.score)
         self.assertEqual(
             {"stdout": "", "stderr": "SyntaxError: invalid syntax\n", "exit_code": 1},
-            result.metadata,
-        )
+            result.metadata)
 
     @mock.patch("subprocess.run")
     def test_timeout_error(self, mock_run: mock.MagicMock) -> None:
@@ -357,8 +348,7 @@ class TestCodeExecutionEvaluator(unittest.TestCase):
         # Act
         result = self.evaluator.evaluate(
             system_output="import time; time.sleep(10)",
-            correct_answer="This will never happen",
-        )
+            correct_answer="This will never happen")
 
         # Assert
         self.assertFalse(result.is_correct)
@@ -387,8 +377,7 @@ class TestCodeExecutionEvaluator(unittest.TestCase):
             args=["python", "-c", 'print("Hello, World!")'],
             capture_output=True,
             text=True,
-            timeout=10.0,
-        )
+            timeout=10.0)
 
 
 class TestPartialRegexEvaluator(unittest.TestCase):

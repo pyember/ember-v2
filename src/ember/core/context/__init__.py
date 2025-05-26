@@ -39,8 +39,7 @@ from .management import (
     scoped_registry,
     seed_registry,
     temp_component,
-    with_registry,
-)
+    with_registry)
 from .metrics import ComponentMetrics, MetricsComponent
 from .model import ModelComponent
 from .registry import Registry
@@ -62,5 +61,4 @@ __all__ = [
     "ComponentMetrics",
     # Backward compatibility
     "EmberContext",
-    "current_context",
-]
+    "current_context"]

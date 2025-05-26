@@ -7,7 +7,7 @@ from typing import Any, ClassVar, Dict
 
 from ember.core.registry.operator.base.operator_base import Operator, Specification
 from ember.xcs.graph.dependency_analyzer import DependencyAnalyzer
-from ember.xcs.graph.xcs_graph import XCSGraph
+from ember.xcs.graph import Graph
 
 
 class TestOperator(Operator[Dict[str, Any], Dict[str, Any]]):
@@ -25,7 +25,7 @@ class TestOperator(Operator[Dict[str, Any], Dict[str, Any]]):
 def test_simple_dependency_analysis():
     """Test analyzing dependencies in a simple linear graph."""
     # Create a graph
-    graph = XCSGraph()
+    graph = Graph()
 
     # Add operators
     op1 = TestOperator(name="op1")
@@ -61,7 +61,7 @@ def test_simple_dependency_analysis():
 def test_complex_dependency_analysis():
     """Test analyzing dependencies in a graph with branches and joins."""
     # Create a graph
-    graph = XCSGraph()
+    graph = Graph()
 
     # Create a diamond pattern:
     #   A

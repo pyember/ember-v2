@@ -30,7 +30,7 @@ with execution_options(scheduler="parallel"):
 
 Ember provides three complementary approaches to JIT compilation:
 
-1. **jit** - Trace-based JIT compilation
+1. **jit** - structural JIT compilation
    - `jit_example.py` - Demonstrates the `@jit` decorator with performance comparisons
    - Shows how tracing and caching work for optimizing operator execution
 
@@ -81,7 +81,7 @@ Replace `example_name.py` with the desired example file.
 The XCS system provides several key capabilities:
 
 - **Just-In-Time Compilation**: Three approaches for different use cases
-  - Trace-based JIT: Analyzes actual execution patterns
+  - structural JIT: Analyzes actual execution patterns
   - Structural JIT: Examines operator composition without tracing
   - Autograph: Explicit graph construction and execution
 

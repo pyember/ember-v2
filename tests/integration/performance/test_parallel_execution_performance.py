@@ -18,14 +18,13 @@ from ember.core.registry.operator.base.operator_base import Operator
 from ember.core.registry.specification.specification import Specification
 from ember.core.types.ember_model import EmberModel
 from ember.xcs.engine.unified_engine import ExecutionOptions, execute_graph
-from ember.xcs.graph.xcs_graph import XCSGraph
+from ember.xcs.graph import Graph
 
 # Import JIT implementations
 from ember.xcs.jit import jit
 from ember.xcs.schedulers.unified_scheduler import (
     ParallelScheduler,
-    SequentialScheduler,
-)
+    SequentialScheduler)
 from ember.xcs.tracer.xcs_tracing import TracerContext
 
 # Configure logging
@@ -70,8 +69,7 @@ class DelayOperator(Operator[TaskInput, TaskOutput]):
 
     specification: ClassVar[Specification] = Specification(
         input_model=TaskInput,
-        structured_output=TaskOutput,
-    )
+        structured_output=TaskOutput)
 
     def __init__(self, *, delay: float, name: str):
         """Initialize with configuration.
@@ -99,8 +97,7 @@ class DelayOperator(Operator[TaskInput, TaskOutput]):
         return TaskOutput(
             result=f"Task {inputs.task_id} processed by {self.name}",
             task_id=inputs.task_id,
-            execution_time=elapsed,
-        )
+            execution_time=elapsed)
 
 
 @jit
@@ -109,8 +106,7 @@ class SequentialEnsembleOperator(Operator[TaskInput, EnsembleOutput]):
 
     specification: ClassVar[Specification] = Specification(
         input_model=TaskInput,
-        structured_output=EnsembleOutput,
-    )
+        structured_output=EnsembleOutput)
 
     def __init__(self, *, width: int = 10, delay: float = 0.1):
         """Initialize with multiple delay operators.
@@ -153,8 +149,7 @@ class ParallelEnsembleOperator(Operator[TaskInput, EnsembleOutput]):
 
     specification: ClassVar[Specification] = Specification(
         input_model=TaskInput,
-        structured_output=EnsembleOutput,
-    )
+        structured_output=EnsembleOutput)
 
     def __init__(self, *, width: int = 10, delay: float = 0.1):
         """Initialize with multiple delay operators.
@@ -208,8 +203,7 @@ class StructuralJITEnsembleOperator(Operator[TaskInput, EnsembleOutput]):
 
     specification: ClassVar[Specification] = Specification(
         input_model=TaskInput,
-        structured_output=EnsembleOutput,
-    )
+        structured_output=EnsembleOutput)
 
     def __init__(self, *, width: int = 10, delay: float = 0.1):
         """Initialize with multiple delay operators.
@@ -251,8 +245,7 @@ class StructuralJITEnsembleOperator(Operator[TaskInput, EnsembleOutput]):
 # --------------------------------
 @pytest.mark.skipif(
     "not config.getoption('--run-perf-tests') and not config.getoption('--run-all-tests')",
-    reason="Performance tests are disabled by default. Run with --run-perf-tests or --run-all-tests flag.",
-)
+    reason="Performance tests are disabled by default. Run with --run-perf-tests or --run-all-tests flag.")
 def test_sequential_vs_explicit_parallel():
     """Test performance difference between sequential and explicitly parallel execution."""
     # Configuration
@@ -323,8 +316,7 @@ def test_sequential_vs_explicit_parallel():
 
 @pytest.mark.skipif(
     "not config.getoption('--run-perf-tests') and not config.getoption('--run-all-tests')",
-    reason="Performance tests are disabled by default. Run with --run-perf-tests or --run-all-tests flag.",
-)
+    reason="Performance tests are disabled by default. Run with --run-perf-tests or --run-all-tests flag.")
 def test_jit_trace_to_graph_parallel_speedup():
     """Test creating an XCS graph from a JIT trace and running with parallel scheduler."""
     # Configuration
@@ -351,7 +343,7 @@ def test_jit_trace_to_graph_parallel_speedup():
 
     # Build graph from members
     logger.info("\nBuilding XCS graph from operators:")
-    graph = XCSGraph()
+    graph = Graph()
     for i, member in enumerate(ensemble.members):
         node_id = f"delay_{i}"
         graph.add_node(
@@ -366,7 +358,7 @@ def test_jit_trace_to_graph_parallel_speedup():
     seq_scheduler = SequentialScheduler()
     seq_options = ExecutionOptions(scheduler_type="sequential")
     start_seq = time.time()
-    _ = execute_graph(graph, global_input, options=seq_options, scheduler=seq_scheduler)
+    _ = graph.run(global_input, options=seq_options, scheduler=seq_scheduler)
     seq_time = time.time() - start_seq
     logger.info(f"  Sequential execution time: {seq_time:.4f}s")
 
@@ -377,7 +369,7 @@ def test_jit_trace_to_graph_parallel_speedup():
         scheduler_type="parallel", max_workers=ensemble_width
     )
     start_par = time.time()
-    _ = execute_graph(graph, global_input, options=par_options, scheduler=par_scheduler)
+    _ = graph.run(global_input, options=par_options, scheduler=par_scheduler)
     par_time = time.time() - start_par
     logger.info(f"  Parallel execution time: {par_time:.4f}s")
 

@@ -87,8 +87,7 @@ class TestOperatorsExamples(GoldenTestBase):
         mock_lm.return_value = "Mocked caravan story response"
         
         extra_patches = [
-            patch("ember.api.non", return_value=mock_lm),
-        ]
+            patch("ember.api.non", return_value=mock_lm)]
         
         result = self.run_example_with_mocks(
             file_path,
@@ -105,8 +104,7 @@ class TestOperatorsExamples(GoldenTestBase):
         expected_patterns = [
             r"Diverse Ensemble",
             r"Creating diverse models",
-            r"Result:",
-        ]
+            r"Result:"]
         
         # Mock multiple language models
         def create_mock_lm(style):

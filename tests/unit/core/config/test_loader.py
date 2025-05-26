@@ -15,8 +15,7 @@ from ember.core.config.loader import (
     load_from_env,
     load_yaml_file,
     merge_dicts,
-    resolve_env_vars,
-)
+    resolve_env_vars)
 from ember.core.config.schema import EmberConfig
 
 

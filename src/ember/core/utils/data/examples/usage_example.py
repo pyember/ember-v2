@@ -36,10 +36,8 @@ def main() -> None:
             dataset_name="mmlu",
             config=MMLUConfig(
                 config_name="abstract_algebra",
-                split="dev",
-            ),
-            num_samples=5,
-        )
+                split="dev"),
+            num_samples=5)
         logger.info("Successfully loaded %d entries for MMLU.", len(mmlu_entries))
         for idx, entry in enumerate(mmlu_entries, start=1):
             logger.info("MMLU Entry #%d:\n%s", idx, entry.model_dump_json(indent=2))
@@ -55,8 +53,7 @@ def main() -> None:
         halu_entries: List[Any] = load_dataset_entries(
             dataset_name="halueval",
             config=halu_config,
-            num_samples=3,
-        )
+            num_samples=3)
         logger.info("Successfully loaded %d entries for HaluEval.", len(halu_entries))
         for idx, entry in enumerate(halu_entries, start=1):
             logger.info("HaluEval Entry #%d:\n%s", idx, entry.model_dump_json(indent=2))

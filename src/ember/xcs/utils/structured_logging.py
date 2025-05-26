@@ -296,8 +296,7 @@ def time_operation(
     logger: Optional[logging.Logger] = None,
     level: int = logging.DEBUG,
     threshold_ms: Optional[float] = None,
-    sample_rate: Optional[float] = None,
-) -> Callable[[F], F]:
+    sample_rate: Optional[float] = None) -> Callable[[F], F]:
     """Timing an operation and logging its duration.
 
     Decorating functions to measure and report execution time,
@@ -320,7 +319,7 @@ def time_operation(
     Example:
         ```python
         @time_operation("graph_execution", threshold_ms=100)
-        def execute_graph(graph, inputs):
+        def graph.run(inputs):
             # Function implementation
             return result
         ```
@@ -365,8 +364,7 @@ def time_operation(
                     operation_name=operation_name,
                     operation_id=operation_id,
                     node_id=node_id,
-                    function=func.__qualname__,
-                )
+                    function=func.__qualname__)
             else:
                 context_manager = _null_context()  # No-op context manager
 
@@ -398,8 +396,7 @@ def time_operation(
                                 operation_name,
                                 duration_ms,
                                 duration_ms=duration_ms,
-                                function=func.__qualname__,
-                            )
+                                function=func.__qualname__)
 
         return cast(F, wrapper)
 
@@ -554,8 +551,7 @@ def configure_logging(
     sampling_rate: Optional[float] = None,
     threshold_ms: Optional[float] = None,
     trace_all: Optional[bool] = None,
-    max_context_size: Optional[int] = None,
-) -> None:
+    max_context_size: Optional[int] = None) -> None:
     """Configuring structured logging based on environment and explicit settings.
 
     Setting up logging configuration with appropriate defaults for different
@@ -668,8 +664,7 @@ def enrich_exception(exception: Exception, **context: Any) -> Exception:
     elif not hasattr(exception, "add_context"):
         for (
             k,
-            v,
-        ) in (
+            v) in (
             context.items()
         ):  # Only add explicitly provided context, not thread-local context
             if not hasattr(exception, k):
@@ -850,8 +845,7 @@ def configure_xcs_logging(
         "ember.xcs.engine",
         "ember.xcs.graph",
         "ember.xcs.jit",
-        "ember.xcs.tracer",
-    ]
+        "ember.xcs.tracer"]
     
     for logger_name in xcs_loggers:
         logger = logging.getLogger(logger_name)

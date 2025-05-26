@@ -27,15 +27,13 @@ try:
         ComposedEvaluator,
         ExactMatchEvaluator,
         NumericToleranceEvaluator,
-        PartialRegexEvaluator,
-    )
+        PartialRegexEvaluator)
 except ImportError:
     from ember.core.utils.eval.evaluators import (
         ComposedEvaluator,
         ExactMatchEvaluator,
         NumericToleranceEvaluator,
-        PartialRegexEvaluator,
-    )
+        PartialRegexEvaluator)
 
 try:
     from ember.core.utils.eval.extractors import RegexExtractor
@@ -45,13 +43,11 @@ except ImportError:
 try:
     from ember.core.utils.eval.pipeline import (
         PipelineEvaluator,
-        evaluate_batch_with_summary,
-    )
+        evaluate_batch_with_summary)
 except ImportError:
     from ember.core.utils.eval.pipeline import (
         PipelineEvaluator,
-        evaluate_batch_with_summary,
-    )
+        evaluate_batch_with_summary)
 
 try:
     from ember.core.utils.eval.registry import EvaluatorRegistry
@@ -79,8 +75,7 @@ class TestComponentIntegration(unittest.TestCase):
 
         pipeline = PipelineEvaluator(
             transforms=[extract_number],
-            evaluator=NumericToleranceEvaluator(tolerance=0.1),
-        )
+            evaluator=NumericToleranceEvaluator(tolerance=0.1))
 
         # Act
         result1 = pipeline.evaluate("The value is 42.5", 42.5)
@@ -109,8 +104,7 @@ class TestComponentIntegration(unittest.TestCase):
             return PartialRegexEvaluator(pattern=pattern)
 
         def create_numeric_evaluator(
-            tolerance: float = 0.01,
-        ) -> IEvaluator[float, float]:
+            tolerance: float = 0.01) -> IEvaluator[float, float]:
             return NumericToleranceEvaluator(tolerance=tolerance)
 
         # Register the factories
@@ -145,8 +139,7 @@ class TestComponentIntegration(unittest.TestCase):
 
         pipeline = PipelineEvaluator(
             transforms=[extract_number],
-            evaluator=NumericToleranceEvaluator(tolerance=0.1),
-        )
+            evaluator=NumericToleranceEvaluator(tolerance=0.1))
 
         stateful = AggregatorEvaluator(evaluator=pipeline)
 
@@ -180,10 +173,8 @@ class TestComponentIntegration(unittest.TestCase):
                 [
                     "Capital of France is Paris",
                     "Capital of UK is London",
-                    "Capital of Italy is Rome",
-                ],
-                ["Paris", "London", "Rome"],
-            ),
+                    "Capital of Italy is Rome"],
+                ["Paris", "London", "Rome"]),
             "numeric": ([10.0, 20.05, 30.2], [10.0, 20.0, 30.0]),
         }
 
@@ -195,8 +186,7 @@ class TestComponentIntegration(unittest.TestCase):
             summary = evaluate_batch_with_summary(
                 evaluator=evaluator,
                 system_outputs=system_outputs,
-                correct_answers=correct_answers,
-            )
+                correct_answers=correct_answers)
             results[eval_type] = {
                 "mean_score": summary.mean_score,
                 "accuracy": summary.accuracy,
@@ -239,15 +229,14 @@ class TestRealWorldScenarios(unittest.TestCase):
                 "question": "When was the Declaration of Independence signed?",
                 "response": "The Declaration of Independence was primarily signed on August 2, 1776.",
                 "answer": "1776",
-            },
-        ]
+            }]
 
         # Create patterns to extract answers from responses
         answer_patterns = {
             "capital": r"capital of \w+ is (\w+)",
             "author": r"(\w+\s+\w+) wrote",
             "math": r"=\s*(\d+)",
-            "number": r"approximately ([\d,]+)",
+            "number": r"approximately ([\d]+)",
             "year": r"(\d{4})",
         }
 
@@ -260,8 +249,7 @@ class TestRealWorldScenarios(unittest.TestCase):
                 extractor=RegexExtractor(pattern=answer_patterns["number"]),
                 base_evaluator=ExactMatchEvaluator(
                     compare_fn=lambda x, y: x.replace(",", "") == y
-                ),
-            ),
+                )),
             "year": PartialRegexEvaluator(pattern=answer_patterns["year"]),
         }
 
@@ -305,8 +293,7 @@ class TestRealWorldScenarios(unittest.TestCase):
                 # Look for choices in the format of "A) ", "B.", "answer is B", etc.
                 match = re.search(
                     r"(?:^|\s+|answer\s+is\s+)([ABCD])(?:$|\s+|\)|\.)",
-                    system_output.upper(),
-                )
+                    system_output.upper())
                 extracted = match.group(1) if match else ""
                 is_correct = extracted == correct_answer.upper()
                 return EvaluationResult(
@@ -338,8 +325,7 @@ class TestRealWorldScenarios(unittest.TestCase):
                 return EvaluationResult(
                     is_correct=is_correct,
                     score=similarity,
-                    metadata={"similarity": similarity},
-                )
+                    metadata={"similarity": similarity})
 
         # Create a registry
         registry = EvaluatorRegistry()
@@ -392,8 +378,7 @@ class TestRealWorldScenarios(unittest.TestCase):
                 "output": "The Earth orbits the sun",
                 "answer": "The moon orbits the Earth",
                 "type": "semantic",
-            },
-        ]
+            }]
 
         results = []
         for item in test_data:

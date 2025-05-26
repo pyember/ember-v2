@@ -41,8 +41,7 @@ class TestDataConfig:
             cache_dir="/tmp/cache",
             batch_size=64,
             cache_ttl=7200,
-            auto_register_preppers=False,
-        )
+            auto_register_preppers=False)
         assert config.cache_dir == "/tmp/cache"
         assert config.batch_size == 64
         assert config.cache_ttl == 7200
@@ -57,8 +56,7 @@ class TestDataConfig:
                 "EMBER_DATA_BATCH_SIZE": "128",
                 "EMBER_DATA_CACHE_TTL": "1800",
                 "EMBER_DATA_AUTO_REGISTER": "0",
-            },
-        ):
+            }):
             config = DataConfig.from_env()
             assert config.cache_dir == "/tmp/env_cache"
             assert config.batch_size == 128
@@ -92,8 +90,7 @@ class TestDataContext:
         context = DataContext(
             registry=registry,
             loader_factory=loader_factory,
-            cache_manager=cache_manager,
-        )
+            cache_manager=cache_manager)
 
         assert context.registry is registry
         assert context.loader_factory is loader_factory
@@ -105,8 +102,7 @@ class TestDataContext:
             cache_dir="/tmp/test_cache",
             batch_size=64,
             cache_ttl=1800,
-            auto_register_preppers=False,
-        )
+            auto_register_preppers=False)
 
         context = DataContext(config=config)
 
@@ -149,8 +145,7 @@ class TestDataContext:
             name="test_dataset",
             source="test/source",
             task_type=TaskType.MULTIPLE_CHOICE,  # Use actual enum value
-            description="Test dataset",
-        )
+            description="Test dataset")
 
         # Check that it was registered
         assert "test_dataset" in context.registry.list_datasets()

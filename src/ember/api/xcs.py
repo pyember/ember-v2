@@ -1,95 +1,56 @@
-"""XCS API for Ember.
+"""Simplified XCS API - Clean and Powerful.
 
-This module provides a clean interface for working with the XCS (Accelerated Compound Systems)
-execution framework in Ember, offering high-performance execution capabilities for computational
-graphs, just-in-time tracing, and parallel execution transformations.
-
-Examples:
-    # Basic JIT compilation (defaults to trace-based)
-    from ember.api import xcs
-
-    @xcs.jit
-    class MyOperator(Operator):
-        def forward(self, *, inputs):
-            # Complex computation here
-            return result
-
-    # Using trace-based JIT with specific options
-    @xcs.jit.trace(sample_input={"query": "test"})
-    class TracedOperator(Operator):
-        def forward(self, *, inputs):
-            # Complex computation here
-            return result
-
-    # Using structural JIT for optimized parallel execution
-    @xcs.jit.structural(execution_strategy="parallel")
-    class ParallelOperator(Operator):
-        def __init__(self):
-            self.op1 = SubOperator1()
-            self.op2 = SubOperator2()
-
-        def forward(self, *, inputs):
-            # Multi-step computation automatically parallelized
-            result1 = self.op1(inputs=inputs)
-            result2 = self.op2(inputs=inputs)
-            return combine(result1, result2)
-
-    # Using vectorized mapping
-    @xcs.vmap(in_axes=(0, None))
-    def process_batch(inputs, model):
-        return model(inputs)
-
-    # Using parallel execution
-    @xcs.pmap
-    def parallel_process(inputs):
-        return heavy_computation(inputs)
+Only the essentials:
+- jit: Optimize Operators
+- trace: Analyze execution
+- Graph: Build computation graphs
 """
 
-# Import from the unified implementation directly
+# Core optimization and analysis
 from ember.xcs import (
-    DeviceMesh,
-    ExecutionResult,
-    JITOptions,
-    PartitionSpec,
-    TraceContextData,
-    TracerContext,
-    TraceRecord,
-    TransformOptions,
-    XCSExecutionOptions,
-    XCSExecutionOptions as ExecutionOptions,  # Alias for compatibility
-    autograph,
-)
-from ember.xcs import execute_graph
-from ember.xcs import execute_graph as execute
-from ember.xcs import execution_options, jit, mesh_sharded, pmap, vmap
-from ember.xcs.graph import XCSGraph
-from ember.xcs.engine.execution_options import get_execution_options
+    jit,
+    trace,
+    trace_execution,
+    Graph,
+    Node,
+    execute_graph,
+    ExecutionOptions,
+    get_jit_stats,
+    explain_jit_selection)
 
+# Transformations
+from ember.xcs import vmap, pmap
+
+# Legacy imports for compatibility
+from ember.xcs import XCSGraph  # Deprecated, use Graph
+from ember.xcs.execution_options import get_execution_options
+
+# Aliases for compatibility
+execute = execute_graph
+autograph = trace  # Similar functionality
 
 __all__ = [
-    # Core functions
+    # Optimization
     "jit",
-    "autograph",
-    "execute",
+    "get_jit_stats",
+    "explain_jit_selection",
+    
+    # Analysis
+    "trace",
+    "trace_execution",
+    "autograph",  # Alias for trace
+    
+    # Graph
+    "Graph", 
+    "Node",
     "execute_graph",
-    "execution_options",
+    "execute",  # Alias
+    "ExecutionOptions",
     "get_execution_options",
-    # Transforms
+    
+    # Transformations
     "vmap",
     "pmap",
-    "mesh_sharded",
-    "DeviceMesh",
-    "PartitionSpec",
-    # Tracing
-    "TracerContext",
-    "TraceRecord",
-    "TraceContextData",
-    # Graph
-    "XCSGraph",
-    # Types
-    "XCSExecutionOptions",
-    "ExecutionOptions",  # Alias
-    "ExecutionResult",
-    "JITOptions",
-    "TransformOptions",
-]
+    
+    # Deprecated
+    "XCSGraph"]

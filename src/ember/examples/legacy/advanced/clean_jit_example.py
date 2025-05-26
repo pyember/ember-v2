@@ -148,8 +148,7 @@ class LLMOperator(Operator):
                 simulated_responses = [
                     f"Mock answer about '{query}' from {self.model_id}",
                     f"Alternative perspective on '{query}'",
-                    f"Additional context for '{query}'",
-                ]
+                    f"Additional context for '{query}'"]
                 return GenerationOutput(responses=simulated_responses)
             else:
                 logging.warning(f"Model {self.model_id} not found in registry")
@@ -204,8 +203,7 @@ class AggregatorOperator(Operator):
 
         return AggregatorOutput(
             final_answer=responses[0],  # Just take the first one for this demo
-            confidence=0.95,
-        )
+            confidence=0.95)
 
 
 def run_pipeline(query: str, num_workers: int = 3) -> AggregatorOutput:
@@ -256,6 +254,7 @@ def run_pipeline(query: str, num_workers: int = 3) -> AggregatorOutput:
 # Main Demonstration
 ###############################################################################
 def main() -> None:
+    """Example demonstrating the simplified XCS architecture."""
     """Run demonstration of clean JIT API."""
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 

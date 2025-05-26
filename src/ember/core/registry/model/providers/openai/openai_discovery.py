@@ -62,8 +62,7 @@ class OpenAIDiscovery(BaseDiscoveryProvider):
             "gpt-4",
             "gpt-3.5",
             "text-embedding",
-            "dall-e",
-        ]
+            "dall-e"]
 
     def fetch_models(self) -> Dict[str, Dict[str, Any]]:
         """

@@ -127,8 +127,7 @@ class VerifierOperator(Operator[VerifierInputs, VerifierOutputs]):
             "Verdict: [correct/incorrect/partially correct]\n"
             "Explanation: [your detailed explanation]\n"
             "Revised Answer: [your improved answer, if needed]"
-        ),
-    )
+        ))
 
     # Define static fields
     lm_module: LMModule = static_field()
@@ -193,8 +192,7 @@ def test_multi_stage_pipeline_integration() -> None:
     lm_modules = [
         LMModule(
             config=LMModuleConfig(id="openai:gpt-3.5-turbo", temperature=0.7),
-            simulate_api=True,
-        )
+            simulate_api=True)
         for _ in range(3)
     ]
 
@@ -207,8 +205,7 @@ def test_multi_stage_pipeline_integration() -> None:
     # Set up a real Verifier operator with a real LM module
     verifier_lm = LMModule(
         config=LMModuleConfig(id="openai:gpt-3.5-turbo", temperature=0.2),
-        simulate_api=True,
-    )
+        simulate_api=True)
     verifier = VerifierOperator(lm_module=verifier_lm)
 
     # Create a sequential pipeline with ensemble and most_common
@@ -229,8 +226,7 @@ def test_multi_stage_pipeline_integration() -> None:
     # Prepare inputs for the verifier
     verifier_input = VerifierInputs(
         query="What is the capital of France?",
-        candidate_answer=pipeline_output.most_common,
-    )
+        candidate_answer=pipeline_output.most_common)
 
     # Execute the verifier with the pipeline output
     verifier_output = verifier(inputs=verifier_input)
@@ -245,8 +241,7 @@ def test_multi_stage_pipeline_integration() -> None:
 
 from ember.core.registry.model.base.schemas.chat_schemas import (
     ChatRequest,
-    ChatResponse,
-)
+    ChatResponse)
 from ember.core.registry.model.providers.base_provider import BaseProviderModel
 
 
@@ -272,8 +267,7 @@ def create_dummy_model_info(model_id: str) -> ModelInfo:
         cost=ModelCost(input_cost_per_thousand=0.0, output_cost_per_thousand=0.0),
         rate_limit=RateLimit(tokens_per_minute=0, requests_per_minute=0),
         provider=ProviderInfo(name="FailingProvider", default_api_key="dummy_key"),
-        api_key="dummy_key",
-    )
+        api_key="dummy_key")
 
 
 @pytest.fixture

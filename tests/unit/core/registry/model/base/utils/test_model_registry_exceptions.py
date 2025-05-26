@@ -4,8 +4,7 @@
 
 from ember.core.registry.model.base.utils.model_registry_exceptions import (
     ModelDiscoveryError,
-    ModelRegistrationError,
-)
+    ModelRegistrationError)
 
 
 def test_model_registration_error() -> None:

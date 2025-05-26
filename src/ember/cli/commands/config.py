@@ -220,8 +220,7 @@ def show_paths(args: argparse.Namespace) -> int:
     paths = [
         {"Location": "User Config", "Path": str(Path.home() / ".ember" / "config.yaml")},
         {"Location": "Project Config", "Path": "./ember.yaml or ./.ember/config.yaml"},
-        {"Location": "Environment", "Path": "$EMBER_CONFIG_PATH (if set)"},
-    ]
+        {"Location": "Environment", "Path": "$EMBER_CONFIG_PATH (if set)"}]
     
     print_table(paths)
     

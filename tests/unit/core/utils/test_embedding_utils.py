@@ -17,8 +17,7 @@ from hypothesis import strategies as st
 from ember.core.utils.embedding_utils import (
     CosineSimilarity,
     MockEmbeddingModel,
-    calculate_text_similarity,
-)
+    calculate_text_similarity)
 
 
 class TestMockEmbeddingModel:
@@ -213,11 +212,9 @@ def embedding_vectors(draw, min_dim=1, max_dim=10, min_val=-10.0, max_val=10.0):
                 min_value=min_val,
                 max_value=max_val,
                 allow_nan=False,
-                allow_infinity=False,
-            ),
+                allow_infinity=False),
             min_size=dim,
-            max_size=dim,
-        )
+            max_size=dim)
     )
 
 
@@ -238,8 +235,7 @@ def test_main_block_coverage():
     from ember.core.utils.embedding_utils import (
         CosineSimilarity,
         MockEmbeddingModel,
-        calculate_text_similarity,
-    )
+        calculate_text_similarity)
 
     temp_module.MockEmbeddingModel = MockEmbeddingModel
     temp_module.CosineSimilarity = CosineSimilarity
@@ -305,8 +301,7 @@ class TestEmbeddingPropertiesPBT:
         vec_a=non_zero_norm_vectors(),
         scale=st.floats(
             min_value=0.1, max_value=10.0, allow_nan=False, allow_infinity=False
-        ),
-    )
+        ))
     def test_cosine_scale_invariance(self, vec_a, scale):
         """Property: Cosine similarity should be invariant to scaling."""
         # Skip for empty vectors
@@ -345,8 +340,7 @@ class TestEmbeddingPropertiesPBT:
     @given(
         vec_a=non_zero_norm_vectors(),
         vec_b=non_zero_norm_vectors(),
-        vec_c=non_zero_norm_vectors(),
-    )
+        vec_c=non_zero_norm_vectors())
     @hypothesis.settings(suppress_health_check=[hypothesis.HealthCheck.filter_too_much])
     def test_cosine_triangle_inequality(self, vec_a, vec_b, vec_c):
         """Property: Triangle inequality for angular distance derived from cosine similarity."""
@@ -397,8 +391,7 @@ class TestEmbeddingPropertiesPBT:
 
     @given(
         text1=st.text(max_size=50, alphabet=string.ascii_letters),
-        text2=st.text(max_size=50, alphabet=string.ascii_letters),
-    )
+        text2=st.text(max_size=50, alphabet=string.ascii_letters))
     def test_calculate_text_similarity_property(self, text1, text2):
         """Property: Text similarity should be bounded [-1, 1] and symmetric."""
         model = MockEmbeddingModel()

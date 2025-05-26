@@ -64,8 +64,7 @@ from typing import (
     List,
     Optional,
     TypeVar,
-    Union,
-)
+    Union)
 
 from ember.core.context.ember_context import EmberContext
 from ember.core.utils.data.base.config import BaseDatasetConfig as DatasetConfig
@@ -145,8 +144,7 @@ class DataItem:
             ("choices", "options"),
             ("options", "options"),
             ("answer", "answer"),
-            ("correct_answer", "answer"),
-        ]:
+            ("correct_answer", "answer")]:
             if hasattr(entry, src):
                 normalized[dst] = getattr(entry, src)
 
@@ -374,8 +372,7 @@ class DatasetBuilder:
         self,
         transform_fn: Union[
             Callable[[Dict[str, Any]], Dict[str, Any]], IDatasetTransformer
-        ],
-    ) -> "DatasetBuilder":
+        ]) -> "DatasetBuilder":
         """Add transformation function to dataset processing pipeline.
 
         Transformations are applied in the order they're added.
@@ -389,8 +386,7 @@ class DatasetBuilder:
         # Import here to avoid circular imports
         from ember.core.utils.data.base.transformers import (
             DatasetType,
-            IDatasetTransformer,
-        )
+            IDatasetTransformer)
 
         # Use transformer directly if it implements the interface
         if isinstance(transform_fn, IDatasetTransformer):
@@ -550,8 +546,7 @@ class DatasetBuilder:
                 sample_size=self._sample_size,
                 random_seed=self._seed,
                 config_name=config_name,  # Pass as config_name to HF Dataset
-                **self._config,
-            )
+                **self._config)
 
             # Import service components
             from ember.core.utils.data.base.loaders import HuggingFaceDatasetLoader
@@ -564,16 +559,14 @@ class DatasetBuilder:
                 loader=HuggingFaceDatasetLoader(),
                 validator=DatasetValidator(),
                 sampler=DatasetSampler(),
-                transformers=self._transformers,
-            )
+                transformers=self._transformers)
 
             # Load and prepare dataset
             entries = service.load_and_prepare(
                 dataset_info=dataset_entry.info,
                 prepper=dataset_entry.prepper,
                 config=config,
-                num_samples=self._sample_size,
-            )
+                num_samples=self._sample_size)
 
             return Dataset(entries=entries, info=dataset_entry.info)
 
@@ -619,8 +612,7 @@ class DataAPI:
         *,
         streaming: bool = True,
         limit: Optional[int] = None,
-        **kwargs: Any,
-    ) -> Union[Iterator[DataItem], List[DatasetEntry]]:
+        **kwargs: Any) -> Union[Iterator[DataItem], List[DatasetEntry]]:
         """Load dataset with specified parameters.
 
         Args:
@@ -698,8 +690,7 @@ class DataAPI:
         source: str,
         task_type: Union[TaskType, str],
         prepper_class: Optional[Any] = None,
-        description: str = "",
-    ) -> None:
+        description: str = "") -> None:
         """Register a new dataset.
 
         Args:
@@ -722,8 +713,7 @@ class DataAPI:
             source=source,
             task_type=task_type,
             prepper_class=prepper_class,
-            description=description,
-        )
+            description=description)
 
 
 __all__ = [
@@ -738,5 +728,4 @@ __all__ = [
     "DatasetEntry",
     "TaskType",
     # Context integration
-    "DataContext",
-]
+    "DataContext"]

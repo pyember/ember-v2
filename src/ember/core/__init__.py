@@ -23,5 +23,4 @@ __all__ = [
     "ValidationError",
     "ConfigError",
     "ConfigurationError",  # Legacy alias
-    "registry",
-]
+    "registry"]

@@ -28,8 +28,7 @@ from ember.core.registry.operator.base._module import (
     ModuleCache,
     _make_initable_wrapper,
     ember_field,
-    static_field,
-)
+    static_field)
 from ember.xcs.utils.tree_util import _pytree_registry, tree_flatten, tree_unflatten
 
 # -----------------------------------------------------------------------------
@@ -135,8 +134,7 @@ def test_ember_field_all_params() -> None:
         static=True,
         default_factory=default_factory,
         init=False,
-        repr=False,
-    )
+        repr=False)
 
     assert field_obj.metadata.get("converter") is converter, "converter not set"
     assert field_obj.metadata.get("static") is True, "static flag not set"
@@ -217,8 +215,7 @@ def test_registration_idempotence() -> None:
         register_tree(
             cls=IdempotentModule,
             flatten_func=dummy_flatten,
-            unflatten_func=dummy_unflatten,
-        )
+            unflatten_func=dummy_unflatten)
 
     # The original registration should still be in place
     current_flatten, current_unflatten = _pytree_registry[IdempotentModule]

@@ -231,6 +231,7 @@ def create_sequential_pipeline(*, model_name: str) -> Callable[[Dict[str, Any]],
 # Main Demonstration
 ###############################################################################
 def main() -> None:
+    """Example demonstrating the simplified XCS architecture."""
     """Run demonstration of different composition patterns."""
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
@@ -246,8 +247,7 @@ def main() -> None:
     questions: List[str] = [
         "How does gravity work?",
         "Tell me about the history of Rome",
-        "What's the difference between DNA and RNA?",
-    ]
+        "What's the difference between DNA and RNA?"]
 
     # Prepare table for results comparison
     table = PrettyTable()
@@ -279,8 +279,7 @@ def main() -> None:
             [
                 "Functional",
                 f"{elapsed:.4f}",
-                (final_answer[:50] + "..." if len(final_answer) > 50 else final_answer),
-            ]
+                (final_answer[:50] + "..." if len(final_answer) > 50 else final_answer)]
         )
 
     print("\n=== Nested Pipeline ===")
@@ -306,8 +305,7 @@ def main() -> None:
             [
                 "Nested",
                 f"{elapsed:.4f}",
-                (final_answer[:50] + "..." if len(final_answer) > 50 else final_answer),
-            ]
+                (final_answer[:50] + "..." if len(final_answer) > 50 else final_answer)]
         )
 
     print("\n=== Sequential Pipeline ===")
@@ -333,8 +331,7 @@ def main() -> None:
             [
                 "Sequential",
                 f"{elapsed:.4f}",
-                (final_answer[:50] + "..." if len(final_answer) > 50 else final_answer),
-            ]
+                (final_answer[:50] + "..." if len(final_answer) > 50 else final_answer)]
         )
 
     # Demonstrate execution options with the nested pipeline
@@ -367,8 +364,7 @@ def main() -> None:
                         final_answer[:50] + "..."
                         if len(final_answer) > 50
                         else final_answer
-                    ),
-                ]
+                    )]
             )
 
     # Display performance comparison

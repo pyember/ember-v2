@@ -9,8 +9,7 @@ from ember.core.types.xcs_types import (
     XCSNode,
     XCSNodeAttributes,
     XCSNodeResult,
-    XCSPlan,
-)
+    XCSPlan)
 
 
 class MockNode:

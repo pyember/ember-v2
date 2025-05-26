@@ -8,7 +8,7 @@ wave computation for parallel scheduling.
 
 from typing import Dict, List, Set
 
-from ember.xcs.graph.xcs_graph import XCSGraph
+from ember.xcs.graph import Graph
 
 
 class DependencyAnalyzer:
@@ -18,7 +18,7 @@ class DependencyAnalyzer:
     scheduling and optimization purposes.
     """
 
-    def analyze(self, graph: XCSGraph) -> Dict[str, Set[str]]:
+    def analyze(self, graph: Graph) -> Dict[str, Set[str]]:
         """Analyze all dependencies in a graph.
 
         Computes the complete dependency relationship between all nodes,
@@ -34,7 +34,7 @@ class DependencyAnalyzer:
         direct_deps = self.build_dependency_graph(graph)
         return self.compute_transitive_closure(direct_deps)
 
-    def build_dependency_graph(self, graph: XCSGraph) -> Dict[str, Set[str]]:
+    def build_dependency_graph(self, graph: Graph) -> Dict[str, Set[str]]:
         """Build a direct dependency graph.
 
         Constructs a mapping of each node to its direct dependencies.
@@ -100,7 +100,7 @@ class DependencyAnalyzer:
 
         return all_deps
 
-    def topological_sort(self, graph: XCSGraph) -> List[str]:
+    def topological_sort(self, graph: Graph) -> List[str]:
         """Perform topological sort on the graph nodes.
 
         Creates a linear ordering of nodes such that for every directed edge
@@ -157,7 +157,7 @@ class DependencyAnalyzer:
 
         return sorted_nodes
 
-    def compute_execution_waves(self, graph: XCSGraph) -> List[List[str]]:
+    def compute_execution_waves(self, graph: Graph) -> List[List[str]]:
         """Compute execution waves for parallel scheduling.
 
         Groups nodes into waves where nodes in each wave have no dependencies

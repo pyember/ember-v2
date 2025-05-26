@@ -17,8 +17,7 @@ from ember.xcs.tracer.structural_jit import (
     ExecutionConfig,
     _analyze_operator_structure,
     get_scheduler,
-    structural_jit,
-)
+    structural_jit)
 
 # -------------------------------------------------------------------------
 # Test Models
@@ -47,8 +46,7 @@ class LeafOperator(Operator):
 
     specification = Specification(
         input_model=TestInput,
-        structured_output=TestOutput,
-    )
+        structured_output=TestOutput)
 
     def __init__(self, name: str = "leaf"):
         """Initialize with a name."""
@@ -64,8 +62,7 @@ class NestedOperator(Operator):
 
     specification = Specification(
         input_model=TestInput,
-        structured_output=TestOutput,
-    )
+        structured_output=TestOutput)
 
     def __init__(self):
         """Initialize with nested sub-operators."""
@@ -84,8 +81,7 @@ class DiamondOperator(Operator):
 
     specification = Specification(
         input_model=TestInput,
-        structured_output=TestOutput,
-    )
+        structured_output=TestOutput)
 
     def __init__(self):
         """Initialize with a diamond-shaped structure."""
@@ -114,8 +110,7 @@ class DeepNestedOperator(Operator):
 
     specification = Specification(
         input_model=TestInput,
-        structured_output=TestOutput,
-    )
+        structured_output=TestOutput)
 
     def __init__(self):
         """Initialize with deeply nested operators."""
@@ -136,8 +131,7 @@ class ReusedOperator(Operator):
 
     specification = Specification(
         input_model=TestInput,
-        structured_output=TestOutput,
-    )
+        structured_output=TestOutput)
 
     def __init__(self):
         """Initialize with a single sub-operator that gets reused."""
@@ -306,8 +300,7 @@ class TestStructuralJITExecution:
         """Test state-aware caching with StructureDependency."""
         from ember.xcs.tracer.structural_jit import (
             StructureDependency,
-            _structural_jit_cache,
-        )
+            _structural_jit_cache)
 
         # Define an operator with state using composition
         class StateAwareOperator(LeafOperator):
@@ -489,8 +482,7 @@ class TestStructuralJITExecution:
         assert par_result.result == auto_result.result
 
         # Test scheduler selection directly
-        from ember.xcs.engine.xcs_engine import TopologicalSchedulerWithParallelDispatch
-        from ember.xcs.engine.xcs_noop_scheduler import XCSNoOpScheduler
+                from ember.xcs.engine.xcs_noop_scheduler import XCSNoOpScheduler
 
         test_graph = seq_op._jit_xcs_graph
 
@@ -544,8 +536,7 @@ class TestStructuralJITErrors:
         class ErrorOp(Operator):
             specification = Specification(
                 input_model=TestInput,
-                structured_output=TestOutput,
-            )
+                structured_output=TestOutput)
 
             def forward(self, *, inputs: TestInput) -> TestOutput:
                 raise ValueError("Test error")

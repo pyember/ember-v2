@@ -110,8 +110,7 @@ class GPQAPrepper(IDatasetPrepper):
                     "task_type": "multiple_choice",
                     "dataset": "gpqa",
                     "subset": self.subset,
-                },
-            )
+                })
         ]
 
 

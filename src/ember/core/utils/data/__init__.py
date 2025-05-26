@@ -37,8 +37,7 @@ from ember.core.utils.data.context.data_context import (
     DataContext,
     get_default_context,
     reset_default_context,
-    set_default_context,
-)
+    set_default_context)
 
 # Load context integration to ensure EmberContext knows about the data system
 import ember.core.utils.data.context_integration
@@ -56,8 +55,7 @@ def load_dataset(
     limit: Optional[int] = None,
     transformers: Optional[List[Any]] = None,
     context: Optional[DataContext] = None,
-    **kwargs,
-) -> Union[List[DatasetEntry], Iterator[Any]]:
+    **kwargs) -> Union[List[DatasetEntry], Iterator[Any]]:
     """Load dataset entries using the high-level API.
 
     This function provides a clean, thread-safe way to load datasets.
@@ -95,8 +93,7 @@ def load_dataset(
         streaming=streaming,
         limit=limit,
         transformers=transformers,
-        **kwargs,
-    )
+        **kwargs)
 
 
 # Import basic types that don't have dependencies
@@ -128,8 +125,7 @@ def load_dataset_entries(
     dataset_name: str,
     config: Union[str, BaseDatasetConfig, None] = None,
     num_samples: Optional[int] = None,
-    context: Optional[DataContext] = None,
-) -> List[DatasetEntry]:
+    context: Optional[DataContext] = None) -> List[DatasetEntry]:
     """Load and prepare dataset entries using a high-level one-liner API.
 
     This function provides a fast-track method to load and process dataset entries
@@ -198,5 +194,4 @@ def load_dataset_entries(
         dataset_info=dataset_info,
         prepper=prepper,
         config=config,
-        num_samples=num_samples,
-    )
+        num_samples=num_samples)

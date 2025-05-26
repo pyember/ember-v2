@@ -45,8 +45,7 @@ class TestConcurrency(unittest.TestCase):
         self.assertEqual(
             first=len(results),
             second=100,
-            msg="Expected exactly 100 results from concurrent reads.",
-        )
+            msg="Expected exactly 100 results from concurrent reads.")
         self.assertTrue(
             all(val == 0 for val in results), msg="All counter values should be 0."
         )

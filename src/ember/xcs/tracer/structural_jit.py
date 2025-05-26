@@ -60,16 +60,8 @@ from typing import (
     TypeVar,
     Union,
     cast,
-    runtime_checkable,
-)
-
-from ember.xcs.engine.xcs_engine import (
-    IScheduler,
-    TopologicalSchedulerWithParallelDispatch,
-    compile_graph,
-)
-from ember.xcs.engine.xcs_noop_scheduler import XCSNoOpScheduler
-from ember.xcs.graph.xcs_graph import XCSGraph
+    runtime_checkable)
+from ember.xcs.graph import Graph
 from ember.xcs.tracer.tracer_decorator import JITCache
 
 # Logger for this module
@@ -80,7 +72,7 @@ T = TypeVar("T")  # Generic return type
 OpT = TypeVar("OpT", bound="Operator")  # Operator type
 
 # Cache for compiled graphs
-_structural_jit_cache = JITCache[XCSGraph]()
+_structural_jit_cache = JITCache[Graph]()
 
 
 # -----------------------------------------------------------------------------
@@ -164,50 +156,9 @@ class ExecutionConfig:
     max_workers: Optional[int] = None
 
 
-def get_scheduler(graph: XCSGraph, config: ExecutionConfig) -> IScheduler:
-    """Create the appropriate scheduler based on strategy and graph.
-
-    Analyzes graph characteristics and config settings to select
-    the optimal scheduler implementation.
-
-    Args:
-        graph: Graph to be executed
-        config: Execution configuration parameters
-
-    Returns:
-        Scheduler instance optimized for the graph
-
-    Raises:
-        ValueError: If strategy is invalid
-    """
-    # Handle pre-defined strategies first
-    if config.strategy == "sequential":
-        return XCSNoOpScheduler()
-
-    if config.strategy == "parallel":
-        return TopologicalSchedulerWithParallelDispatch(max_workers=config.max_workers)
-
-    if config.strategy == "auto":
-        # Auto mode - analyze graph for parallelization potential
-        if len(graph.nodes) < config.parallel_threshold:
-            return XCSNoOpScheduler()
-
-        # Count potentially parallelizable nodes
-        parallel_nodes = _count_parallelizable_nodes(graph)
-        return (
-            TopologicalSchedulerWithParallelDispatch(max_workers=config.max_workers)
-            if parallel_nodes >= 2
-            else XCSNoOpScheduler()
-        )
-
-    # Invalid strategy
-    raise ValueError(
-        f"Unknown execution strategy: {config.strategy}. "
-        "Expected 'auto', 'parallel', or 'sequential'."
-    )
 
 
-def _count_parallelizable_nodes(graph: XCSGraph) -> int:
+def _count_parallelizable_nodes(graph: Graph) -> int:
     """Count nodes that could execute in parallel.
 
     Analyzes graph structure to identify potential parallelism.
@@ -319,8 +270,7 @@ def _analyze_operator_structure(operator: Operator) -> OperatorStructureGraph:
                         operator=attr_value,
                         node_id=attr_node_id,
                         attribute_path=f"root.{attr_name}",
-                        parent_id=root_node_id,
-                    )
+                        parent_id=root_node_id)
 
             # If we successfully used explicit dependencies, return now
             if len(graph.nodes) > 1:  # More than just the root node
@@ -451,8 +401,7 @@ def _get_attributes(obj: Any) -> List[Tuple[str, Any]]:
 def _build_xcs_graph_from_structure(
     operator: Operator,
     structure: OperatorStructureGraph,
-    sample_input: Optional[Dict[str, Any]] = None,
-) -> XCSGraph:
+    sample_input: Optional[Dict[str, Any]] = None) -> Graph:
     """Build execution graph from operator structure.
 
     Creates a graph with nodes and edges based on the analyzed
@@ -467,7 +416,7 @@ def _build_xcs_graph_from_structure(
     Returns:
         Executable XCS graph
     """
-    graph = XCSGraph()
+    graph = Graph()
 
     # Add all operators as nodes with their metadata
     for node_id, node in structure.nodes.items():
@@ -534,56 +483,56 @@ def _build_xcs_graph_from_structure(
 
 
 def _execute_with_engine(
-    graph: XCSGraph,
+    graph: Graph,
     inputs: Dict[str, Any],
-    config: ExecutionConfig,
-) -> Dict[str, Any]:
-    """Execute a graph using the XCS engine.
-
-    Core execution method for structural JIT that handles graph execution
-    with appropriate scheduling based on graph characteristics.
-
+    config: ExecutionConfig) -> Dict[str, Any]:
+    """Execute a graph directly using Graph.run().
+    
     Args:
         graph: Graph to execute
         inputs: Input data
         config: Execution configuration
-
+        
     Returns:
         Execution results
-
-    Raises:
-        OperatorExecutionError: For errors in operator implementation
-        Exception: For errors in graph execution machinery
     """
     logger = logging.getLogger("ember.xcs.tracer.structural_jit")
-
-    # Get appropriate scheduler based on strategy and graph
-    scheduler = get_scheduler(graph, config)
-    scheduler_name = scheduler.__class__.__name__
-    logger.debug(
-        f"Executing graph with {len(graph.nodes)} nodes using {scheduler_name}"
-    )
-
+    
     try:
-        # Compile and execute graph
-        plan = compile_graph(graph=graph)
-        results = scheduler.run_plan(
-            plan=plan,
-            global_input=inputs,
-            graph=graph,
-        )
-
-        # Find appropriate output from results
+        # Determine parallel execution based on config
+        if config.strategy == "sequential":
+            max_workers = 1
+        elif config.strategy == "parallel":
+            max_workers = config.max_workers
+        else:  # auto
+            # Use graph's wave analysis to decide
+            max_workers = None if len(graph.nodes) >= config.parallel_threshold else 1
+            
+        logger.debug(f"Executing graph with {len(graph.nodes)} nodes")
+        
+        # Execute the graph
+        results = graph.run(inputs, max_workers=max_workers)
+        
+        # Extract appropriate result
         result = _extract_result(graph, results, logger)
         return result
-
+        
     except Exception as e:
         # Handle execution errors
         from ember.core.exceptions import OperatorExecutionError
-
+        
         # Propagate operator errors without recovery attempts
         if isinstance(e, (OperatorExecutionError, ValueError, TypeError, RuntimeError)):
             raise
+            
+        # For machinery errors, try to recover with cached result if available
+        if hasattr(graph, "original_result") and graph.original_result is not None:
+            logger.debug(f"Recovering from JIT error: {str(e)}")
+            return graph.original_result
+            
+        # Cannot recover - re-raise the original exception
+        raise
+
 
         # For machinery errors, try to recover with cached result if available
         if hasattr(graph, "original_result") and graph.original_result is not None:
@@ -595,7 +544,7 @@ def _execute_with_engine(
 
 
 def _extract_result(
-    graph: XCSGraph, results: Dict[str, Any], logger: logging.Logger
+    graph: Graph, results: Dict[str, Any], logger: logging.Logger
 ) -> Dict[str, Any]:
     """Extract the appropriate result from graph execution output.
 
@@ -680,8 +629,7 @@ def structural_jit(
     execution_strategy: str = "auto",
     parallel_threshold: int = 5,
     max_workers: Optional[int] = None,
-    cache_graph: bool = True,
-) -> Union[Callable[[Type[OpT]], Type[OpT]], Type[OpT]]:
+    cache_graph: bool = True) -> Union[Callable[[Type[OpT]], Type[OpT]], Type[OpT]]:
     """Structure-based JIT optimization for operators.
 
     Analyzes operator composition structure to build optimized execution graphs
@@ -724,8 +672,7 @@ def structural_jit(
         execution_config = ExecutionConfig(
             strategy=execution_strategy,
             parallel_threshold=parallel_threshold,
-            max_workers=max_workers,
-        )
+            max_workers=max_workers)
 
         # Save original methods
         original_init = cls.__init__
@@ -783,8 +730,7 @@ def structural_jit(
                     result = _execute_with_engine(
                         graph=graph,
                         inputs=inputs,
-                        config=self._jit_config,
-                    )
+                        config=self._jit_config)
                     execution_duration = time.time() - execution_start
                     _structural_jit_cache.metrics.record_execution(execution_duration)
                     return result
@@ -806,15 +752,13 @@ def structural_jit(
                 graph = _build_xcs_graph_from_structure(
                     operator=self,
                     structure=structure,
-                    sample_input=inputs,
-                )
+                    sample_input=inputs)
 
                 # Save original result and add original operator node
                 graph.original_result = original_result
                 graph.add_node(
                     operator=original_call.__get__(self),
-                    node_id="original_operator",
-                )
+                    node_id="original_operator")
 
                 # Record compilation time
                 compilation_duration = time.time() - compilation_start
@@ -840,8 +784,7 @@ def structural_jit(
         cls.enable_jit = lambda self: setattr(self, "_jit_enabled", True)
         cls.clear_graph_cache = lambda self: (
             _structural_jit_cache.invalidate(self),
-            setattr(self, "_jit_xcs_graph", None),
-        )
+            setattr(self, "_jit_xcs_graph", None))
         cls.get_jit_metrics = lambda self: _structural_jit_cache.get_metrics()
 
         return cls

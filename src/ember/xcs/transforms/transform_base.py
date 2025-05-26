@@ -33,8 +33,7 @@ class TransformError(Exception):
         transform_name: str,
         message: str,
         details: Optional[Dict[str, Any]] = None,
-        cause: Optional[Exception] = None,
-    ) -> "TransformError":
+        cause: Optional[Exception] = None) -> "TransformError":
         """Create an error specific to a transformation.
 
         Args:
@@ -107,8 +106,7 @@ class BatchingOptions(BaseOptions):
         out_axis: int = 0,
         batch_size: Optional[int] = None,
         parallel: bool = False,
-        max_workers: Optional[int] = None,
-    ) -> None:
+        max_workers: Optional[int] = None) -> None:
         """Initialize batching options.
 
         Args:
@@ -161,8 +159,7 @@ class ParallelOptions(BaseOptions):
         num_workers: Optional[int] = None,
         continue_on_errors: bool = False,
         timeout_seconds: Optional[float] = None,
-        return_partial: bool = True,
-    ) -> None:
+        return_partial: bool = True) -> None:
         """Initialize parallel options.
 
         Args:

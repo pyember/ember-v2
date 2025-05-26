@@ -52,7 +52,7 @@ class Gauge:
     - Thread-safe with no locks (leveraging Python atomics)
     """
 
-    __slots__ = ("_value",)
+    __slots__ = ("_value")
 
     def __init__(self, initial_value: float = 0.0):
         self._value = initial_value
@@ -102,8 +102,7 @@ class Histogram:
         250,
         500,
         1000,
-        float("inf"),
-    ]
+        float("inf")]
     NUM_BUCKETS = len(BUCKET_BOUNDARIES)
 
     def __init__(self):

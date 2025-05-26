@@ -2,16 +2,14 @@
 
 from ember.core.registry.model.base.schemas.chat_schemas import (
     ChatRequest,
-    ChatResponse,
-)
+    ChatResponse)
 from ember.core.registry.model.base.schemas.cost import ModelCost, RateLimit
 from ember.core.registry.model.base.schemas.model_info import ModelInfo
 from ember.core.registry.model.base.schemas.provider_info import ProviderInfo
 from ember.core.registry.model.base.schemas.usage import (
     UsageRecord,
     UsageStats,
-    UsageSummary,
-)
+    UsageSummary)
 from ember.core.registry.model.providers.base_provider import BaseChatParameters
 
 __all__ = [
@@ -24,5 +22,4 @@ __all__ = [
     "RateLimit",
     "UsageStats",
     "UsageRecord",
-    "UsageSummary",
-]
+    "UsageSummary"]

@@ -69,14 +69,12 @@ def main():
         "--time_limit",
         type=int,
         default=None,
-        help="Time limit in seconds for each fuzzing test",
-    )
+        help="Time limit in seconds for each fuzzing test")
     parser.add_argument(
         "--test",
         type=str,
         default=None,
-        help="Run a specific test file (e.g. fuzz_parser.py)",
-    )
+        help="Run a specific test file (e.g. fuzz_parser.py)")
     args = parser.parse_args()
 
     # Create output directory for crash artifacts

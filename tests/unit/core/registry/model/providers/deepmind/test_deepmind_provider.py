@@ -5,15 +5,13 @@ import pytest
 
 from ember.core.registry.model.base.schemas.chat_schemas import (
     ChatRequest,
-    ChatResponse,
-)
+    ChatResponse)
 from ember.core.registry.model.base.schemas.cost import ModelCost, RateLimit
 from ember.core.registry.model.base.schemas.model_info import ModelInfo
 from ember.core.registry.model.base.schemas.provider_info import ProviderInfo
 from ember.core.registry.model.providers.deepmind.deepmind_provider import (
     GeminiChatParameters,
-    GeminiModel,
-)
+    GeminiModel)
 
 
 class DummyGeminiResponse:
@@ -26,8 +24,7 @@ class DummyGeminiResponse:
                 "prompt_token_count": 50,
                 "candidates_token_count": 20,
                 "total_token_count": 70,
-            },
-        )
+            })
 
 
 def create_dummy_deepmind_model_info() -> ModelInfo:
@@ -37,8 +34,7 @@ def create_dummy_deepmind_model_info() -> ModelInfo:
         cost=ModelCost(input_cost_per_thousand=3500, output_cost_per_thousand=10500),
         rate_limit=RateLimit(tokens_per_minute=1000000, requests_per_minute=1000),
         provider=ProviderInfo(name="Google", default_api_key="dummy_google_key"),
-        api_key="dummy_google_key",
-    )
+        api_key="dummy_google_key")
 
 
 @pytest.fixture(autouse=True)

@@ -81,8 +81,7 @@ def _init_registry():
     from ember.core.utils.eval.evaluators import (
         ExactMatchEvaluator,
         NumericToleranceEvaluator,
-        PartialRegexEvaluator,
-    )
+        PartialRegexEvaluator)
 
     # Skip if already initialized
     if hasattr(_REGISTRY, "_initialized"):
@@ -365,5 +364,4 @@ __all__ = [
     "register_evaluator",
     # Core implementation re-exports
     "EvaluationResult",
-    "IEvaluator",
-]
+    "IEvaluator"]

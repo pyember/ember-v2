@@ -11,13 +11,11 @@ from ember.xcs import (
     BatchingOptions,
     ParallelOptions,
     TransformError,
-    compose,
-)
+    compose)
 from ember.xcs.transforms.transform_base import (
     combine_outputs,
     get_batch_size,
-    split_batch,
-)
+    split_batch)
 
 
 class TestTransformBase:
@@ -99,8 +97,7 @@ class TestParallelOptions:
             num_workers=4,
             continue_on_errors=True,
             timeout_seconds=30.0,
-            return_partial=True,
-        )
+            return_partial=True)
         options.validate()  # Should not raise
 
     def test_invalid_options(self) -> None:
@@ -188,8 +185,7 @@ class TestBatchUtilities:
         outputs = [
             {"result": 1, "meta": "a"},
             {"result": 2, "meta": "b"},
-            {"result": 3, "meta": "c"},
-        ]
+            {"result": 3, "meta": "c"}]
         combined = combine_outputs(outputs)
         assert combined["result"] == [1, 2, 3]
         assert combined["meta"] == ["a", "b", "c"]

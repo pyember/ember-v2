@@ -65,8 +65,7 @@ class DelayOperator(Operator[DelayInput, DelayOutput]):
     # Class-level specification
     specification: ClassVar[Specification] = Specification(
         input_model=DelayInput,
-        structured_output=DelayOutput,
-    )
+        structured_output=DelayOutput)
 
     # Field declarations - important for structural JIT
     name: str
@@ -107,8 +106,7 @@ class DelayOperator(Operator[DelayInput, DelayOutput]):
         return DelayOutput(
             result=f"Processed by {self.name} in {processing_time:.4f}s",
             task_id=inputs.task_id,
-            processing_time=processing_time,
-        )
+            processing_time=processing_time)
 
 
 # --------------------------------
@@ -126,8 +124,7 @@ class EnsembleOperator(Operator[DelayInput, EnsembleOutput]):
     # Class-level specification
     specification: ClassVar[Specification] = Specification(
         input_model=DelayInput,
-        structured_output=EnsembleOutput,
-    )
+        structured_output=EnsembleOutput)
 
     # Field declarations
     members: List[DelayOperator]
@@ -217,8 +214,7 @@ class ExplicitParallelEnsembleOperator(Operator[DelayInput, EnsembleOutput]):
     # Class-level specification
     specification: ClassVar[Specification] = Specification(
         input_model=DelayInput,
-        structured_output=EnsembleOutput,
-    )
+        structured_output=EnsembleOutput)
 
     # Field declarations
     members: List[DelayOperator]
@@ -424,8 +420,7 @@ def test_jit_comparison():
                 },
             },
             f,
-            indent=2,
-        )
+            indent=2)
 
     logger.info(f"\nResults saved to {filename}")
 

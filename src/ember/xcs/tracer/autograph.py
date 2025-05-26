@@ -14,7 +14,7 @@ Example:
     ```python
     from ember.xcs.tracer.autograph import AutoGraphBuilder
     from ember.xcs.tracer.xcs_tracing import TraceRecord
-    from ember.xcs.engine import execute_graph
+    from ember.xcs.graph import Graph
 
     # Execution traces from previous operator calls
     records = [
@@ -59,7 +59,7 @@ from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import Any, Callable, Dict, List, Optional, Set, Union
 
-from ember.xcs.graph.xcs_graph import XCSGraph
+from ember.xcs.graph import Graph
 from ember.xcs.tracer.xcs_tracing import TraceRecord
 
 logger = logging.getLogger(__name__)
@@ -205,15 +205,13 @@ class DependencyAnalyzer:
         self._extract_references_from_dict(
             data_dict=node.trace_record.inputs,
             references_dict=node.inputs,
-            path_prefix="inputs",
-        )
+            path_prefix="inputs")
 
         # Extract output references - handle all types uniformly
         self._extract_references_from_dict(
             data_dict=node.trace_record.outputs,
             references_dict=node.outputs,
-            path_prefix="outputs",
-        )
+            path_prefix="outputs")
 
         # Register outputs in the data registry for dependency tracking
         for _, ref in node.outputs.items():
@@ -274,8 +272,7 @@ class DependencyAnalyzer:
         self,
         data_dict: Dict[str, Any],
         references_dict: Dict[str, DataReference],
-        path_prefix: str,
-    ) -> None:
+        path_prefix: str) -> None:
         """Extract data references from a dictionary.
 
         Args:
@@ -311,8 +308,7 @@ class DependencyAnalyzer:
                 self._extract_references_from_dict(
                     data_dict=nested_dict,
                     references_dict=nested_references,
-                    path_prefix=path,
-                )
+                    path_prefix=path)
                 # Add nested references with prefixed keys
                 for nested_key, nested_ref in nested_references.items():
                     references_dict[f"{key}.{nested_key}"] = nested_ref
@@ -593,8 +589,7 @@ class DependencyAnalyzer:
                         # Prefer to break inferred or execution order dependencies first
                         if dep_type in (
                             DependencyType.INFERRED,
-                            DependencyType.EXECUTION_ORDER,
-                        ):
+                            DependencyType.EXECUTION_ORDER):
                             self.nodes[dependent_id].dependencies.pop(node_id)
                             if dependent_id in self.nodes[node_id].outbound_edges:
                                 self.nodes[node_id].outbound_edges.remove(dependent_id)
@@ -752,7 +747,7 @@ class AutoGraphBuilder:
 
         return field_mappings
 
-    def build_graph(self, records: List[TraceRecord] = None, **kwargs) -> XCSGraph:
+    def build_graph(self, records: List[TraceRecord] = None, **kwargs) -> Graph:
         """Builds an executable XCS graph from trace records.
 
         Constructs a graph in multiple phases:
@@ -777,10 +772,10 @@ class AutoGraphBuilder:
 
         # Handle empty case
         if not records:
-            return XCSGraph()
+            return Graph()
 
         # Create new graph
-        graph = XCSGraph()
+        graph = Graph()
 
         # Map from trace record node_id to graph node_id
         node_id_map: Dict[str, str] = {}
@@ -802,8 +797,7 @@ class AutoGraphBuilder:
             graph.add_node(
                 operator=self._create_operator_callable(trace_record=record),
                 node_id=graph_node_id,
-                name=record.operator_name,
-            )
+                name=record.operator_name)
 
         # Second pass: Add edges based on dependencies
         for node_id, dep_node in dep_nodes.items():
@@ -828,8 +822,7 @@ class AutoGraphBuilder:
                 graph.add_edge(
                     from_id=dep_graph_id,
                     to_id=graph_node_id,
-                    field_mappings=field_mappings,
-                )
+                    field_mappings=field_mappings)
 
                 # Optionally add edge metadata
                 if "dependencies" not in graph.metadata:
@@ -845,10 +838,9 @@ class AutoGraphBuilder:
 
     def _add_execution_metadata(
         self,
-        graph: XCSGraph,
+        graph: Graph,
         dep_nodes: Dict[str, DependencyNode],
-        node_id_map: Dict[str, str],
-    ) -> None:
+        node_id_map: Dict[str, str]) -> None:
         """Adds optimization metadata to the graph for efficient execution.
 
         Enhances the graph with execution hints for the scheduler:

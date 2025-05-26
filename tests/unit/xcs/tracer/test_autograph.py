@@ -13,8 +13,7 @@ import weakref
 from ember.xcs.tracer.autograph import (
     AutoGraphBuilder,
     DataReference,
-    DependencyAnalyzer,
-)
+    DependencyAnalyzer)
 from ember.xcs.tracer.tracer_decorator import JITCache, StateDependency
 from ember.xcs.tracer.xcs_tracing import TraceRecord
 
@@ -40,21 +39,17 @@ class TestAutoGraphBuilder(unittest.TestCase):
                 operator_name="Op1",
                 node_id="1",
                 inputs={"query": "test"},
-                outputs={"result": "output1"},
-            ),
+                outputs={"result": "output1"}),
             TraceRecord(
                 operator_name="Op2",
                 node_id="2",
                 inputs={"result": "output1"},
-                outputs={"intermediate": "output2"},
-            ),
+                outputs={"intermediate": "output2"}),
             TraceRecord(
                 operator_name="Op3",
                 node_id="3",
                 inputs={"intermediate": "output2"},
-                outputs={"final": "output3"},
-            ),
-        ]
+                outputs={"final": "output3"})]
 
         # Build the graph
         builder = AutoGraphBuilder()
@@ -84,27 +79,22 @@ class TestAutoGraphBuilder(unittest.TestCase):
                 operator_name="Op1",
                 node_id="1",
                 inputs={"query": "test"},
-                outputs={"result": "output1"},
-            ),
+                outputs={"result": "output1"}),
             TraceRecord(
                 operator_name="Op2a",
                 node_id="2a",
                 inputs={"result": "output1"},
-                outputs={"branch_a": "output2a"},
-            ),
+                outputs={"branch_a": "output2a"}),
             TraceRecord(
                 operator_name="Op2b",
                 node_id="2b",
                 inputs={"result": "output1"},
-                outputs={"branch_b": "output2b"},
-            ),
+                outputs={"branch_b": "output2b"}),
             TraceRecord(
                 operator_name="Op3",
                 node_id="3",
                 inputs={"branch_a": "output2a", "branch_b": "output2b"},
-                outputs={"final": "output3"},
-            ),
-        ]
+                outputs={"final": "output3"})]
 
         # Build the graph
         builder = AutoGraphBuilder()
@@ -152,15 +142,12 @@ class TestAutoGraphBuilder(unittest.TestCase):
                 operator_name="Op1",
                 node_id="1",
                 inputs={"query": "test"},
-                outputs={"result": "output1"},
-            ),
+                outputs={"result": "output1"}),
             TraceRecord(
                 operator_name="Op2",
                 node_id="2",
                 inputs={"data": "output1"},
-                outputs={"final": "output2"},
-            ),
-        ]
+                outputs={"final": "output2"})]
 
         # Analyze dependencies
         dep_nodes = analyzer.analyze(records)
@@ -279,8 +266,7 @@ class TestJITRefactoring(unittest.TestCase):
             node_id="1",
             inputs={"value": 5},
             outputs={"result": 10},
-            operator=operator,
-        )
+            operator=operator)
 
         # Create the callable using AutoGraphBuilder's method
         builder = AutoGraphBuilder()

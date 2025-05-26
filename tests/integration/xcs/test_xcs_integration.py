@@ -12,8 +12,7 @@ from tests.helpers.xcs_minimal_doubles import (
     minimal_autograph,
     minimal_jit,
     minimal_pmap,
-    minimal_vmap,
-)
+    minimal_vmap)
 
 # Mark all tests as integration tests
 pytestmark = [pytest.mark.integration]

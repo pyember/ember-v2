@@ -16,8 +16,7 @@ from ember.api.data import (
     DatasetBuilder,
     DatasetEntry,
     DatasetInfo,
-    TaskType,
-)
+    TaskType)
 from ember.core.utils.data.base.config import BaseDatasetConfig
 from ember.core.utils.data.base.loaders import HuggingFaceDatasetLoader
 from ember.core.utils.data.base.preppers import IDatasetPrepper
@@ -67,16 +66,14 @@ def register_test_datasets():
                     query=item.get("query", ""),
                     metadata={
                         k: v for k, v in item.items() if k not in ["id", "query"]
-                    },
-                )
+                    })
             ]
 
     # Create and register test datasets that match those referenced in tests
     datasets_to_register = [
         ("preset_dataset", "test source", TaskType.SHORT_ANSWER),
         ("explicit_dataset", "test source", TaskType.SHORT_ANSWER),
-        ("custom/test", "custom test", TaskType.SHORT_ANSWER),
-    ]
+        ("custom/test", "custom test", TaskType.SHORT_ANSWER)]
 
     # Save existing registry to restore later
     original_registry = {}
@@ -89,8 +86,7 @@ def register_test_datasets():
             name=name,
             description=f"Test dataset {name}",
             source=source,
-            task_type=task_type,
-        )
+            task_type=task_type)
         DATASET_REGISTRY._registry[name] = RegisteredDataset(
             name=name, info=info, prepper=TestDatasetPrepper()
         )
@@ -176,8 +172,7 @@ class TestDataAPIFacade(unittest.TestCase):
             ),
             DatasetEntry(
                 query="Question 3?", metadata={"id": "3", "answer": "Answer 3"}
-            ),
-        ]
+            )]
         dataset = Dataset(entries=entries)
 
         # Assert - basic dataset behavior

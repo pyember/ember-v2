@@ -52,8 +52,7 @@ class EmberModel(BaseModel, Mapping):
             origin_type=self.__class__,
             type_args=tuple(type_hints.values()) if type_hints else None,
             is_container=False,
-            is_optional=False,
-        )
+            is_optional=False)
 
     # Serializable protocol implementation
     def to_dict(self) -> Dict[str, Any]:
@@ -283,7 +282,7 @@ class EmberModel(BaseModel, Mapping):
         }
 
         # Create the model class directly as a subclass
-        model_class = type(name, (cls,), model_attrs)
+        model_class = type(name, (cls), model_attrs)
 
         # Explicitly cast to the correct return type
         return cast(Type["EmberModel"], model_class)

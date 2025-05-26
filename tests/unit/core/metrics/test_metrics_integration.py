@@ -86,8 +86,7 @@ def test_component_metrics_count(component_metrics, metrics_instance):
     # Expected key: test_component.operations_total[env=test,operation=login_attempt,status=fail]
     expected_key = registry._get_key(
         "test_component.operations_total",
-        {"env": "test", "operation": "login_attempt", "status": "fail"},
-    )
+        {"env": "test", "operation": "login_attempt", "status": "fail"})
 
     assert expected_key in snap
     assert snap[expected_key] == 2
@@ -114,8 +113,7 @@ def test_component_metrics_time(component_metrics, metrics_instance):
     # Expected key: test_component.duration_ms[env=test,operation=db_query,table=users]
     expected_key = registry._get_key(
         "test_component.duration_ms",
-        {"env": "test", "operation": "db_query", "table": "users"},
-    )
+        {"env": "test", "operation": "db_query", "table": "users"})
 
     assert expected_key in snap
     hist_snap = snap[expected_key]
@@ -149,8 +147,7 @@ def test_component_metrics_timed(component_metrics, metrics_instance):
     # Expected key: test_component.duration_ms[env=test,job_id=123,operation=background_job]
     expected_key = registry._get_key(
         "test_component.duration_ms",
-        {"env": "test", "operation": operation_name, "job_id": "123"},
-    )
+        {"env": "test", "operation": operation_name, "job_id": "123"})
 
     assert expected_key in snap
     hist_snap = snap[expected_key]

@@ -16,12 +16,10 @@ from typing import Any, Dict, List, Type
 import pytest
 from pydantic import BaseModel
 
-from ember.xcs.engine.xcs_engine import (
     TopologicalSchedulerWithParallelDispatch,
-    compile_graph,
-)
+    compile_graph)
 from ember.xcs.engine.xcs_noop_scheduler import XCSNoOpScheduler
-from ember.xcs.graph.xcs_graph import XCSGraph
+from ember.xcs.graph import Graph
 from ember.xcs.tracer.tracer_decorator import jit
 from ember.xcs.tracer.xcs_tracing import TracerContext
 from tests.helpers.stub_classes import Operator
@@ -463,8 +461,8 @@ def test_jit_produces_xcs_graph_and_parallel_speedup() -> None:
         len(tracer.records) >= 1
     ), "Expected at least one trace record from DelayEnsembleOperator."
 
-    # Instead of using the ensemble node as a whole, build an XCSGraph with one node per DelayOperator.
-    graph: XCSGraph = XCSGraph()
+    # Instead of using the ensemble node as a whole, build an Graph with one node per DelayOperator.
+    graph: Graph = Graph()
     for i, member in enumerate(ensemble.members):
         node_id = f"delay_{i}"
         graph.add_node(operator=member, node_id=node_id)

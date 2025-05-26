@@ -18,8 +18,7 @@ from typing import (
     TypeVar,
     Union,
     get_type_hints,
-    runtime_checkable,
-)
+    runtime_checkable)
 
 from pydantic import BaseModel
 
@@ -51,8 +50,7 @@ class TypeInfo:
         origin_type: Type,
         type_args: Optional[Tuple[Type, ...]] = None,
         is_container: bool = False,
-        is_optional: bool = False,
-    ):
+        is_optional: bool = False):
         self.origin_type = origin_type
         self.type_args = type_args
         self.is_container = is_container
@@ -131,8 +129,7 @@ class EmberModel(BaseModel):
             origin_type=self.__class__,
             type_args=tuple(type_hints.values()) if type_hints else None,
             is_container=False,
-            is_optional=False,
-        )
+            is_optional=False)
 
     # Compatibility operators
     def __call__(self) -> Union[Dict[str, object], str, "EmberModel"]:

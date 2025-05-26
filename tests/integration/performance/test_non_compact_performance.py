@@ -19,8 +19,7 @@ from ember.core.non import (
     MostCommon,
     Sequential,
     UniformEnsemble,
-    Verifier,
-)
+    Verifier)
 from ember.core.non_compact import OpRegistry, build_graph
 
 
@@ -47,8 +46,7 @@ def time_execution(func, *args, **kwargs) -> Tuple[Any, float]:
 
 @pytest.mark.skipif(
     not hasattr(pytest, "config") or not pytest.config.getoption("--run-perf-tests", default=False),  # type: ignore
-    reason="Performance tests only run with --run-perf-tests flag",
-)
+    reason="Performance tests only run with --run-perf-tests flag")
 class TestConstructionPerformance:
     """Tests for graph construction performance."""
 
@@ -65,9 +63,7 @@ class TestConstructionPerformance:
             Sequential,
             operators=[
                 UniformEnsemble(num_units=3, model_name="gpt-4o", temperature=0.7),
-                JudgeSynthesis(model_name="claude-3-5-sonnet", temperature=0.0),
-            ],
-        )
+                JudgeSynthesis(model_name="claude-3-5-sonnet", temperature=0.0)])
         standard_pipeline, standard_time = standard_time_result
 
         # Report the times (no assertion, just for information)
@@ -105,9 +101,7 @@ class TestConstructionPerformance:
             [
                 ["3:E:gpt-4o:0.7", "1:V:gpt-4o:0.0"],
                 ["3:E:claude-3-5-haiku:0.7", "1:V:claude-3-5-haiku:0.0"],
-                "1:J:claude-3-5-sonnet:0.0",
-            ],
-        )
+                "1:J:claude-3-5-sonnet:0.0"])
 
         # Report the times
         print("\nComplex structure construction time:")
@@ -124,8 +118,7 @@ class TestConstructionPerformance:
 
 @pytest.mark.skipif(
     not hasattr(pytest, "config") or not pytest.config.getoption("--run-perf-tests", default=False),  # type: ignore
-    reason="Performance tests only run with --run-perf-tests flag",
-)
+    reason="Performance tests only run with --run-perf-tests flag")
 class TestExecutionPerformance:
     """Tests for graph execution performance."""
 
@@ -137,8 +130,7 @@ class TestExecutionPerformance:
         standard_pipeline = Sequential(
             operators=[
                 UniformEnsemble(num_units=3, model_name="gpt-4o", temperature=0.7),
-                JudgeSynthesis(model_name="claude-3-5-sonnet", temperature=0.0),
-            ]
+                JudgeSynthesis(model_name="claude-3-5-sonnet", temperature=0.0)]
         )
 
         # Create test input
@@ -207,8 +199,7 @@ class TestExecutionPerformance:
 
 @pytest.mark.skipif(
     not hasattr(pytest, "config") or not pytest.config.getoption("--run-perf-tests", default=False),  # type: ignore
-    reason="Performance tests only run with --run-perf-tests flag",
-)
+    reason="Performance tests only run with --run-perf-tests flag")
 class TestCustomRegistryPerformance:
     """Tests for custom registry performance."""
 
@@ -226,10 +217,8 @@ class TestCustomRegistryPerformance:
                     UniformEnsemble(
                         num_units=count, model_name=model, temperature=temp
                     ),
-                    MostCommon(),
-                ]
-            ),
-        )
+                    MostCommon()]
+            ))
         custom_registry.register(
             "CVE",  # Custom Verified Ensemble
             lambda count, model, temp: Sequential(
@@ -238,10 +227,8 @@ class TestCustomRegistryPerformance:
                         num_units=count, model_name=model, temperature=temp
                     ),
                     MostCommon(),
-                    Verifier(model_name=model, temperature=temp),
-                ]
-            ),
-        )
+                    Verifier(model_name=model, temperature=temp)]
+            ))
 
         # Test spec
         test_spec = "3:E:gpt-4o:0.7"

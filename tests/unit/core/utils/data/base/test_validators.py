@@ -89,8 +89,7 @@ class TestDatasetValidator(unittest.TestCase):
         self.mock_dataset_dict.__contains__.side_effect = lambda key: key in [
             "train",
             "validation",
-            "test",
-        ]
+            "test"]
         self.mock_dataset_dict.__iter__.return_value = iter(
             ["train", "validation", "test"]
         )
@@ -149,8 +148,7 @@ class TestDatasetValidator(unittest.TestCase):
         mock_dataset_dict.keys.return_value = ["train", "test"]
         mock_dataset_dict.__contains__.side_effect = lambda key: key in [
             "train",
-            "test",
-        ]
+            "test"]
         mock_dataset_dict.__iter__.return_value = iter(["train", "test"])
 
         mock_dataset_dict.__getitem__.side_effect = lambda key: {

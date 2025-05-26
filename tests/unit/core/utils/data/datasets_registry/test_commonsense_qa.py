@@ -20,8 +20,7 @@ class TestCommonsenseQAPrepper(unittest.TestCase):
                 {"label": "A", "text": "London"},
                 {"label": "B", "text": "Paris"},
                 {"label": "C", "text": "Berlin"},
-                {"label": "D", "text": "Madrid"},
-            ],
+                {"label": "D", "text": "Madrid"}],
             "answerKey": "B",
         }
 

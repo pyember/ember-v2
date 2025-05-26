@@ -34,8 +34,7 @@ class _ConfigView:
         self,
         data: Dict[str, Any],
         parent: Optional["_ConfigView"] = None,
-        path: str = "",
-    ):
+        path: str = ""):
         """Initialize a new configuration view.
 
         Args:

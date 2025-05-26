@@ -12,14 +12,12 @@ import pytest
 
 from ember.core.registry.model.base.registry.factory import (
     ModelFactory,
-    discover_providers_in_package,
-)
+    discover_providers_in_package)
 from ember.core.registry.model.base.schemas.cost import ModelCost, RateLimit
 from ember.core.registry.model.base.schemas.model_info import ModelInfo
 from ember.core.registry.model.base.schemas.provider_info import ProviderInfo
 from ember.core.registry.model.base.utils.model_registry_exceptions import (
-    ProviderConfigError,
-)
+    ProviderConfigError)
 from ember.core.registry.model.providers.base_provider import BaseProviderModel
 
 
@@ -101,8 +99,7 @@ def create_dummy_model_info(model_id: str = "openai:gpt-4o") -> ModelInfo:
         cost=ModelCost(input_cost_per_thousand=1.0, output_cost_per_thousand=2.0),
         rate_limit=RateLimit(tokens_per_minute=1000, requests_per_minute=100),
         provider=ProviderInfo(name="DummyProvider", default_api_key="dummy_key"),
-        api_key="dummy_key",
-    )
+        api_key="dummy_key")
 
 
 @patch.object(
@@ -157,8 +154,7 @@ def test_unknown_provider_error() -> None:
     with patch.object(
         ModelFactory,
         "_get_providers",
-        return_value={"DummyProvider": DummyProviderModel},
-    ):
+        return_value={"DummyProvider": DummyProviderModel}):
         # Should raise ProviderConfigError with available providers list
         with pytest.raises(ProviderConfigError) as exc_info:
             ModelFactory.create_model_from_info(model_info=dummy_info)
@@ -266,13 +262,11 @@ def test_discover_providers_in_package() -> None:
                 (
                     None,
                     "test_module.subpackage",
-                    True,
-                ),  # Should be skipped (is a package)
+                    True),  # Should be skipped (is a package)
                 (
                     None,
                     "test_module.base_discovery",
-                    False,
-                ),  # Should be skipped (name blacklist)
+                    False),  # Should be skipped (name blacklist)
             ]
 
             # Mock importlib.import_module to return our test module
@@ -310,8 +304,7 @@ def test_discover_provider_import_error() -> None:
     # Mock a failing import during package walk
     with patch("pkgutil.walk_packages") as mock_walk:
         mock_walk.return_value = [
-            (None, "test_module.failing_module", False),
-        ]
+            (None, "test_module.failing_module", False)]
 
         # Mock importlib.import_module to raise ImportError
         with patch(
@@ -353,8 +346,7 @@ def test_provider_without_name() -> None:
         # Mock package walk to include our module
         with patch("pkgutil.walk_packages") as mock_walk:
             mock_walk.return_value = [
-                (None, "test_module_noname.provider", False),
-            ]
+                (None, "test_module_noname.provider", False)]
 
             # Mock import to return our module
             with patch("importlib.import_module", return_value=test_module):

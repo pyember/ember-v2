@@ -33,8 +33,7 @@ class TestStreamingDataset:
         source = [
             {"id": 1, "question": "Q1"},
             {"id": 2, "question": "Q2"},
-            {"id": 3, "question": "Q3"},
-        ]
+            {"id": 3, "question": "Q3"}]
 
         # For the StreamingDataset.py implementation with context architecture
         from ember.core.utils.data.context.data_context import DataContext
@@ -63,8 +62,7 @@ class TestStreamingDataset:
         source = [
             {"id": 1, "question": "Q1"},
             {"id": 2, "question": "Q2"},
-            {"id": 3, "question": "Q3"},
-        ]
+            {"id": 3, "question": "Q3"}]
 
         # For the StreamingDataset.py implementation with context architecture
         from ember.core.utils.data.context.data_context import DataContext
@@ -98,8 +96,7 @@ class TestStreamingDataset:
             {"id": 2, "question": "Q2"},
             {"id": 3, "question": "Q3"},
             {"id": 4, "question": "Q4"},
-            {"id": 5, "question": "Q5"},
-        ]
+            {"id": 5, "question": "Q5"}]
 
         # Create streaming dataset
         dataset = StreamingDataset(source)
@@ -123,8 +120,7 @@ class TestStreamingDataset:
             {"id": 2, "question": "Q2", "category": "science"},
             {"id": 3, "question": "Q3", "category": "math"},
             {"id": 4, "question": "Q4", "category": "history"},
-            {"id": 5, "question": "Q5", "category": "math"},
-        ]
+            {"id": 5, "question": "Q5", "category": "math"}]
 
         # Create custom transformer for filtering
         class FilterMathTransformer:
@@ -153,8 +149,7 @@ class TestStreamingDataset:
         # Create mock data source
         source = [
             {"id": 1, "question": "Q1"},
-            {"id": 2, "question": "Q2"},
-        ]
+            {"id": 2, "question": "Q2"}]
 
         # Create transformers
         transformer1 = MockTransformer(
@@ -184,8 +179,7 @@ class TestStreamingDataset:
         # Create mock data source
         source = [
             {"id": 1, "question": "Q1"},
-            {"id": 2, "question": "Q2"},
-        ]
+            {"id": 2, "question": "Q2"}]
 
         # Create streaming dataset
         dataset = StreamingDataset(source)
@@ -210,8 +204,7 @@ class TestStreamingDataset:
             {"id": 2, "question": "Q2", "category": "science"},
             {"id": 3, "question": "Q3", "category": "math"},
             {"id": 4, "question": "Q4", "category": "history"},
-            {"id": 5, "question": "Q5", "category": "math"},
-        ]
+            {"id": 5, "question": "Q5", "category": "math"}]
 
         # Define transformers directly for better control
         class MathFilter:
@@ -227,8 +220,7 @@ class TestStreamingDataset:
         # Create streaming dataset with chained operations
         dataset = StreamingDataset(
             source=source,
-            transformers=[MathFilter(), AddPrefixTransformer()],
-        ).limit(2)
+            transformers=[MathFilter(), AddPrefixTransformer()]).limit(2)
 
         # Iterate and collect items
         items = list(dataset)

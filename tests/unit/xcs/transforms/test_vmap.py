@@ -15,8 +15,7 @@ from ember.xcs.transforms.vmap import (
     _combine_outputs,
     _get_batch_size,
     _prepare_batched_inputs,
-    vmap,
-)
+    vmap)
 
 # Import test operators
 from tests.unit.xcs.transforms.mock_operators import (
@@ -25,8 +24,7 @@ from tests.unit.xcs.transforms.mock_operators import (
     ExceptionOperator,
     MockModule,
     NestedOperator,
-    StatefulOperator,
-)
+    StatefulOperator)
 from tests.unit.xcs.transforms.test_utils import generate_batch_inputs
 
 # =============================== Fixtures ===============================
@@ -139,8 +137,7 @@ class TestVMapInternals:
         # Case 3: Complex nested outputs
         results = [
             {"results": ["a_processed"], "metadata": {"id": 1}},
-            {"results": ["b_processed"], "metadata": {"id": 2}},
-        ]
+            {"results": ["b_processed"], "metadata": {"id": 2}}]
         combined = _combine_outputs(results)
         assert combined["results"] == ["a_processed", "b_processed"]
         assert combined["metadata"] == [{"id": 1}, {"id": 2}]
@@ -181,8 +178,7 @@ class TestVMap:
         assert result["results"] == [
             "prompt1_processed",
             "prompt2_processed",
-            "prompt3_processed",
-        ]
+            "prompt3_processed"]
 
         # Verify original operator was called for each batch item
         assert basic_operator.call_count == 3
@@ -291,8 +287,7 @@ class TestVMap:
             "s1_processed",
             "s2_processed",
             "s3_processed",
-            "s4_processed",
-        ]
+            "s4_processed"]
 
         # Verify order is preserved
         assert len(stateful_operator.history) == 4
@@ -409,8 +404,7 @@ class TestVMap:
             "second_processed",
             "third_processed",
             "fourth_processed",
-            "fifth_processed",
-        ]
+            "fifth_processed"]
         assert result["results"] == expected
 
 
@@ -430,8 +424,7 @@ class TestVMapProperties:
             {"prompts": []},
             {"config": {}},
             {"config": {}, "metadata": None},
-            {"prompts": [], "config": {}},
-        ]
+            {"prompts": [], "config": {}}]
 
         for inputs in empty_inputs:
             # Reset the operator state for each test case

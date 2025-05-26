@@ -17,5 +17,4 @@ __all__ = [
     "TracerContext",
     # Graph building
     "AutoGraphBuilder",
-    "autograph",
-]
+    "autograph"]

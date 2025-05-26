@@ -5,8 +5,7 @@ from typing import Dict, Generic, List, Optional, TypeVar
 from ember.core.registry.model.base.registry.factory import ModelFactory
 from ember.core.registry.model.base.schemas.model_info import ModelInfo
 from ember.core.registry.model.base.utils.model_registry_exceptions import (
-    ModelNotFoundError,
-)
+    ModelNotFoundError)
 from ember.core.registry.model.providers.base_provider import BaseProviderModel
 
 # Type variable for model implementation
@@ -103,8 +102,7 @@ class ModelRegistry(Generic[M]):
             self._logger.info(
                 "Successfully registered model: %s with provider %s",
                 model_info.id,
-                model_info.provider.name,
-            )
+                model_info.provider.name)
 
     def register_or_update_model(self, model_info: ModelInfo) -> None:
         """
@@ -209,8 +207,7 @@ class ModelRegistry(Generic[M]):
         # Import here to avoid circular dependency issues
         from ember.core.exceptions import EmberError
         from ember.core.registry.model.base.registry.discovery import (
-            ModelDiscoveryService,
-        )
+            ModelDiscoveryService)
 
         discovery_service = ModelDiscoveryService()
         self._logger.info("Initiating model discovery via ModelDiscoveryService")
@@ -227,8 +224,7 @@ class ModelRegistry(Generic[M]):
             self._logger.debug(
                 "Raw discovery found %d models: %s",
                 len(discovered_models),
-                list(discovered_models.keys()),
-            )
+                list(discovered_models.keys()))
 
             # Step 2: Merge discovered models with local configuration
             merged_models = discovery_service.merge_with_config(
@@ -243,8 +239,7 @@ class ModelRegistry(Generic[M]):
             self._logger.debug(
                 "Merged discovery found %d models: %s",
                 len(merged_models),
-                list(merged_models.keys()),
-            )
+                list(merged_models.keys()))
 
             # Step 3: Register each model, tracking newly added ones
             self._logger.info(f"Registering {len(merged_models)} models from discovery")
@@ -266,8 +261,7 @@ class ModelRegistry(Generic[M]):
                                 model_info.provider.name
                                 if model_info.provider
                                 else "unknown"
-                            ),
-                        )
+                            ))
                         # Use register_model which has its own lock
                         self.register_model(model_info=model_info)
                         newly_registered.append(model_id)
@@ -279,16 +273,14 @@ class ModelRegistry(Generic[M]):
                                 model_info.provider.name
                                 if model_info.provider
                                 else "unknown"
-                            ),
-                        )
+                            ))
                     except ValueError as registration_error:
                         # Expected error if model already exists
                         registration_stats["skipped"] += 1
                         self._logger.debug(
                             "Model %s already registered: %s",
                             model_id,
-                            registration_error,
-                        )
+                            registration_error)
                     except Exception as unexpected_error:
                         # Unexpected error during registration (validation failure, etc.)
                         registration_stats["failed"] += 1
@@ -296,22 +288,19 @@ class ModelRegistry(Generic[M]):
                             "Failed to register discovered model %s: %s (error type: %s)",
                             model_id,
                             unexpected_error,
-                            type(unexpected_error).__name__,
-                        )
+                            type(unexpected_error).__name__)
 
             self._logger.info(
                 "Registration summary: %d new, %d skipped, %d failed",
                 registration_stats["new"],
                 registration_stats["skipped"],
-                registration_stats["failed"],
-            )
+                registration_stats["failed"])
 
             if newly_registered:
                 self._logger.info(
                     "Successfully discovered and registered %d new models: %s",
                     len(newly_registered),
-                    newly_registered,
-                )
+                    newly_registered)
             else:
                 self._logger.info(
                     "No new models discovered that weren't already registered"

@@ -13,8 +13,7 @@ from ember.core.exceptions import (
     OperatorExecutionError,
     OperatorSpecificationError,
     SpecificationValidationError,
-    TreeTransformationError,
-)
+    TreeTransformationError)
 
 # Backwards compatibility aliases
 EmberException = EmberError
@@ -31,5 +30,4 @@ __all__ = [
     "SpecificationValidationError",
     "OperatorExecutionError",
     "BoundMethodNotInitializedError",
-    "TreeTransformationError",
-]
+    "TreeTransformationError"]

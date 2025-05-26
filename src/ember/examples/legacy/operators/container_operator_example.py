@@ -90,8 +90,7 @@ class QuestionAnsweringPipeline(
         self.ensemble = non.UniformEnsemble(
             num_units=self.num_units,
             model_name=self.model_name,
-            temperature=self.temperature,
-        )
+            temperature=self.temperature)
         self.aggregator = non.MostCommon()
 
     def forward(self, *, inputs: QuestionAnsweringInput) -> QuestionAnsweringOutput:
@@ -119,14 +118,14 @@ class QuestionAnsweringPipeline(
         return QuestionAnsweringOutput(
             answer=aggregated["final_answer"],
             confidence=confidence,
-            model_responses=responses,
-        )
+            model_responses=responses)
 
 
 ###############################################################################
 # Main Demonstration
 ###############################################################################
 def main() -> None:
+    """Example demonstrating the simplified XCS architecture."""
     """Run demonstration of container operator with JIT."""
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
@@ -139,8 +138,7 @@ def main() -> None:
     queries = [
         "What is the capital of France?",
         "How many planets are in our solar system?",
-        "Who wrote 'Pride and Prejudice'?",
-    ]
+        "Who wrote 'Pride and Prejudice'?"]
 
     # Process all queries
     for query in queries:

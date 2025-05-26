@@ -8,7 +8,7 @@ import inspect
 import logging
 from typing import Any, Dict, List, Set
 
-from ember.xcs.graph.xcs_graph import XCSGraph
+from ember.xcs.graph import Graph
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 class GraphBuilder:
     """Builder for computation graphs with node and edge creation."""
 
-    def build_from_operator(self, operator: Any) -> XCSGraph:
+    def build_from_operator(self, operator: Any) -> Graph:
         """Build a graph from an operator's structure.
 
         Args:
@@ -25,7 +25,7 @@ class GraphBuilder:
         Returns:
             Constructed computation graph
         """
-        graph = XCSGraph()
+        graph = Graph()
 
         # Get operator attributes for graph building
         op_attrs = self._get_operator_attributes(operator)
@@ -75,7 +75,7 @@ class EnhancedTraceGraphBuilder(GraphBuilder):
     like automatic parallelization.
     """
 
-    def build_graph(self, records: List[Any]) -> XCSGraph:
+    def build_graph(self, records: List[Any]) -> Graph:
         """Build a graph from trace records.
 
         Args:
@@ -84,7 +84,7 @@ class EnhancedTraceGraphBuilder(GraphBuilder):
         Returns:
             Constructed computation graph
         """
-        graph = XCSGraph()
+        graph = Graph()
 
         if not records:
             return graph
@@ -124,8 +124,7 @@ class EnhancedTraceGraphBuilder(GraphBuilder):
         self,
         operator: Any,
         trace_data: Dict[str, Any],
-        recorded_calls: Dict[str, List[Dict[str, Any]]],
-    ) -> XCSGraph:
+        recorded_calls: Dict[str, List[Dict[str, Any]]]) -> Graph:
         """Build a graph using execution trace data.
 
         Args:
@@ -136,7 +135,7 @@ class EnhancedTraceGraphBuilder(GraphBuilder):
         Returns:
             Traced computation graph
         """
-        graph = XCSGraph()
+        graph = Graph()
 
         # Create node for the root operator
         root_id = graph.add_node(
@@ -197,7 +196,7 @@ class StructuralGraphBuilder(GraphBuilder):
         """
         self.recursive = recursive
 
-    def build_graph(self, operator: Any) -> XCSGraph:
+    def build_graph(self, operator: Any) -> Graph:
         """Build a graph by analyzing an operator's structure.
 
         Args:
@@ -206,7 +205,7 @@ class StructuralGraphBuilder(GraphBuilder):
         Returns:
             Constructed computational graph
         """
-        graph = XCSGraph()
+        graph = Graph()
 
         # Create node for the root operator
         root_id = graph.add_node(
@@ -224,12 +223,11 @@ class StructuralGraphBuilder(GraphBuilder):
 
     def _analyze_structure(
         self,
-        graph: XCSGraph,
+        graph: Graph,
         obj: Any,
         parent_id: str,
         visited: Set[int],
-        attr_path: str = "",
-    ) -> None:
+        attr_path: str = "") -> None:
         """Recursively analyze an object's structure and add nodes to the graph.
 
         Args:

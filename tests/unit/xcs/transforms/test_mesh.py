@@ -18,8 +18,7 @@ from ember.xcs.transforms.mesh import (
     InputOutputMapper,
     OutputAggregator,
     _collect_outputs,
-    _distribute_inputs,
-)
+    _distribute_inputs)
 from ember.xcs.transforms.transform_base import TransformError
 
 # Import test operators
@@ -28,12 +27,10 @@ from tests.unit.xcs.transforms.mock_operators import (
     BasicOperator,
     ComplexInputOperator,
     ExceptionOperator,
-    NestedOperator,
-)
+    NestedOperator)
 from tests.unit.xcs.transforms.test_utils import (
     assert_processing_time,
-    time_function_execution,
-)
+    time_function_execution)
 
 # =============================== Fixtures ===============================
 
@@ -96,7 +93,7 @@ class TestDeviceMesh:
         """Test DeviceMesh creation with default arguments."""
         # Default shape
         mesh1 = DeviceMesh(devices=["cpu:0", "cpu:1", "cpu:2", "cpu:3"])
-        assert mesh1.shape == (4,)
+        assert mesh1.shape == (4)
         assert len(mesh1.devices) == 4
 
         # Create a mesh with explicit devices to test shape handling
@@ -166,7 +163,7 @@ class TestDeviceMesh:
         # Extract a 1x3 submesh
         submesh2 = larger_mesh.get_submesh(0, slice(None))
 
-        assert submesh2.shape == (3,)
+        assert submesh2.shape == (3)
         assert len(submesh2.devices) == 3
         assert submesh2.get_device(0) == "cpu:0"
         assert submesh2.get_device(1) == "cpu:1"
@@ -806,7 +803,7 @@ class TestMeshEdgeCases:
 
     def test_mesh_with_1d_shape(self, basic_operator):
         """Test mesh with a 1D shape."""
-        mesh_1d = DeviceMesh(devices=["cpu:0", "cpu:1", "cpu:2", "cpu:3"], shape=(4,))
+        mesh_1d = DeviceMesh(devices=["cpu:0", "cpu:1", "cpu:2", "cpu:3"], shape=(4))
 
         partition = {"prompts": PartitionSpec(0)}
         sharded_op = mesh_sharded(basic_operator, mesh_1d, in_partition=partition)
@@ -844,7 +841,7 @@ class TestMeshEdgeCases:
 
     def test_mesh_with_single_device(self, basic_operator):
         """Test mesh with a single device."""
-        mesh_single = DeviceMesh(devices=["cpu:0"], shape=(1,))
+        mesh_single = DeviceMesh(devices=["cpu:0"], shape=(1))
 
         partition = {"prompts": PartitionSpec(0)}
         sharded_op = mesh_sharded(basic_operator, mesh_single, in_partition=partition)
@@ -911,7 +908,7 @@ class TestMeshPerformance:
             pytest.skip("Performance tests are disabled by default")
 
         # Create meshes of different sizes
-        mesh_1d = DeviceMesh(devices=["cpu:0", "cpu:1"], shape=(2,))
+        mesh_1d = DeviceMesh(devices=["cpu:0", "cpu:1"], shape=(2))
         mesh_2d = DeviceMesh(devices=["cpu:0", "cpu:1", "cpu:2", "cpu:3"], shape=(2, 2))
 
         partition_1d = {"prompts": PartitionSpec(0)}

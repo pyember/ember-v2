@@ -22,26 +22,21 @@ class LMModuleConfig(BaseModel):
 
     id: str = Field(
         default="openai:gpt-4o",
-        description="Identifier for the underlying model provider.",
-    )
+        description="Identifier for the underlying model provider.")
     temperature: float = Field(
         default=1.0,
         ge=0.0,
         le=5.0,
-        description="Sampling temperature for model generation.",
-    )
+        description="Sampling temperature for model generation.")
     max_tokens: Optional[int] = Field(
         default=None,
-        description="Maximum tokens to generate in one call.",
-    )
+        description="Maximum tokens to generate in one call.")
     cot_prompt: Optional[str] = Field(
         default=None,
-        description="Optional chain-of-thought prompt to append.",
-    )
+        description="Optional chain-of-thought prompt to append.")
     persona: Optional[str] = Field(
         default=None,
-        description="Optional persona context to prepend to the query.",
-    )
+        description="Optional persona context to prepend to the query.")
 
 
 def get_default_model_service() -> ModelService:
@@ -79,8 +74,7 @@ class LMModule:
         self,
         config: LMModuleConfig,
         model_service: Optional[ModelService] = None,
-        simulate_api: bool = False,
-    ) -> None:
+        simulate_api: bool = False) -> None:
         """Initializes the LMModule.
 
         Args:
@@ -136,8 +130,7 @@ class LMModule:
             prompt=final_prompt,
             temperature=kwargs.get("temperature", self.config.temperature),
             max_tokens=kwargs.get("max_tokens", self.config.max_tokens),
-            **kwargs,
-        )
+            **kwargs)
         # Return response content if available; otherwise, convert response to string.
         return response.data if hasattr(response, "data") else str(response)
 

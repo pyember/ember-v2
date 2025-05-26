@@ -16,8 +16,7 @@ from ember.core.exceptions import (
     ProviderAPIError,
     ProviderConfigError,
     RegistryError,
-    ValidationError,
-)
+    ValidationError)
 
 __all__ = [
     "ModelError",
@@ -30,5 +29,4 @@ __all__ = [
     "InvalidPromptError",
     "InvalidArgumentError",
     "ValidationError",
-    "RegistryError",
-]
+    "RegistryError"]

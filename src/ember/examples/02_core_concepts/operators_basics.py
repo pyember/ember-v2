@@ -25,6 +25,7 @@ from ember.api import models, operators
 
 
 def main():
+    """Example demonstrating the simplified XCS architecture."""
     """Learn the fundamentals of Ember operators."""
     print_section_header("Understanding Operators")
     

@@ -57,6 +57,7 @@ def check_ember_installation(verbose: bool = False):
 
 
 def main():
+    """Example demonstrating the simplified XCS architecture."""
     """Print environment variables related to API keys and check Ember setup."""
     # Set up argument parser
     parser = create_argument_parser("Check Ember environment and installation")

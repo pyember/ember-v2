@@ -12,8 +12,7 @@ from ember.xcs.transforms.transform_base import (
     ParallelOptions,
     TransformError,
     TransformProtocol,
-    compose,
-)
+    compose)
 from ember.xcs.transforms.vmap import vmap
 
 __all__ = [
@@ -31,5 +30,4 @@ __all__ = [
     # Device mesh support
     "DeviceMesh",
     "PartitionSpec",
-    "mesh_sharded",
-]
+    "mesh_sharded"]

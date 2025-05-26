@@ -81,8 +81,7 @@ class SingleModelOperator(Operator[BenchmarkInput, BenchmarkOutput]):
         self,
         model_name: str = "anthropic:claude-3-haiku",
         temperature: float = 0.0,
-        max_tokens: int = 16,
-    ) -> None:
+        max_tokens: int = 16) -> None:
         """Initialize the benchmark operator with model configuration."""
         self.model_name = model_name
         self.temperature = temperature
@@ -134,8 +133,7 @@ class EnsembleOperator(Operator[BenchmarkInput, BenchmarkEnsembleOutput]):
                 SingleModelOperator(
                     model_name=config["model_name"],
                     temperature=config.get("temperature", 0.0),
-                    max_tokens=config.get("max_tokens", 16),
-                )
+                    max_tokens=config.get("max_tokens", 16))
             )
 
     def forward(self, *, inputs: BenchmarkInput) -> BenchmarkEnsembleOutput:
@@ -289,8 +287,7 @@ def run_benchmarks(
             f"Run {i+1}",
             f"{sequential_times[i]:.4f}s",
             f"{auto_parallel_times[i]:.4f}s",
-            f"{explicit_parallel_times[i]:.4f}s",
-        )
+            f"{explicit_parallel_times[i]:.4f}s")
 
     console.print(run_table)
 
@@ -311,6 +308,7 @@ def run_benchmarks(
 
 
 def main() -> None:
+    """Example demonstrating the simplified XCS architecture."""
     """Main function to run the parallelization benchmark."""
     import os
 
@@ -320,8 +318,7 @@ def main() -> None:
             "Measuring JIT Parallelization Impact in Ensemble LLM Execution",
             title="Ember Parallelization Benchmark",
             subtitle="Comparing Sequential vs Auto-Parallel vs Explicit Parallel",
-            style="bold cyan",
-        )
+            style="bold cyan")
     )
 
     # Check if API keys are available
@@ -342,8 +339,7 @@ def main() -> None:
                 "Example:\n"
                 "  export ANTHROPIC_API_KEY=sk_ant_xxxx",
                 title="API Keys Required",
-                style="yellow",
-            )
+                style="yellow")
         )
         return
 
@@ -358,8 +354,7 @@ def main() -> None:
             "model_name": "anthropic:claude-3-haiku",
             "temperature": 0.7,
             "max_tokens": 16,
-        },
-    ]
+        }]
 
     # Add OpenAI model if available
     if os.environ.get("OPENAI_API_KEY"):
@@ -391,8 +386,7 @@ def main() -> None:
                 "This benchmark requires properly configured API keys and model availability.\n"
                 "Please check your API keys and available models.",
                 title="Execution Error",
-                style="red",
-            )
+                style="red")
         )
 
 

@@ -13,8 +13,8 @@ from typing import Any, Dict
 import numpy as np
 import pytest
 
-from ember.xcs.engine.xcs_engine import execute_graph
-from ember.xcs.graph.xcs_graph import XCSGraph
+from ember.xcs.graph import Graph
+from ember.xcs.graph import Graph
 from tests.helpers.stub_classes import Operator
 
 # Import our test operators
@@ -22,8 +22,7 @@ from tests.unit.xcs.transforms.mock_operators import (
     AsyncBehaviorOperator,
     BasicOperator,
     ComplexInputOperator,
-    ExceptionOperator,
-)
+    ExceptionOperator)
 from tests.unit.xcs.transforms.mock_operators import MockModule as ModuleOperator
 from tests.unit.xcs.transforms.mock_operators import NestedOperator, StatefulOperator
 
@@ -34,8 +33,7 @@ from tests.unit.xcs.transforms.test_transform_imports import (
     mesh_sharded,
     pjit,
     pmap,
-    vmap,
-)
+    vmap)
 
 # ============================== VMAP Tests ==============================
 
@@ -57,8 +55,7 @@ class TestVMap:
         assert result["results"] == [
             "prompt1_processed",
             "prompt2_processed",
-            "prompt3_processed",
-        ]
+            "prompt3_processed"]
 
         # Verify original operator was called for each batch item
         assert op.call_count == 3
@@ -151,8 +148,7 @@ class TestVMap:
             "s1_processed",
             "s2_processed",
             "s3_processed",
-            "s4_processed",
-        ]
+            "s4_processed"]
 
     def test_vmap_with_nested_operator(self):
         """Test vmap with a nested operator structure."""
@@ -555,7 +551,7 @@ class TestDeviceMesh:
         """Test DeviceMesh creation with default arguments."""
         # Default shape
         mesh1 = DeviceMesh(devices=["cpu:0", "cpu:1", "cpu:2", "cpu:3"])
-        assert mesh1.shape == (4,)
+        assert mesh1.shape == (4)
         assert len(mesh1.devices) == 4
 
         # Create a mesh with explicit devices to test shape handling
@@ -842,8 +838,7 @@ class TestTransformationIntegration:
                 ["inner1a", "inner1b"],
                 ["inner2a", "inner2b"],
                 ["inner3a", "inner3b"],
-                ["inner4a", "inner4b"],
-            ]
+                ["inner4a", "inner4b"]]
         }
 
         result = parallel_vectorized_op(inputs=batch_inputs)
@@ -912,7 +907,7 @@ class TestTransformationIntegration:
         op2 = SimpleGraphOperator(transform_second)
 
         # Create a graph
-        graph = XCSGraph()
+        graph = Graph()
         node1 = graph.add_node(op1, name="first")
         node2 = graph.add_node(op2, name="second")
 

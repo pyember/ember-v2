@@ -390,8 +390,7 @@ class TestBareWithVMap:
             5,
             6,
             7,
-            8,
-        ]  # Increased number of inputs for more parallelism opportunity
+            8]  # Increased number of inputs for more parallelism opportunity
         prompts = [f"test_prompt_{seed}" for seed in seeds]
 
         # Reset call counts for tracking
@@ -816,8 +815,7 @@ class TestBareWithVMap:
             # This is different behavior than vmap, but we should test for what it actually does
             assert base_model.call_count in (
                 len(seeds),
-                len(seeds) * 4,
-            ), f"Base model call count {base_model.call_count} not as expected"
+                len(seeds) * 4), f"Base model call count {base_model.call_count} not as expected"
 
             # Check results exist
             assert len(pmap_results) == len(

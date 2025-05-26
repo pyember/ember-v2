@@ -20,8 +20,7 @@ from ember.xcs.transforms.pmap import (
     _get_default_num_workers,
     _shard_inputs,
     pjit,
-    pmap,
-)
+    pmap)
 
 # Import test operators
 from tests.unit.xcs.transforms.mock_operators import (
@@ -31,14 +30,12 @@ from tests.unit.xcs.transforms.mock_operators import (
     ExceptionOperator,
     MockModule,
     NestedOperator,
-    StatefulOperator,
-)
+    StatefulOperator)
 from tests.unit.xcs.transforms.test_utils import (
     assert_processing_time,
     count_unique_threads,
     generate_batch_inputs,
-    time_function_execution,
-)
+    time_function_execution)
 
 # =============================== Fixtures ===============================
 
@@ -173,8 +170,7 @@ class TestPMapInternals:
         # Case 3: Multiple fields
         results = [
             {"results": ["a", "b"], "metadata": {"shard": 1}},
-            {"results": ["c", "d"], "metadata": {"shard": 2}},
-        ]
+            {"results": ["c", "d"], "metadata": {"shard": 2}}]
         combined = _combine_results(results)
         assert combined["results"] == ["a", "b", "c", "d"]
         assert combined["metadata"] == [{"shard": 1}, {"shard": 2}]
@@ -182,8 +178,7 @@ class TestPMapInternals:
         # Case 4: Mixed list and scalar values
         results = [
             {"results": ["a", "b"], "count": 2},
-            {"results": ["c", "d"], "count": 2},
-        ]
+            {"results": ["c", "d"], "count": 2}]
         combined = _combine_results(results)
         assert combined["results"] == ["a", "b", "c", "d"]
         assert combined["count"] == [2, 2]
@@ -191,8 +186,7 @@ class TestPMapInternals:
         # Case 5: Differing keys
         results = [
             {"results": ["a"], "only_in_first": True},
-            {"results": ["b"], "only_in_second": True},
-        ]
+            {"results": ["b"], "only_in_second": True}]
         combined = _combine_results(results)
         assert combined["results"] == ["a", "b"]
         assert combined["only_in_first"] == [True]
@@ -645,8 +639,7 @@ class TestPMapEdgeCases:
         parallel_op = pmap(
             basic_operator,
             num_workers=2,
-            sharding_options=ShardingOptions(strict_batch_size=False),
-        )
+            sharding_options=ShardingOptions(strict_batch_size=False))
 
         # Inconsistent lengths in shardable inputs
         batch_inputs = {

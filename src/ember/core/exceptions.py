@@ -69,8 +69,7 @@ class EmberError(Exception):
         error_code: Optional[int] = None,
         context: Optional[Dict[str, Any]] = None,
         cause: Optional[Exception] = None,
-        recovery_hint: Optional[str] = None,
-    ) -> None:
+        recovery_hint: Optional[str] = None) -> None:
         """Initialize with message, error code, and optional context.
 
         Args:
@@ -103,8 +102,7 @@ class EmberError(Exception):
                     self.add_context(
                         caller_file=caller_info.filename,
                         caller_function=caller_info.function,
-                        caller_lineno=caller_info.lineno,
-                    )
+                        caller_lineno=caller_info.lineno)
 
         super().__init__(self._format_message())
 
@@ -164,8 +162,7 @@ class EmberError(Exception):
         logger.log(
             level,
             f"{self.__class__.__name__}: {self.message}",
-            extra={"structured_data": self.get_context()},
-        )
+            extra={"structured_data": self.get_context()})
 
     @classmethod
     def from_exception(
@@ -222,8 +219,7 @@ class ErrorGroup(EmberError):
         message: str,
         errors: List[Exception],
         error_code: Optional[int] = None,
-        context: Optional[Dict[str, Any]] = None,
-    ) -> None:
+        context: Optional[Dict[str, Any]] = None) -> None:
         """Initialize with a message and list of errors.
 
         Args:
@@ -241,8 +237,7 @@ class ErrorGroup(EmberError):
         super().__init__(
             message=message,
             error_code=error_code,
-            context=error_context,
-        )
+            context=error_context)
 
     def _format_message(self) -> str:
         """Format the error message with the list of contained errors.
@@ -486,8 +481,7 @@ class ProviderAPIError(ModelError):
         provider_name: str,
         message: str,
         status_code: Optional[int] = None,
-        cause: Optional[Exception] = None,
-    ) -> "ProviderAPIError":
+        cause: Optional[Exception] = None) -> "ProviderAPIError":
         """Create an exception for a specific provider API error.
 
         Args:
@@ -538,8 +532,7 @@ class ModelDiscoveryError(ModelError):
         return cls(
             message=message,
             context={"provider": provider, "reason": reason},
-            cause=cause,
-        )
+            cause=cause)
 
 
 class ModelRegistrationError(ModelError):
@@ -566,8 +559,7 @@ class ModelRegistrationError(ModelError):
         return cls(
             message=message,
             context={"model_name": model_name, "reason": reason},
-            cause=cause,
-        )
+            cause=cause)
 
 
 class MissingLMModuleError(ModelError):
@@ -622,8 +614,7 @@ class OperatorExecutionError(OperatorError):
         operator_name: str,
         message: Optional[str] = None,
         cause: Optional[Exception] = None,
-        **context: Any,
-    ) -> "OperatorExecutionError":
+        **context: Any) -> "OperatorExecutionError":
         """Create an exception for a specific operator execution error.
 
         Args:
@@ -701,8 +692,7 @@ class DataValidationError(DataError):
         message: Optional[str] = None,
         expected_type: Optional[str] = None,
         actual_value: Any = None,
-        **additional_context: Any,
-    ) -> "DataValidationError":
+        **additional_context: Any) -> "DataValidationError":
         """Create an exception for a specific field validation error.
 
         Args:
@@ -805,8 +795,7 @@ class GatedDatasetAuthenticationError(DataError):
                 "auth_command": "huggingface-cli login",
                 "recovery_steps": recovery_steps,
             },
-            recovery_hint=recovery_steps,
-        )
+            recovery_hint=recovery_steps)
 
 
 # =========================================================
@@ -840,8 +829,7 @@ class TraceError(XCSError):
         cls,
         operation_id: Optional[str] = None,
         message: Optional[str] = None,
-        cause: Optional[Exception] = None,
-    ) -> "TraceError":
+        cause: Optional[Exception] = None) -> "TraceError":
         """Create an exception for a specific tracing error.
 
         Args:
@@ -875,8 +863,7 @@ class CompilationError(XCSError):
         cls,
         graph_id: Optional[str] = None,
         message: Optional[str] = None,
-        cause: Optional[Exception] = None,
-    ) -> "CompilationError":
+        cause: Optional[Exception] = None) -> "CompilationError":
         """Create an exception for a specific graph compilation error.
 
         Args:
@@ -911,8 +898,7 @@ class ExecutionError(XCSError):
         node_id: Optional[str] = None,
         message: Optional[str] = None,
         cause: Optional[Exception] = None,
-        **context: Any,
-    ) -> "ExecutionError":
+        **context: Any) -> "ExecutionError":
         """Create an exception for a specific node execution error.
 
         Args:
@@ -951,8 +937,7 @@ class TransformError(XCSError):
         message: Optional[str] = None,
         cause: Optional[Exception] = None,
         details: Optional[Dict[str, Any]] = None,
-        **context: Any,
-    ) -> "TransformError":
+        **context: Any) -> "TransformError":
         """Create an exception for a specific transform error.
 
         Args:
@@ -995,8 +980,7 @@ class ParallelExecutionError(ExecutionError):
         node_id: Optional[str] = None,
         message: Optional[str] = None,
         cause: Optional[Exception] = None,
-        **context: Any,
-    ) -> "ParallelExecutionError":
+        **context: Any) -> "ParallelExecutionError":
         """Create an exception for a specific worker execution error.
 
         Args:
@@ -1036,8 +1020,7 @@ class DataFlowError(XCSError):
         source_node: str,
         target_node: str,
         graph_id: Optional[str] = None,
-        message: Optional[str] = None,
-    ) -> "DataFlowError":
+        message: Optional[str] = None) -> "DataFlowError":
         """Create an exception for a specific data flow error.
 
         Args:
@@ -1075,8 +1058,7 @@ class SchedulerError(XCSError):
         cls,
         scheduler_type: str,
         graph_id: Optional[str] = None,
-        message: Optional[str] = None,
-    ) -> "SchedulerError":
+        message: Optional[str] = None) -> "SchedulerError":
         """Create an exception for a specific scheduler error.
 
         Args:
@@ -1187,8 +1169,7 @@ class PluginLoadError(PluginError):
         return cls(
             message=message,
             context={"plugin_name": plugin_name, "reason": reason},
-            cause=cause,
-        )
+            cause=cause)
 
 
 # =========================================================
@@ -1297,5 +1278,4 @@ __all__ = [
     "PromptSpecificationError",
     "OperatorSpecificationNotDefinedError",
     "BoundMethodNotInitializedError",
-    "EmberException",
-]
+    "EmberException"]

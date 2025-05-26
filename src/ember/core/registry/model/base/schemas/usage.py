@@ -29,8 +29,7 @@ class UsageStats(BaseModel):
             total_tokens=self.total_tokens + other.total_tokens,
             prompt_tokens=self.prompt_tokens + other.prompt_tokens,
             completion_tokens=self.completion_tokens + other.completion_tokens,
-            cost_usd=self.cost_usd + other.cost_usd,
-        )
+            cost_usd=self.cost_usd + other.cost_usd)
 
     def __add__(self, other: "UsageStats") -> "UsageStats":
         """Overloads the addition operator to combine usage statistics.

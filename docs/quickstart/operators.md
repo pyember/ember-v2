@@ -99,7 +99,7 @@ result = pipeline(inputs={"text": "Your input text here"})
 ### Parallel
 
 ```python
-from ember.xcs.graph.xcs_graph import XCSGraph
+from ember.xcs.graph.xcs_graph import Graph
 from ember.xcs.engine.unified_engine import execute_graph
 
 # Setup operators
@@ -108,7 +108,7 @@ classifier = TextClassifierOperator(model_name="anthropic:claude-3-haiku")
 summarizer = TextSummarizerOperator(model_name="openai:gpt-4o-mini")
 
 # Build computation graph
-graph = XCSGraph()
+graph = Graph()
 graph.add_node(operator=sentiment, node_id="sentiment")
 graph.add_node(operator=classifier, node_id="classifier")
 graph.add_node(operator=summarizer, node_id="summarizer")

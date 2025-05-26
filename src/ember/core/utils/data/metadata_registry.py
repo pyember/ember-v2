@@ -17,8 +17,7 @@ warnings.warn(
     "The metadata_registry module is deprecated. "
     "Use ember.core.utils.data.registry instead.",
     DeprecationWarning,
-    stacklevel=2,
-)
+    stacklevel=2)
 
 # Compatibility aliases for internal code
 # These aliases are provided to maintain backward compatibility with existing code

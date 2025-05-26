@@ -34,8 +34,7 @@ class CodeExecutionError(ExecutionError):
         error_type: str,
         stderr: Optional[str] = None,
         exit_code: Optional[int] = None,
-        **context: Any,
-    ) -> "CodeExecutionError":
+        **context: Any) -> "CodeExecutionError":
         """Create an exception for a specific code execution error.
 
         Args:
@@ -184,8 +183,7 @@ class PythonHandler(LanguageHandler):
             "import random",
             "import string",
             "from collections import Counter, defaultdict, deque",
-            "from itertools import combinations, permutations, product",
-        ]
+            "from itertools import combinations, permutations, product"]
 
         # Security patterns to check (pattern, description)
         unsafe_patterns = [
@@ -218,8 +216,7 @@ class PythonHandler(LanguageHandler):
             (r"setattr\s*\(", "attribute modification"),
             (r"getattr\s*\(", "attribute access"),
             (r"import\s+ctypes", "C bindings"),
-            (r"import\s+multiprocessing", "process spawning"),
-        ]
+            (r"import\s+multiprocessing", "process spawning")]
 
         # Check for unsafe patterns and collect violations
         violations = []
@@ -240,16 +237,14 @@ class PythonHandler(LanguageHandler):
                     if len(violations) > 1
                     else violations[0]
                 ),
-                code_snippet=code[:200] if len(code) > 200 else code,
-            )
+                code_snippet=code[:200] if len(code) > 200 else code)
 
         # Memory and CPU limits to prevent infinite loops and memory bombs
         resource_limits = [
             "# Set resource limits",
             "import resource",
             "resource.setrlimit(resource.RLIMIT_CPU, (5, 5))  # 5 CPU seconds",
-            "resource.setrlimit(resource.RLIMIT_AS, (500 * 1024 * 1024, 500 * 1024 * 1024))  # 500MB memory",
-        ]
+            "resource.setrlimit(resource.RLIMIT_AS, (500 * 1024 * 1024, 500 * 1024 * 1024))  # 500MB memory"]
 
         # Wrap code with safety measures
         wrapper = "\n".join(
@@ -262,8 +257,7 @@ class PythonHandler(LanguageHandler):
                 "",
                 "# Begin user code",
                 code,
-                "# End user code",
-            ]
+                "# End user code"]
         )
 
         return wrapper
@@ -310,8 +304,7 @@ class CPPHandler(LanguageHandler):
             "-Wall",
             str(code_file),
             "-o",
-            str(output_file),
-        ]
+            str(output_file)]
 
     def get_run_command(self, code_file: Path) -> List[str]:
         """Return the command to run compiled C++ code.
@@ -372,8 +365,7 @@ class CodeExecutor:
             raise DataError(
                 message=f"Unsupported language: {language}",
                 context={"language": language, "supported_languages": supported},
-                recovery_hint=f"Use one of the supported languages: {supported}",
-            )
+                recovery_hint=f"Use one of the supported languages: {supported}")
         return handler
 
     def _monitor_process_resources(self, process: subprocess.Popen) -> float:
@@ -465,8 +457,7 @@ class CodeExecutor:
                             cwd=temp_dir,
                             capture_output=True,
                             text=True,
-                            timeout=timeout,
-                        )
+                            timeout=timeout)
 
                         if compile_result.returncode != 0:
                             return TestCaseResult(
@@ -476,15 +467,13 @@ class CodeExecutor:
                                 stdout="",
                                 stderr=compile_result.stderr,
                                 error="Compilation error",
-                                exit_code=compile_result.returncode,
-                            )
+                                exit_code=compile_result.returncode)
                     except subprocess.TimeoutExpired:
                         return TestCaseResult(
                             passed=False,
                             execution_time=timeout,
                             error="Compilation timeout",
-                            exit_code=None,
-                        )
+                            exit_code=None)
 
                 # Execute code with resource monitoring
                 run_cmd = handler.get_run_command(code_file)
@@ -502,8 +491,7 @@ class CodeExecutor:
                             stderr=subprocess.PIPE,
                             text=True,
                             # Set process group to enable clean termination of subprocesses
-                            preexec_fn=os.setsid,
-                        )
+                            preexec_fn=os.setsid)
 
                         # Start resource monitoring in a separate thread
                         import threading
@@ -512,8 +500,7 @@ class CodeExecutor:
                             target=lambda: setattr(
                                 threading.current_thread(),
                                 "memory_usage",
-                                self._monitor_process_resources(process),
-                            )
+                                self._monitor_process_resources(process))
                         )
                         monitor_thread.daemon = True
                         monitor_thread.start()
@@ -551,8 +538,7 @@ class CodeExecutor:
                                 error=(
                                     None if process.returncode == 0 else "Runtime error"
                                 ),
-                                exit_code=process.returncode,
-                            )
+                                exit_code=process.returncode)
 
                         except subprocess.TimeoutExpired:
                             # Clean termination of process group
@@ -570,8 +556,7 @@ class CodeExecutor:
                                 execution_time=execution_time,
                                 memory_used_mb=memory_used,
                                 error="Time limit exceeded",
-                                exit_code=None,
-                            )
+                                exit_code=None)
 
                 except Exception as e:
                     # Handle any unexpected errors during execution
@@ -580,8 +565,7 @@ class CodeExecutor:
                         passed=False,
                         execution_time=execution_time,
                         error=f"Execution error: {str(e)}",
-                        exit_code=None,
-                    )
+                        exit_code=None)
 
             except SecurityViolationError:
                 # Re-raise security violations
@@ -623,8 +607,7 @@ class CodeCompetitionEvaluator(IEvaluator[str, Dict[str, Any]]):
         self.executor = CodeExecutor(
             time_limit=time_limit,
             memory_limit_mb=memory_limit_mb,
-            max_output_size=max_output_size,
-        )
+            max_output_size=max_output_size)
 
     def evaluate(
         self, system_output: str, reference_data: Dict[str, Any], **kwargs: Any
@@ -659,8 +642,7 @@ class CodeCompetitionEvaluator(IEvaluator[str, Dict[str, Any]]):
                     "error": f"Unsupported language: {language}",
                     "error_type": "unsupported_language",
                     "supported_languages": self.supported_languages,
-                },
-            )
+                })
 
         # Validate test cases
         test_cases = reference_data.get("test_cases", [])
@@ -671,8 +653,7 @@ class CodeCompetitionEvaluator(IEvaluator[str, Dict[str, Any]]):
                 metadata={
                     "error": "No test cases provided",
                     "error_type": "missing_test_cases",
-                },
-            )
+                })
 
         # Process test cases
         results = []
@@ -755,8 +736,7 @@ class CodeCompetitionEvaluator(IEvaluator[str, Dict[str, Any]]):
                             "language": language,
                             "test_case": test_id,
                             "context": e.context,
-                        },
-                    )
+                        })
 
                 except CodeExecutionError as e:
                     # Code execution errors are per-test-case
@@ -825,5 +805,4 @@ class CodeCompetitionEvaluator(IEvaluator[str, Dict[str, Any]]):
                 "max_memory_used_mb": round(max_memory, 2),
                 "test_results": results,
                 "error_message": error_message,
-            },
-        )
+            })

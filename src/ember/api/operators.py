@@ -26,8 +26,7 @@ Examples:
     ensemble = EnsembleOperator(
         operators=[
             QuestionAnswerer(model="gpt-4"),
-            QuestionAnswerer(model="claude-3"),
-        ]
+            QuestionAnswerer(model="claude-3")]
     )
 
     # Using selector operators
@@ -61,8 +60,7 @@ from typing import Any, Dict, List, Optional, TypeVar, Union
 # Core operator implementations
 from ember.core.registry.operator.core.ensemble import EnsembleOperator
 from ember.core.registry.operator.core.most_common import (
-    MostCommonAnswerSelectorOperator as MostCommonAnswerSelector,
-)
+    MostCommonAnswerSelectorOperator as MostCommonAnswerSelector)
 from ember.core.registry.operator.core.selector_judge import SelectorJudgeOperator
 from ember.core.registry.operator.core.synthesis_judge import JudgeSynthesisOperator
 from ember.core.registry.operator.core.verifier import VerifierOperator
@@ -87,5 +85,4 @@ __all__ = [
     "Any",
     "Optional",
     "Union",
-    "TypeVar",
-]
+    "TypeVar"]

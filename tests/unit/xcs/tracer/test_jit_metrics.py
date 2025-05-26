@@ -99,16 +99,13 @@ def test_jit_cache_with_metrics() -> None:
     [
         (0.1, 0.2, 10, 0, 1.0),
         (0.1, 0.2, 0, 10, 0.0),
-        (0.1, 0.2, 7, 3, 0.7),
-    ],
-)
+        (0.1, 0.2, 7, 3, 0.7)])
 def test_jit_metrics_parameterized(
     compilation_time: float,
     execution_time: float,
     cache_hits: int,
     cache_misses: int,
-    expected_hit_ratio: float,
-) -> None:
+    expected_hit_ratio: float) -> None:
     """Test metrics calculation with different parameters."""
     metrics = JITMetrics()
 

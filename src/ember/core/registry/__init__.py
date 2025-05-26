@@ -12,5 +12,4 @@ __all__ = [
     "model",
     "operator",
     "specification",
-    "EmberModel",
-]
+    "EmberModel"]

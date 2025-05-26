@@ -13,8 +13,7 @@ from ember.api.data import (
     DatasetConfig,
     DatasetEntry,
     DatasetInfo,
-    TaskType,
-)
+    TaskType)
 from ember.core.utils.data import load_dataset_entries
 from ember.core.utils.data.context.data_context import DataContext
 
@@ -38,14 +37,12 @@ class TestDatasetClass(unittest.TestCase):
         self.entries = [
             DatasetEntry(id="1", query="Question 1?", metadata={"answer": "Answer 1"}),
             DatasetEntry(id="2", query="Question 2?", metadata={"answer": "Answer 2"}),
-            DatasetEntry(id="3", query="Question 3?", metadata={"answer": "Answer 3"}),
-        ]
+            DatasetEntry(id="3", query="Question 3?", metadata={"answer": "Answer 3"})]
         self.dataset_info = DatasetInfo(
             name="test_dataset",
             description="Test dataset",
             source="test_source",
-            task_type=TaskType.SHORT_ANSWER,
-        )
+            task_type=TaskType.SHORT_ANSWER)
         self.dataset = Dataset(entries=self.entries, info=self.dataset_info)
 
     def test_init(self) -> None:

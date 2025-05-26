@@ -78,18 +78,15 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 from ember.core.registry.model.base.schemas.chat_schemas import (
     ChatRequest,
     ChatResponse,
-    ProviderParams,
-)
+    ProviderParams)
 from ember.core.registry.model.base.schemas.usage import UsageStats
 from ember.core.registry.model.base.utils.model_registry_exceptions import (
     InvalidPromptError,
     ProviderAPIError,
-    ValidationError,
-)
+    ValidationError)
 from ember.core.registry.model.providers.base_provider import (
     BaseChatParameters,
-    BaseProviderModel,
-)
+    BaseProviderModel)
 from ember.plugin_system import provider
 
 
@@ -322,8 +319,7 @@ class AnthropicChatParameters(BaseChatParameters):
         if value < 1:
             raise ValidationError(
                 message=f"max_tokens must be >= 1, got {value}",
-                context={"max_tokens": value, "min_allowed": 1},
-            )
+                context={"max_tokens": value, "min_allowed": 1})
         return value
 
     def to_anthropic_kwargs(self) -> Dict[str, Any]:
@@ -423,8 +419,7 @@ class AnthropicModel(BaseProviderModel):
         logger.warning(
             "Anthropic model '%s' not recognized in configuration. Falling back to '%s'.",
             raw_name,
-            default_model,
-        )
+            default_model)
         return default_model
 
     def create_client(self) -> anthropic.Anthropic:
@@ -476,8 +471,7 @@ class AnthropicModel(BaseProviderModel):
                 "model_name": self.model_info.name,
                 "correlation_id": correlation_id,
                 "prompt_length": len(request.prompt),
-            },
-        )
+            })
 
         final_model_name: str = self._normalize_anthropic_model_name(
             self.model_info.name
@@ -500,8 +494,7 @@ class AnthropicModel(BaseProviderModel):
                 messages=messages,
                 max_tokens=anthro_kwargs.pop("max_tokens_to_sample", 768),
                 timeout=timeout,
-                **anthro_kwargs,
-            )
+                **anthro_kwargs)
             # New API returns content array, join if multiple parts
             if hasattr(response, "content") and isinstance(response.content, list):
                 response_text = "".join(
@@ -547,8 +540,7 @@ class AnthropicModel(BaseProviderModel):
                 total_tokens=completion_words,
                 prompt_tokens=completion_words,
                 completion_tokens=0,
-                cost_usd=0.0,
-            )
+                cost_usd=0.0)
 
         # Content field in newer API responses
         if hasattr(raw_output, "content") and isinstance(raw_output.content, list):
@@ -560,13 +552,11 @@ class AnthropicModel(BaseProviderModel):
                 total_tokens=content_words,
                 prompt_tokens=0,
                 completion_tokens=content_words,
-                cost_usd=0.0,
-            )
+                cost_usd=0.0)
 
         # Final fallback
         return UsageStats(
             total_tokens=0,
             prompt_tokens=0,
             completion_tokens=0,
-            cost_usd=0.0,
-        )
+            cost_usd=0.0)

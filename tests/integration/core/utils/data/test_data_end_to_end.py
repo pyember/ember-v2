@@ -57,8 +57,7 @@ def sample_json_data():
             "question": "What is the speed of light?",
             "answer": "299,792,458 m/s",
             "difficulty": "hard",
-        },
-    ]
+        }]
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as temp:
         json.dump(data, temp)
@@ -78,8 +77,7 @@ def sample_text_data():
         "It contains multiple lines of text.",
         "Each line can be processed separately.",
         "Line processing is an important aspect of NLP.",
-        "The final line has some numbers: 123, 456, 789.",
-    ]
+        "The final line has some numbers: 123, 456, 789."]
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as temp:
         for line in lines:
@@ -176,8 +174,7 @@ def test_text_data_end_to_end(sample_text_data):
         "numbers:",
         "123,",
         "456,",
-        "789.",
-    ]
+        "789."]
     assert processed_data[0] == expected_tokens
 
 

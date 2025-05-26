@@ -17,8 +17,7 @@ from ember.core.utils.eval.numeric_answer import AIMEAnswerEvaluator
 # Skip these tests unless integration testing is enabled or --run-all-tests is used
 pytestmark = pytest.mark.skipif(
     "os.environ.get('RUN_INTEGRATION_TESTS', '0') != '1' and not config.getoption('--run-all-tests')",
-    reason="Integration tests are disabled. Set RUN_INTEGRATION_TESTS=1 or use --run-all-tests to enable.",
-)
+    reason="Integration tests are disabled. Set RUN_INTEGRATION_TESTS=1 or use --run-all-tests to enable.")
 
 
 # Manually register datasets for testing
@@ -30,24 +29,21 @@ def setup_module(module):
         description="American Invitational Mathematics Examination",
         source="aime_2024",
         task_type=TaskType.SHORT_ANSWER,
-        prepper_class=AIMEPrepper,
-    )
+        prepper_class=AIMEPrepper)
 
     DATASET_REGISTRY.register_metadata(
         name="gpqa",
         description="Graduate-level PhD science questions",
         source="Idavidrein/gpqa",
         task_type=TaskType.MULTIPLE_CHOICE,
-        prepper_class=GPQAPrepper,
-    )
+        prepper_class=GPQAPrepper)
 
     DATASET_REGISTRY.register_metadata(
         name="codeforces",
         description="Competitive programming problems",
         source="open-r1/codeforces",
         task_type=TaskType.CODE_COMPLETION,
-        prepper_class=CodeForcesPrepper,
-    )
+        prepper_class=CodeForcesPrepper)
 
 
 class TestAIMEIntegration:
@@ -143,8 +139,7 @@ print(solve(a, b))
         test_case = {
             "test_cases": [
                 {"input": "5 7", "output": "12"},
-                {"input": "10 20", "output": "30"},
-            ]
+                {"input": "10 20", "output": "30"}]
         }
 
         result = evaluator.evaluate(solution, test_case, language="python")

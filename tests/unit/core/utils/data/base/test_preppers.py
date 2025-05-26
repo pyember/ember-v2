@@ -31,8 +31,7 @@ class ConcreteDatasetPrepper(IDatasetPrepper):
         entry = DatasetEntry(
             query=item["question"],
             choices={},
-            metadata={"id": item["id"], "answer": item["answer"]},
-        )
+            metadata={"id": item["id"], "answer": item["answer"]})
         return [entry]
 
 
@@ -128,8 +127,7 @@ class TestConcreteDatasetPrepper(unittest.TestCase):
         self.assertEqual({}, entry.choices)
         self.assertEqual(
             {"id": self.test_item["id"], "answer": self.test_item["answer"]},
-            entry.metadata,
-        )
+            entry.metadata)
 
     def test_create_dataset_entries_with_named_params(self) -> None:
         """create_dataset_entries() should require named parameters."""
@@ -169,8 +167,7 @@ class TestPreppersWithConfig(unittest.TestCase):
                 # Use config values in the creation process
                 entry = DatasetEntry(
                     query=item["question"],
-                    metadata={"config_name": self.config_name, "split": self.split},
-                )
+                    metadata={"config_name": self.config_name, "split": self.split})
                 return [entry]
 
         # Arrange

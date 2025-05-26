@@ -26,8 +26,7 @@ def _convert_model_config_to_model_info(
     provider_name: str,
     model_config: Any,
     provider_config: Any,
-    api_key: str,
-) -> ModelInfo:
+    api_key: str) -> ModelInfo:
     """
     Convert from configuration model to ModelInfo.
 
@@ -56,13 +55,11 @@ def _convert_model_config_to_model_info(
             ),
             output_cost_per_thousand=getattr(
                 model_config.cost, "output_cost_per_thousand", 0.0
-            ),
-        )
+            ))
     elif hasattr(model_config, "cost_input") and hasattr(model_config, "cost_output"):
         cost = ModelCost(
             input_cost_per_thousand=getattr(model_config, "cost_input", 0.0),
-            output_cost_per_thousand=getattr(model_config, "cost_output", 0.0),
-        )
+            output_cost_per_thousand=getattr(model_config, "cost_output", 0.0))
 
     # Create rate limit object
     rate_limit = RateLimit()
@@ -71,22 +68,19 @@ def _convert_model_config_to_model_info(
             tokens_per_minute=getattr(model_config.rate_limit, "tokens_per_minute", 0),
             requests_per_minute=getattr(
                 model_config.rate_limit, "requests_per_minute", 0
-            ),
-        )
+            ))
     elif hasattr(model_config, "tokens_per_minute") or hasattr(
         model_config, "requests_per_minute"
     ):
         rate_limit = RateLimit(
             tokens_per_minute=getattr(model_config, "tokens_per_minute", 0),
-            requests_per_minute=getattr(model_config, "requests_per_minute", 0),
-        )
+            requests_per_minute=getattr(model_config, "requests_per_minute", 0))
 
     # Create provider info with custom args
     provider_info = ProviderInfo(
         name=provider_name.capitalize(),
         default_api_key=api_key,
-        base_url=getattr(provider_config, "base_url", None),
-    )
+        base_url=getattr(provider_config, "base_url", None))
 
     # Add additional provider parameters as custom args
     if hasattr(provider_config, "model_dump") and callable(provider_config.model_dump):
@@ -106,16 +100,14 @@ def _convert_model_config_to_model_info(
         cost=cost,
         rate_limit=rate_limit,
         provider=provider_info,
-        api_key=api_key,
-    )
+        api_key=api_key)
 
 
 def initialize_registry(
     config_path: Optional[str] = None,
     config_manager: Optional[ConfigManager] = None,
     auto_discover: Optional[bool] = None,
-    force_discovery: bool = False,
-) -> ModelRegistry:
+    force_discovery: bool = False) -> ModelRegistry:
     """
     Initialize the model registry using the centralized configuration system.
 
@@ -243,8 +235,7 @@ def initialize_registry(
                             provider_name=provider_name,
                             model_config=model_config,
                             provider_config=provider_config,
-                            api_key=api_key,
-                        )
+                            api_key=api_key)
 
                         registry.register_model(model_info)
                         registered_models.append(model_id)

@@ -44,8 +44,7 @@ from ember.core.non import (
     Operator,
     Sequential,
     UniformEnsemble,
-    Verifier,
-)
+    Verifier)
 
 # Type aliases
 NodeSpec = Union[str, List[Any], Operator]
@@ -135,13 +134,11 @@ class OpRegistry:
         # Ensemble operators
         registry.register(
             "E",
-            lambda c, m, t: UniformEnsemble(num_units=c, model_name=m, temperature=t),
-        )
+            lambda c, m, t: UniformEnsemble(num_units=c, model_name=m, temperature=t))
 
         registry.register(
             "UE",
-            lambda c, m, t: UniformEnsemble(num_units=c, model_name=m, temperature=t),
-        )
+            lambda c, m, t: UniformEnsemble(num_units=c, model_name=m, temperature=t))
 
         # Judge operators
         registry.register(
@@ -236,8 +233,7 @@ def parse_spec(
 def resolve_refs(
     node_spec: NodeSpec,
     components: Optional[Dict[str, Any]] = None,
-    type_registry: Optional[OpRegistry] = None,
-) -> Operator:
+    type_registry: Optional[OpRegistry] = None) -> Operator:
     """Resolve operator references to concrete instances.
 
     The node can be:
@@ -296,8 +292,7 @@ def resolve_refs(
 def build_graph(
     graph_spec: GraphSpec,
     components: Optional[Dict[str, Any]] = None,
-    type_registry: Optional[OpRegistry] = None,
-) -> Operator:
+    type_registry: Optional[OpRegistry] = None) -> Operator:
     """Build an operator graph from a compact specification.
 
     Args:
@@ -342,5 +337,4 @@ __all__ = [
     # Core graph building function
     "build_graph",
     # Operator registry for type extension
-    "OpRegistry",
-]
+    "OpRegistry"]

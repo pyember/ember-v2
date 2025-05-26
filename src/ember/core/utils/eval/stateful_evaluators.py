@@ -42,8 +42,7 @@ class AggregatorEvaluator(IStatefulEvaluator[Any, Any]):
         return EvaluationResult(
             is_correct=aggregated_correct,
             score=summary.mean_score,
-            metadata={"accuracy": summary.accuracy, "total_samples": len(self.results)},
-        )
+            metadata={"accuracy": summary.accuracy, "total_samples": len(self.results)})
 
     def evaluate(
         self, system_output: Any, correct_answer: Any, **kwargs: Any

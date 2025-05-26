@@ -48,8 +48,7 @@ class DataConfig:
             batch_size=int(os.environ.get("EMBER_DATA_BATCH_SIZE", "32")),
             cache_ttl=int(os.environ.get("EMBER_DATA_CACHE_TTL", "3600")),
             auto_register_preppers=os.environ.get("EMBER_DATA_AUTO_REGISTER", "1")
-            != "0",
-        )
+            != "0")
 
     @classmethod
     def from_ember_context(cls, context: EmberContext) -> "DataConfig":
@@ -60,8 +59,7 @@ class DataConfig:
             cache_dir=getattr(config, "data_cache_dir", None),
             batch_size=getattr(config, "data_batch_size", 32),
             cache_ttl=getattr(config, "data_cache_ttl", 3600),
-            auto_register_preppers=getattr(config, "data_auto_register", True),
-        )
+            auto_register_preppers=getattr(config, "data_auto_register", True))
 
 
 class DataContext:
@@ -84,8 +82,7 @@ class DataContext:
         config_manager: Optional[Any] = None,
         config_path: Optional[str] = None,
         auto_discover: bool = True,
-        metrics: Optional[Dict[str, Any]] = None,
-    ):
+        metrics: Optional[Dict[str, Any]] = None):
         """Initialize data context with explicit dependencies.
 
         This constructor supports three main use cases:
@@ -119,8 +116,7 @@ class DataContext:
     def _init_config(
         self,
         config_manager: Optional[Any],
-        config_path: Optional[str],
-    ) -> DataConfig:
+        config_path: Optional[str]) -> DataConfig:
         """Initialize configuration from manager or path.
 
         Args:
@@ -137,8 +133,7 @@ class DataContext:
                 cache_ttl=getattr(config_manager.get_config(), "data_cache_ttl", 3600),
                 auto_register_preppers=getattr(
                     config_manager.get_config(), "data_auto_register", True
-                ),
-            )
+                ))
 
         if config_path is not None:
             # Load configuration from file
@@ -157,8 +152,7 @@ class DataContext:
                     cache_ttl=data_config.get("cache_ttl", 3600),
                     auto_register_preppers=data_config.get(
                         "auto_register_preppers", True
-                    ),
-                )
+                    ))
             except (IOError, yaml.YAMLError) as e:
                 logger.error(f"Error loading configuration from {config_path}: {e}")
                 logger.warning("Falling back to default configuration")
@@ -210,8 +204,7 @@ class DataContext:
         """
         return DatasetCache(
             disk_cache_dir=self._config.cache_dir,
-            default_ttl=self._config.cache_ttl,
-        )
+            default_ttl=self._config.cache_ttl)
 
     def _connect_loader_factory(self) -> None:
         """Connect loader factory to registry.
@@ -224,8 +217,7 @@ class DataContext:
                 if dataset and hasattr(dataset, "prepper") and dataset.prepper:
                     self._loader_factory.register(
                         dataset_name=name,
-                        prepper_class=dataset.prepper.__class__,
-                    )
+                        prepper_class=dataset.prepper.__class__)
 
     @property
     def registry(self) -> DatasetRegistry:
@@ -278,8 +270,7 @@ class DataContext:
                 service = DatasetService(
                     loader=self._create_dataset_loader(),
                     validator=DatasetValidator(),
-                    sampler=DatasetSampler(),
-                )
+                    sampler=DatasetSampler())
                 # Atomic assignment (thread-safe)
                 self._dataset_service = service
             else:
@@ -296,8 +287,7 @@ class DataContext:
         streaming: Optional[bool] = None,
         limit: Optional[int] = None,
         transformers: Optional[List[Any]] = None,
-        **kwargs,
-    ) -> Union[List[Any], Iterator[Any]]:
+        **kwargs) -> Union[List[Any], Iterator[Any]]:
         """Load a dataset with flexibility for streaming or eager loading.
 
         This is the primary method for loading datasets efficiently,
@@ -342,8 +332,7 @@ class DataContext:
             dataset_info=dataset_entry.info,
             prepper=dataset_entry.prepper,
             config=config,
-            num_samples=limit,
-        )
+            num_samples=limit)
 
     def get_streaming_dataset(self, name: str, **kwargs):
         """Get a streaming dataset by name.
@@ -376,8 +365,7 @@ class DataContext:
         return StreamingDataset(
             source=name,
             prepper=dataset_entry.prepper if dataset_entry else None,
-            **kwargs,
-        )
+            **kwargs)
 
     def _create_dataset_loader(self) -> IDatasetLoader:
         """Create a dataset loader with necessary configuration.
@@ -386,8 +374,7 @@ class DataContext:
             Configured dataset loader
         """
         return HuggingFaceDatasetLoader(
-            cache_dir=self._config.cache_dir,
-        )
+            cache_dir=self._config.cache_dir)
 
     def register_dataset(
         self,
@@ -396,8 +383,7 @@ class DataContext:
         source: str,
         task_type: Any,  # Use TaskType enum, but avoid circular import
         prepper_class: Optional[Type[IDatasetPrepper]] = None,
-        description: str = "",
-    ) -> None:
+        description: str = "") -> None:
         """Register dataset with context.
 
         Args:
@@ -412,8 +398,7 @@ class DataContext:
             name=name,
             source=source,
             task_type=task_type,
-            description=description,
-        )
+            description=description)
 
         # Create prepper instance if class provided
         prepper = None
@@ -424,15 +409,13 @@ class DataContext:
         self._registry.register(
             name=name,
             info=info,
-            prepper=prepper,
-        )
+            prepper=prepper)
 
         # Register with loader factory
         if prepper_class is not None:
             self._loader_factory.register(
                 dataset_name=name,
-                prepper_class=prepper_class,
-            )
+                prepper_class=prepper_class)
 
     @classmethod
     def create_from_env(
@@ -476,9 +459,7 @@ class DataContext:
             auto_discover=False,
             config=DataConfig(
                 cache_dir=None,  # Disable caching
-                auto_register_preppers=False,
-            ),
-        )
+                auto_register_preppers=False))
 
 
 def get_default_context() -> DataContext:

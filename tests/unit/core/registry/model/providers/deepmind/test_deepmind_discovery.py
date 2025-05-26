@@ -8,8 +8,7 @@ import google.generativeai as genai
 import pytest
 
 from ember.core.registry.model.providers.deepmind.deepmind_discovery import (
-    DeepmindDiscovery,
-)
+    DeepmindDiscovery)
 
 
 class DummyModel:
@@ -37,8 +36,7 @@ def patch_genai(monkeypatch: pytest.MonkeyPatch) -> None:
             DummyModel("gemini-2.0-pro"),  # Add new models from the enum
             DummyModel("gemini-2.0-flash"),  # Add new models from the enum
             # This one should be filtered out due to missing generateContent
-            DummyModel("other-model", []),
-        ]
+            DummyModel("other-model", [])]
 
     monkeypatch.setattr(genai, "list_models", mock_list_models)
     # Mock environment for EmberContext

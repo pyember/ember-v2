@@ -22,8 +22,7 @@ def test_context() -> DataContext:
         name="test_dataset",
         source="test/source",
         task_type=TaskType.MULTIPLE_CHOICE,
-        description="Test dataset for integration tests",
-    )
+        description="Test dataset for integration tests")
 
     return context
 
@@ -99,8 +98,7 @@ class TestIntegrationWithService:
             name="test_prepper_dataset",
             source="test/source",
             task_type=TaskType.MULTIPLE_CHOICE,
-            prepper_class=SimpleTestPrepper,
-        )
+            prepper_class=SimpleTestPrepper)
         
         # Verify prepper is registered with loader factory
         prepper_class = test_context.loader_factory.get_prepper_class(

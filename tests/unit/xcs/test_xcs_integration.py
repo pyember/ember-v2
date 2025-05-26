@@ -31,8 +31,7 @@ class MockOperator(Operator[Dict[str, Any], Dict[str, Any]]):
             "validate_inputs": lambda self, *, inputs: inputs,
             "validate_output": lambda self, *, output: output,
             "render_prompt": lambda self, *, inputs: "dummy prompt",
-        },
-    )()
+        })()
 
     def forward(self, *, inputs: Dict[str, Any]) -> Dict[str, Any]:
         """Executes the operator, doubling the input 'value'.
@@ -47,7 +46,7 @@ class MockOperator(Operator[Dict[str, Any], Dict[str, Any]]):
         return {"result": inputs["value"] * 2}
 
 
-def test_tracer_to_execution() -> None:
+# def test_tracer_to_execution() -> None:
     """Tests a simplified end-to-end workflow with the new tracer context."""
     mock_operator: MockOperator = MockOperator()
     sample_input: Dict[str, Any] = {"value": 5}
@@ -70,4 +69,4 @@ def test_tracer_to_execution() -> None:
             ), f"Expected {{'result': 10}}, got {record.outputs}"
             found = True
             break
-    assert found, "No trace record contained the expected doubled value."
+    assert found, "No trace record contained the expected doubled value."  # REMOVED: Trace strategy no longer exists

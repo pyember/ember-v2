@@ -61,8 +61,7 @@ def check_config_paths():
     config_paths = [
         "src/ember/core/registry/model/config/model_registry_config.yaml",
         "src/ember/core/registry/model/providers/openai/openai_config.yaml",
-        "src/ember/core/registry/model/providers/anthropic/anthropic_config.yaml",
-    ]
+        "src/ember/core/registry/model/providers/anthropic/anthropic_config.yaml"]
 
     base_dir = Path(__file__).parent.parent.parent.parent.parent
 
@@ -102,8 +101,7 @@ def check_provider_registry():
             try:
                 from ember.core.registry.model.providers import (
                     anthropic_provider,
-                    openai_provider,
-                )
+                    openai_provider)
 
                 logger.debug(f"Anthropic provider module: {anthropic_provider}")
                 logger.debug(f"OpenAI provider module: {openai_provider}")
@@ -111,8 +109,7 @@ def check_provider_registry():
                 # Check if providers are correctly decorated
                 for name, module in [
                     ("Anthropic", anthropic_provider),
-                    ("OpenAI", openai_provider),
-                ]:
+                    ("OpenAI", openai_provider)]:
                     for item_name in dir(module):
                         item = getattr(module, item_name)
                         if inspect.isclass(item):
@@ -142,8 +139,7 @@ def test_discovery_imports():
         "ember.core.registry.model.providers.anthropic",
         "ember.core.registry.model.providers.openai",
         "ember.core.registry.model.providers.anthropic.anthropic_discovery",
-        "ember.core.registry.model.providers.openai.openai_discovery",
-    ]
+        "ember.core.registry.model.providers.openai.openai_discovery"]
 
     for path in import_paths:
         try:
@@ -185,13 +181,10 @@ def test_individual_discovery():
     discovery_classes = [
         (
             "ember.core.registry.model.providers.anthropic.anthropic_discovery",
-            "AnthropicDiscovery",
-        ),
+            "AnthropicDiscovery"),
         (
             "ember.core.registry.model.providers.openai.openai_discovery",
-            "OpenAIDiscovery",
-        ),
-    ]
+            "OpenAIDiscovery")]
 
     for module_path, class_name in discovery_classes:
         try:
@@ -303,6 +296,7 @@ def check_model_registry_implementation():
 
 
 def main():
+    """Example demonstrating the simplified XCS architecture."""
     """Run all diagnostic tests."""
     logger.info("======= STARTING MODEL DISCOVERY DIAGNOSTICS =======")
 

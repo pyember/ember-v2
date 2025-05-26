@@ -34,14 +34,20 @@ class Strategy(Protocol):
         ...
 
     def compile(
-        self, func: F, sample_input: Optional[Dict[str, Any]] = None, **kwargs: Any
-    ) -> F:
+        self, 
+        func: F,
+        force_trace: bool = False,
+        recursive: bool = True,
+        cache: Optional[JITCache] = None,
+        preserve_stochasticity: bool = False) -> F:
         """Compile a function using this strategy.
 
         Args:
             func: Function to compile
-            sample_input: Optional sample input for eager compilation
-            **kwargs: Additional strategy-specific options
+            force_trace: Whether to force recompilation
+            recursive: Whether to compile nested functions
+            cache: JIT cache to use
+            preserve_stochasticity: Whether to preserve non-deterministic behavior
 
         Returns:
             Compiled function with the same signature

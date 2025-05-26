@@ -11,8 +11,7 @@ import pytest
 
 from ember.core.utils.data.base.models import TaskType
 from ember.core.utils.data.context.data_context import (  # Removed get_default_context,; Removed reset_default_context,; Removed set_default_context,
-    DataContext,
-)
+    DataContext)
 
 
 @pytest.fixture
@@ -27,8 +26,7 @@ def benchmark_context():
             name=f"benchmark_dataset_{i}",
             source=f"benchmark/source_{i}",
             task_type=TaskType.MULTIPLE_CHOICE,
-            description=f"Benchmark dataset {i}",
-        )
+            description=f"Benchmark dataset {i}")
 
     # Removed setting/resetting default context
     # old_context = get_default_context()

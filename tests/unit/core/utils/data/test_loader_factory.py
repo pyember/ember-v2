@@ -150,8 +150,7 @@ class TestDatasetLoaderFactory(unittest.TestCase):
             self.assertIn(name, registered_preppers)
             self.assertEqual(
                 discovered_preppers[name],
-                self.factory.get_prepper_class(dataset_name=name),
-            )
+                self.factory.get_prepper_class(dataset_name=name))
 
     def test_register_with_named_parameters(self) -> None:
         """register() should require named parameters."""

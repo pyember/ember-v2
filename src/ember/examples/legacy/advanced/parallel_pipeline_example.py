@@ -20,11 +20,7 @@ from ember.api.models import models
 from ember.api.non import non
 from ember.api.xcs import jit
 # Import internals only when needed for advanced usage
-from ember.xcs.engine.xcs_engine import (
-    TopologicalSchedulerWithParallelDispatch,
-    execute_graph,
-)
-from ember.xcs.graph.xcs_graph import XCSGraph
+from ember.xcs.graph import Graph, execute_graph
 
 ###############################################################################
 # JIT-Decorated Ensemble Operators
@@ -92,11 +88,10 @@ def build_multi_branch_pipeline(
     # Create the judge operator using non API
     judge = non.JudgeSynthesisOperator(
         model_name="openai:gpt-4o",
-        temperature=0.0,
-    )
+        temperature=0.0)
 
     # Build the graph
-    graph = XCSGraph()
+    graph = Graph()
 
     # Add nodes
     fact_id = graph.add_node(operator=fact_ensemble, node_id="fact_ensemble")
@@ -117,13 +112,10 @@ def build_multi_branch_pipeline(
     workers = (
         max_workers or 12
     )  # Default to 12 workers (3 ensembles × 3 units + overhead)
-    scheduler = TopologicalSchedulerWithParallelDispatch(max_workers=workers)
-
+    
     # Execute the graph
     start_time = time.perf_counter()
-    result = execute_graph(
-        graph=graph, global_input={"query": query}, scheduler=scheduler
-    )
+    result = execute_graph(graph=graph, inputs={"query": query}, parallel=workers)
     end_time = time.perf_counter()
 
     logging.info(f"Pipeline execution completed in {end_time - start_time:.4f}s")
@@ -135,6 +127,7 @@ def build_multi_branch_pipeline(
 # Main Demonstration
 ###############################################################################
 def main() -> None:
+    """Example demonstrating the simplified XCS architecture."""
     """Run demonstration of parallel pipeline with JIT-enabled operators."""
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 

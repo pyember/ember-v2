@@ -174,8 +174,7 @@ def test_model_info_creation():
     # Create model info from config
     cost = MockCost(
         input_cost_per_thousand=model_data["cost_input"],
-        output_cost_per_thousand=model_data["cost_output"],
-    )
+        output_cost_per_thousand=model_data["cost_output"])
 
     provider = MockProvider(
         name="OpenAI", default_api_key=provider_data["api_keys"]["default"]["key"]
@@ -186,8 +185,7 @@ def test_model_info_creation():
         name=model_data["name"],
         cost=cost,
         provider=provider,
-        api_key=provider_data["api_keys"]["default"]["key"],
-    )
+        api_key=provider_data["api_keys"]["default"]["key"])
 
     # Verify model info
     assert model_info.model_id == "openai:gpt-4"
@@ -230,8 +228,7 @@ def test_centralized_config_schema():
         name="GPT-4",
         provider="openai",
         cost_input=5.0,
-        cost_output=15.0,
-    )
+        cost_output=15.0)
     assert model.name == "GPT-4"
     assert model.cost_input == 5.0
     assert model.cost_output == 15.0

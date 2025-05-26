@@ -18,8 +18,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 def initialize_dataset_registry(
     *,
     metadata_registry: DatasetRegistry = DATASET_REGISTRY,
-    loader_factory: Optional[DatasetLoaderFactory] = None,
-) -> None:
+    loader_factory: Optional[DatasetLoaderFactory] = None) -> None:
     """Initializes the dataset registry with known datasets.
 
     Compatibility layer for the legacy initialization pattern that redirects
@@ -38,8 +37,7 @@ def initialize_dataset_registry(
     from ember.core.utils.data.datasets_registry.aime import AIMEPrepper
     from ember.core.utils.data.datasets_registry.codeforces import CodeForcesPrepper
     from ember.core.utils.data.datasets_registry.commonsense_qa import (
-        CommonsenseQAPrepper,
-    )
+        CommonsenseQAPrepper)
     from ember.core.utils.data.datasets_registry.gpqa import GPQAPrepper
     from ember.core.utils.data.datasets_registry.halueval import HaluEvalPrepper
     from ember.core.utils.data.datasets_registry.mmlu import MMLUPrepper
@@ -105,8 +103,7 @@ def initialize_dataset_registry(
             "source": "short_answer",
             "task_type": TaskType.SHORT_ANSWER,
             "prepper_class": ShortAnswerPrepper,
-        },
-    ]
+        }]
 
     # Register each dataset with metadata registry
     for dataset_info in datasets:
@@ -118,9 +115,7 @@ def initialize_dataset_registry(
                 name=name,
                 description=dataset_info["description"],
                 source=dataset_info["source"],
-                task_type=dataset_info["task_type"],
-            ),
-        )
+                task_type=dataset_info["task_type"]))
 
         # Register prepper with loader factory if provided
         if loader_factory is not None:

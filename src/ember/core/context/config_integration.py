@@ -48,7 +48,7 @@ class ConfigView:
         timeout = config.get("timeout", 30)
     """
 
-    __slots__ = ("_config",)
+    __slots__ = ("_config")
 
     def __init__(self, config: Dict[str, Any]) -> None:
         """Initializes a view over an immutable configuration dictionary.

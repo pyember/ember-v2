@@ -97,8 +97,7 @@ def run_benchmark(
     factory: Callable[[], Operator],
     input_data: Dict[str, Any],
     runs: int = 5,
-    warmup_runs: int = 1,
-) -> BenchmarkResult:
+    warmup_runs: int = 1) -> BenchmarkResult:
     """Run a benchmark with multiple iterations.
 
     Args:
@@ -142,8 +141,7 @@ def run_benchmark(
 
 def compare_benchmarks(
     benchmarks: List[BenchmarkResult],
-    baseline_name: Optional[str] = None,
-) -> Dict[str, float]:
+    baseline_name: Optional[str] = None) -> Dict[str, float]:
     """Compare benchmark results against a baseline.
 
     Args:
@@ -271,8 +269,7 @@ class CPUIntensiveOperator(Operator[OperatorInput, OperatorOutput]):
         OperatorInput, OperatorOutput
     ](
         input_model=OperatorInput,
-        structured_output=OperatorOutput,
-    )
+        structured_output=OperatorOutput)
 
     def __init__(self, name: str = "cpu", work_size: int = 1000000):
         """Initialize with a work size parameter.
@@ -313,8 +310,7 @@ class LinearChainOperator(Operator[OperatorInput, OperatorOutput]):
         OperatorInput, OperatorOutput
     ](
         input_model=OperatorInput,
-        structured_output=OperatorOutput,
-    )
+        structured_output=OperatorOutput)
 
     def __init__(self, depth: int = 3, work_size: int = 100000):
         """Initialize with a chain of the specified depth.
@@ -350,8 +346,7 @@ class LinearChainOperator(Operator[OperatorInput, OperatorOutput]):
             metadata={
                 "depth": self.depth,
                 "operators": [op.name for op in self.operators],
-            },
-        )
+            })
 
 
 class DiamondOperator(Operator[OperatorInput, OperatorOutput]):
@@ -361,8 +356,7 @@ class DiamondOperator(Operator[OperatorInput, OperatorOutput]):
         OperatorInput, OperatorOutput
     ](
         input_model=OperatorInput,
-        structured_output=OperatorOutput,
-    )
+        structured_output=OperatorOutput)
 
     def __init__(self, work_size: int = 100000):
         """Initialize the diamond-shaped operator structure.
@@ -398,8 +392,7 @@ class DiamondOperator(Operator[OperatorInput, OperatorOutput]):
         # Combine results for final node
         combined_input = OperatorInput(
             data={"left": left_result.result, "right": right_result.result},
-            work_factor=inputs.work_factor,
-        )
+            work_factor=inputs.work_factor)
 
         # End node
         final_result = self.end(inputs=combined_input)
@@ -409,8 +402,7 @@ class DiamondOperator(Operator[OperatorInput, OperatorOutput]):
             metadata={
                 "structure": "diamond",
                 "components": ["start", "left", "right", "end"],
-            },
-        )
+            })
 
 
 class EnsembleOperator(Operator[OperatorInput, OperatorOutput]):
@@ -420,8 +412,7 @@ class EnsembleOperator(Operator[OperatorInput, OperatorOutput]):
         OperatorInput, OperatorOutput
     ](
         input_model=OperatorInput,
-        structured_output=OperatorOutput,
-    )
+        structured_output=OperatorOutput)
 
     def __init__(self, width: int = 5, work_size: int = 100000):
         """Initialize with the specified number of parallel operators.
@@ -453,8 +444,7 @@ class EnsembleOperator(Operator[OperatorInput, OperatorOutput]):
 
         return OperatorOutput(
             result=combined_result,
-            metadata={"width": self.width, "members": [m.name for m in self.members]},
-        )
+            metadata={"width": self.width, "members": [m.name for m in self.members]})
 
 
 class JudgeOperator(Operator[OperatorInput, OperatorOutput]):
@@ -464,8 +454,7 @@ class JudgeOperator(Operator[OperatorInput, OperatorOutput]):
         OperatorInput, OperatorOutput
     ](
         input_model=OperatorInput,
-        structured_output=OperatorOutput,
-    )
+        structured_output=OperatorOutput)
 
     def __init__(self, work_size: int = 200000):
         """Initialize the judge operator.
@@ -491,8 +480,7 @@ class JudgeOperator(Operator[OperatorInput, OperatorOutput]):
 
         return OperatorOutput(
             result=result.result,
-            metadata={"role": "judge", "processor": self.processor.name},
-        )
+            metadata={"role": "judge", "processor": self.processor.name})
 
 
 class EnsembleJudgeSystem(Operator[OperatorInput, OperatorOutput]):
@@ -502,8 +490,7 @@ class EnsembleJudgeSystem(Operator[OperatorInput, OperatorOutput]):
         OperatorInput, OperatorOutput
     ](
         input_model=OperatorInput,
-        structured_output=OperatorOutput,
-    )
+        structured_output=OperatorOutput)
 
     def __init__(self, width: int = 10, work_size: int = 100000):
         """Initialize the ensemble+judge system.
@@ -541,8 +528,7 @@ class EnsembleJudgeSystem(Operator[OperatorInput, OperatorOutput]):
                 "system": "ensemble_judge",
                 "ensemble_width": self.ensemble.width,
                 "judge": self.judge.processor.name,
-            },
-        )
+            })
 
 
 class NestedEnsembleSystem(Operator[OperatorInput, OperatorOutput]):
@@ -552,8 +538,7 @@ class NestedEnsembleSystem(Operator[OperatorInput, OperatorOutput]):
         OperatorInput, OperatorOutput
     ](
         input_model=OperatorInput,
-        structured_output=OperatorOutput,
-    )
+        structured_output=OperatorOutput)
 
     def __init__(
         self, level1_width: int = 3, level2_width: int = 3, work_size: int = 100000
@@ -606,8 +591,7 @@ class NestedEnsembleSystem(Operator[OperatorInput, OperatorOutput]):
                 "level1_width": len(self.level2_ensembles),
                 "level2_width": self.level2_ensembles[0].width,
                 "judge": self.judge.processor.name,
-            },
-        )
+            })
 
 
 # --------------------------------
@@ -623,15 +607,13 @@ def apply_regular_jit(operator_class):
 def apply_structural_jit_sequential(operator_class):
     """Apply structural JIT with sequential execution to an operator class."""
     return structural_jit(
-        execution_strategy="sequential",
-    )(operator_class)
+        execution_strategy="sequential")(operator_class)
 
 
 def apply_structural_jit_parallel(operator_class):
     """Apply structural JIT with parallel execution to an operator class."""
     return structural_jit(
-        execution_strategy="parallel",
-    )(operator_class)
+        execution_strategy="parallel")(operator_class)
 
 
 # --------------------------------
@@ -641,8 +623,7 @@ def apply_structural_jit_parallel(operator_class):
 
 @pytest.mark.skipif(
     "not config.getoption('--run-perf-tests') and not config.getoption('--run-all-tests')",
-    reason="Performance tests are disabled by default. Run with --run-perf-tests or --run-all-tests flag.",
-)
+    reason="Performance tests are disabled by default. Run with --run-perf-tests or --run-all-tests flag.")
 class TestOperatorPerformance:
     """Comprehensive performance tests for operators with different JIT implementations."""
 
@@ -676,14 +657,11 @@ class TestOperatorPerformance:
             run_benchmark(
                 "Structural JIT Sequential (Linear)",
                 create_structural_sequential,
-                input_data,
-            ),
+                input_data),
             run_benchmark(
                 "Structural JIT Parallel (Linear)",
                 create_structural_parallel,
-                input_data,
-            ),
-        ]
+                input_data)]
 
         # Compare results
         speedups = compare_benchmarks(benchmarks, "No JIT (Linear)")
@@ -723,14 +701,11 @@ class TestOperatorPerformance:
             run_benchmark(
                 "Structural JIT Sequential (Diamond)",
                 create_structural_sequential,
-                input_data,
-            ),
+                input_data),
             run_benchmark(
                 "Structural JIT Parallel (Diamond)",
                 create_structural_parallel,
-                input_data,
-            ),
-        ]
+                input_data)]
 
         # Compare results
         speedups = compare_benchmarks(benchmarks, "No JIT (Diamond)")
@@ -774,14 +749,11 @@ class TestOperatorPerformance:
             run_benchmark(
                 "Structural JIT Sequential (Ensemble)",
                 create_structural_sequential,
-                input_data,
-            ),
+                input_data),
             run_benchmark(
                 "Structural JIT Parallel (Ensemble)",
                 create_structural_parallel,
-                input_data,
-            ),
-        ]
+                input_data)]
 
         # Compare results
         speedups = compare_benchmarks(benchmarks, "No JIT (Ensemble)")
@@ -827,14 +799,11 @@ class TestOperatorPerformance:
             run_benchmark(
                 "Structural JIT Sequential (EnsembleJudge)",
                 create_structural_sequential,
-                input_data,
-            ),
+                input_data),
             run_benchmark(
                 "Structural JIT Parallel (EnsembleJudge)",
                 create_structural_parallel,
-                input_data,
-            ),
-        ]
+                input_data)]
 
         # Compare results
         speedups = compare_benchmarks(benchmarks, "No JIT (EnsembleJudge)")
@@ -881,14 +850,11 @@ class TestOperatorPerformance:
             run_benchmark(
                 "Structural JIT Sequential (NestedEnsemble)",
                 create_structural_sequential,
-                input_data,
-            ),
+                input_data),
             run_benchmark(
                 "Structural JIT Parallel (NestedEnsemble)",
                 create_structural_parallel,
-                input_data,
-            ),
-        ]
+                input_data)]
 
         # Compare results
         speedups = compare_benchmarks(benchmarks, "No JIT (NestedEnsemble)")
@@ -910,8 +876,7 @@ if __name__ == "__main__":
     # Configure logging
     logging.basicConfig(
         level=logging.INFO,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    )
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
     # Add command line argument support for direct execution
     import argparse
@@ -934,11 +899,9 @@ if __name__ == "__main__":
             "ensemble",
             "ensemble_judge",
             "nested_ensemble",
-            "all",
-        ],
+            "all"],
         default="all",
-        help="Which test to run",
-    )
+        help="Which test to run")
     args = parser.parse_args()
 
     print(

@@ -26,8 +26,7 @@ def test_context():
         name="test_dataset",
         source="test/source",
         task_type=TaskType.MULTIPLE_CHOICE,
-        description="Test dataset for integration testing",
-    )
+        description="Test dataset for integration testing")
     
     return context
 
@@ -85,8 +84,7 @@ class TestContextIsolation:
             ctx.register_dataset(
                 name=dataset_name,
                 source="test/thread",
-                task_type=TaskType.MULTIPLE_CHOICE,
-            )
+                task_type=TaskType.MULTIPLE_CHOICE)
             
             # Create an API with this context
             api = DataAPI(context=ctx)
@@ -122,8 +120,7 @@ class TestDatasetOperations:
         test_context.register_dataset(
             name="extra_dataset",
             source="test/extra",
-            task_type=TaskType.SHORT_ANSWER,
-        )
+            task_type=TaskType.SHORT_ANSWER)
         
         # Get dataset list
         datasets = data_api.list()
@@ -154,8 +151,7 @@ class TestDatasetOperations:
             name="new_dataset",
             source="test/new",
             task_type=TaskType.SHORT_ANSWER,  # Use existing enum value
-            description="Newly registered dataset",
-        )
+            description="Newly registered dataset")
         
         # Verify it appears in the list
         assert "new_dataset" in data_api.list()
@@ -264,8 +260,7 @@ class TestDataItemAPI:
         entry = DatasetEntry(
             query="What is the capital of France?",
             choices={"A": "London", "B": "Paris", "C": "Berlin"},
-            metadata={"correct_answer": "B"},
-        )
+            metadata={"correct_answer": "B"})
         
         item = DataItem(entry)
         

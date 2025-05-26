@@ -133,7 +133,5 @@ def create_dummy_model_info(model_id: str) -> ModelInfo:
         provider=ProviderInfo(
             name="DummyFactoryProvider",
             default_api_key="dummy_key",
-            base_url="https://api.dummy.example",
-        ),
-        api_key="dummy_key",
-    )
+            base_url="https://api.dummy.example"),
+        api_key="dummy_key")

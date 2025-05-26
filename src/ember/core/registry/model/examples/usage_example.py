@@ -77,8 +77,7 @@ def main() -> None:
     try:
         response_enum: ChatResponse = service.invoke_model(
             model_id="openai:gpt-4o",  # Use string instead of enum for now
-            prompt="Hello from Enum invocation!",
-        )
+            prompt="Hello from Enum invocation!")
         print(f"Response using Enum:\n{response_enum.data}")
     except Exception as error:
         logger.exception("Error during enum-based invocation: %s", error)

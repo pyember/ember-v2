@@ -51,8 +51,7 @@ class TestModel:
             provider="test-provider",
             cost_input=1.5,
             cost_output=2.5,
-            rate_limit={"tokens_per_minute": 1000, "requests_per_minute": 100},
-        )
+            rate_limit={"tokens_per_minute": 1000, "requests_per_minute": 100})
         assert model.id == "test"
         assert model.name == "Test Model"
         assert model.provider == "test-provider"
@@ -67,8 +66,7 @@ class TestModel:
             name="Test Model",
             provider="test-provider",
             cost_input=1.5,
-            cost_output=2.5,
-        )
+            cost_output=2.5)
         assert isinstance(model.cost, Cost)
         assert model.cost.input_cost_per_thousand == 1.5
         assert model.cost.output_cost_per_thousand == 2.5
@@ -80,8 +78,7 @@ class TestModel:
             name="Test Model",
             provider="test-provider",
             context_length=4096,
-            vision_enabled=True,
-        )
+            vision_enabled=True)
         assert model.id == "test"
         assert model.name == "Test Model"
         assert model.provider == "test-provider"
@@ -103,8 +100,7 @@ class TestProvider:
         """Test creating a Provider with all fields."""
         models = [
             Model(id="model1", name="Model One", provider="test"),
-            Model(id="model2", name="Model Two", provider="test"),
-        ]
+            Model(id="model2", name="Model Two", provider="test")]
         provider = Provider(
             enabled=True, api_keys={"default": {"key": "test-api-key"}}, models=models
         )
@@ -117,8 +113,7 @@ class TestProvider:
         """Test get_model_config method."""
         models = [
             Model(id="model1", name="Model One", provider="test"),
-            Model(id="model2", name="Model Two", provider="test"),
-        ]
+            Model(id="model2", name="Model Two", provider="test")]
         provider = Provider(
             enabled=True, api_keys={"default": {"key": "test-api-key"}}, models=models
         )
@@ -144,8 +139,7 @@ class TestProvider:
             enabled=True,
             api_keys={"default": {"key": "test-api-key"}},
             base_url="https://api.example.com",
-            timeout=30.0,
-        )
+            timeout=30.0)
         assert provider.enabled is True
         assert provider.api_keys["default"]["key"] == "test-api-key"
         assert provider.base_url == "https://api.example.com"
@@ -209,8 +203,7 @@ class TestEmberConfig:
             providers={
                 "provider1": Provider(enabled=True, api_key="key1"),
                 "provider2": Provider(enabled=False, api_key="key2"),
-            },
-        )
+            })
         config = EmberConfig(registry=registry, logging={"level": "DEBUG"})
         assert config.registry.auto_discover is False
         assert len(config.registry.providers) == 2
@@ -238,8 +231,7 @@ class TestEmberConfig:
         """Test get_model_config method."""
         models1 = [
             Model(id="model1", name="Model One", provider="provider1"),
-            Model(id="model2", name="Model Two", provider="provider1"),
-        ]
+            Model(id="model2", name="Model Two", provider="provider1")]
         models2 = [Model(id="model3", name="Model Three", provider="provider2")]
         providers = {
             "provider1": Provider(
@@ -274,8 +266,7 @@ class TestEmberConfig:
         """Test adding arbitrary fields."""
         config = EmberConfig(
             custom_section={"enabled": True, "value": 42},
-            experimental_features=["feature1", "feature2"],
-        )
+            experimental_features=["feature1", "feature2"])
         assert config.custom_section["enabled"] is True
         assert config.custom_section["value"] == 42
         assert len(config.experimental_features) == 2

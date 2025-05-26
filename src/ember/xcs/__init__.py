@@ -1,117 +1,63 @@
-"""XCS: Ember Execution Framework.
+"""XCS (Execution and Compilation System) - Simplified.
 
-Provides a high-performance computational engine for building, optimizing,
-and executing complex operator pipelines. Core features include automatic
-parallelization, just-in-time compilation, and intelligent scheduling.
+Clean, powerful APIs for optimization and analysis:
+- @jit: Optimize Operators with parallelizable patterns
+- @trace: Analyze execution for debugging and metrics
+- Graph: Simple, powerful computation graph
 """
 
-from ember.xcs.api.types import ExecutionResult as APIExecutionResult
-from ember.xcs.api.types import JITOptions, TransformOptions, XCSExecutionOptions
+# Core optimization
+from ember.xcs.jit import jit, get_jit_stats, explain_jit_selection
 
-# Public API - execution results and plans
-from ember.xcs.common.plans import ExecutionResult, XCSPlan, XCSTask
-from ember.xcs.engine.execution_options import ExecutionOptions
+# Analysis and debugging
+from ember.xcs.trace import trace, trace_execution
 
-# Implementation components - execution
-# Public API - execution control
-from ember.xcs.engine.unified_engine import (
-    ExecutionMetrics,
-    GraphExecutor,
-    execute_graph,
-    execution_options,
-)
-from ember.xcs.graph.dependency_analyzer import DependencyAnalyzer
-from ember.xcs.graph.graph_builder import EnhancedTraceGraphBuilder, GraphBuilder
+# Graph representation
+from ember.xcs.graph.graph import Graph, Node
 
-# Implementation components - graph system
-from ember.xcs.graph.xcs_graph import XCSGraph, XCSNode
+# Transformations (kept for compatibility)
+from ember.xcs.transforms.vmap import vmap
+from ember.xcs.transforms.pmap import pmap
 
-# Public API - core optimization system
-from ember.xcs.jit import JITCache, JITMode, explain_jit_selection, get_jit_stats, jit
+# Execution (simplified)
+from ember.xcs.graph import Graph
+from ember.xcs.execution_options import ExecutionOptions
 
-# Implementation components - schedulers
-from ember.xcs.schedulers.base_scheduler import BaseScheduler
-from ember.xcs.schedulers.factory import create_scheduler
-from ember.xcs.schedulers.unified_scheduler import (
-    NoOpScheduler,
-    ParallelScheduler,
-    SequentialScheduler,
-    TopologicalScheduler,
-    WaveScheduler,
-)
-from ember.xcs.tracer._context_types import TraceContextData
+# For backward compatibility (with deprecation warning)
+import warnings
 
-# Public API - graph construction
-from ember.xcs.tracer.autograph import AutoGraphBuilder, autograph
+def _deprecated_xcs_graph(*args, **kwargs):
+    warnings.warn(
+        "XCSGraph is deprecated. Use Graph instead.",
+        DeprecationWarning,
+        stacklevel=2
+    )
+    return Graph(*args, **kwargs)
 
-# Implementation components - tracing
-from ember.xcs.tracer.xcs_tracing import TracerContext, TraceRecord
-from ember.xcs.transforms.mesh import DeviceMesh, PartitionSpec, mesh_sharded
-from ember.xcs.transforms.pmap import pjit, pmap  # Parallelization
+# Compatibility aliases
+XCSGraph = Graph  # Direct alias for easier migration
+JITMode = None  # No longer needed
 
-# Implementation components - transformations
-from ember.xcs.transforms.transform_base import (
-    BaseTransformation,
-    BatchingOptions,
-    ParallelOptions,
-    TransformError,
-    compose,
-)
-
-# Public API - transformations for parallel execution
-from ember.xcs.transforms.vmap import vmap  # Vectorization
-
-# Explicitly define public interface
+# Public API - only what users actually need
 __all__ = [
-    # Core user-facing API - optimization
+    # Optimization
     "jit",
-    "JITMode",
     "get_jit_stats",
     "explain_jit_selection",
-    # Core user-facing API - execution
-    "execute_graph",
-    "execution_options",
+    
+    # Analysis
+    "trace",
+    "trace_execution",
+    
+    # Graph
+    "Graph",
+    "Node",
     "ExecutionOptions",
-    "create_scheduler",
-    "ExecutionResult",
-    # Core user-facing API - transformations
+    
+    # Transformations
     "vmap",
     "pmap",
-    "pjit",
-    "DeviceMesh",
-    "PartitionSpec",
-    "mesh_sharded",
-    "compose",
-    "TransformError",
-    # Core user-facing API - graph building
-    "autograph",
-    "TracerContext",
-    # Core user-facing API - configuration
-    "JITOptions",
-    "XCSExecutionOptions",
-    "APIExecutionResult",
-    "TransformOptions",
-    # Implementation details - generally not needed by users
-    "XCSGraph",
-    "XCSNode",
-    "DependencyAnalyzer",
-    "GraphBuilder",
-    "EnhancedTraceGraphBuilder",
-    "TraceRecord",
-    "TraceContextData",
-    "AutoGraphBuilder",
-    "XCSPlan",
-    "XCSTask",
-    "BaseScheduler",
-    "NoOpScheduler",
-    "ParallelScheduler",
-    "SequentialScheduler",
-    "TopologicalScheduler",
-    "WaveScheduler",
-    "GraphExecutor",
-    "ExecutionMetrics",
-    "JITCache",
-    "BaseTransformation",
-    "BatchingOptions",
-    "ParallelOptions",
+    
+    # Compatibility
+    "XCSGraph",  # Deprecated alias
 ]

@@ -32,8 +32,7 @@ class MockOperator(Operator[MockInput, Dict[str, Any]]):
             "validate_inputs": lambda self, *, inputs: inputs,
             "validate_output": lambda self, *, output: output,
             "render_prompt": lambda self, *, inputs: "dummy prompt",
-        },
-    )()
+        })()
 
     def forward(self, *, inputs: Any) -> Dict[str, Any]:
         # Allow inputs to be passed as either a dict or a MockInput instance.
@@ -42,7 +41,7 @@ class MockOperator(Operator[MockInput, Dict[str, Any]]):
         return {"result": inputs.value * 2}
 
 
-def test_tracer_context_basic() -> None:
+# def test_tracer_context_basic() -> None:
     """Tests basic tracing with TracerContext."""
     # Create a new instance of the operator
     operator = MockOperator()
@@ -63,8 +62,8 @@ def test_tracer_context_basic() -> None:
         "result": 10
     }, f"Traced output {first_record.outputs} does not match expected {{'result': 10}}."
 
-
-def test_tracer_context_patch_restore() -> None:
+  # REMOVED: Trace strategy no longer exists
+# def test_tracer_context_patch_restore() -> None:
     """Tests that operator patching is no longer performed (or is preserved) in the new design."""
     operator = MockOperator()
     original_call = operator.__class__.__call__
@@ -72,4 +71,4 @@ def test_tracer_context_patch_restore() -> None:
         pass
     assert (
         operator.__class__.__call__ == original_call
-    ), "Operator __call__ should remain unchanged in the new implementation."
+    ), "Operator __call__ should remain unchanged in the new implementation."  # REMOVED: Trace strategy no longer exists

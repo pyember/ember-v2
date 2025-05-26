@@ -33,8 +33,7 @@ class DatasetService:
         loader: IDatasetLoader,
         validator: IDatasetValidator,
         sampler: IDatasetSampler,
-        transformers: Optional[Iterable[IDatasetTransformer]] = None,
-    ) -> None:
+        transformers: Optional[Iterable[IDatasetTransformer]] = None) -> None:
         """Initialize a DatasetService instance.
 
         Args:
@@ -204,8 +203,7 @@ class DatasetService:
                     dataset_info.name,
                     exc,
                     list(item),
-                    required_keys,
-                )
+                    required_keys)
         return entries
 
     def load_and_prepare(
@@ -213,8 +211,7 @@ class DatasetService:
         dataset_info: DatasetInfo,
         prepper: IDatasetPrepper,
         config: Union[str, BaseDatasetConfig, None] = None,
-        num_samples: Optional[int] = None,
-    ) -> List[DatasetEntry]:
+        num_samples: Optional[int] = None) -> List[DatasetEntry]:
         """Execute the complete pipeline for processing and preparing a dataset.
 
         The pipeline includes:
@@ -241,8 +238,7 @@ class DatasetService:
             dataset_info.name,
             dataset_info.source,
             config,
-            num_samples,
-        )
+            num_samples)
 
         # Step 1: Resolve configuration
         resolved_config: Optional[str] = self._resolve_config_name(config=config)
@@ -257,8 +253,7 @@ class DatasetService:
             logger.debug(
                 "Loaded dataset: type=%s, size=%d",
                 type(dataset),
-                len(dataset),
-            )
+                len(dataset))
 
         # Step 3: Select split if specified
         config_obj: Optional[BaseDatasetConfig] = (
@@ -292,8 +287,7 @@ class DatasetService:
         logger.info(
             "Generated %d DatasetEntry objects for '%s'",
             len(entries),
-            dataset_info.name,
-        )
+            dataset_info.name)
         return entries
 
 

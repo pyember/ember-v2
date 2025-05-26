@@ -246,8 +246,7 @@ class ReuseOperator(Operator[Dict[str, Any], Dict[str, Any]]):
             "results": [
                 result1.get("result"),
                 result2.get("result"),
-                result3.get("result"),
-            ]
+                result3.get("result")]
         }
 
 

@@ -50,8 +50,7 @@ from ember.core.non import build_graph  # Compact graph notation builder
 from ember.core.non import (  # Operator patterns; Input/Output types
     JudgeSynthesisInputs,
     VariedEnsembleInputs,
-    VerifierInputs,
-)
+    VerifierInputs)
 
 # Import from compact notation module
 from ember.core.non_compact import OpRegistry
@@ -74,5 +73,4 @@ __all__ = [
     "VariedEnsembleOutputs",
     # Compact graph notation
     "build_graph",
-    "OpRegistry",
-]
+    "OpRegistry"]

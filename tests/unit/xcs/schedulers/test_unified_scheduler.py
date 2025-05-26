@@ -2,14 +2,13 @@
 
 from typing import Any, Dict
 
-from ember.xcs.graph.xcs_graph import XCSGraph
+from ember.xcs.graph import Graph
 from ember.xcs.schedulers.unified_scheduler import (
     NoOpScheduler,
     ParallelScheduler,
     SequentialScheduler,
     TopologicalScheduler,
-    WaveScheduler,
-)
+    WaveScheduler)
 
 
 class SimpleOperator:
@@ -25,9 +24,9 @@ class SimpleOperator:
         return {"result": inputs.get("value", 1) * self.value_multiplier}
 
 
-def create_test_graph() -> XCSGraph:
+def create_test_graph() -> Graph:
     """Create a simple test graph for scheduler tests."""
-    graph = XCSGraph()
+    graph = Graph()
 
     # Create operators
     op1 = SimpleOperator("op1", 2)

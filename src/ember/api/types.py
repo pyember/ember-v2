@@ -82,5 +82,4 @@ __all__ = [
     "Union",
     "Generic",
     "ClassVar",
-    "Type",
-]
+    "Type"]

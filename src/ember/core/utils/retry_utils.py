@@ -106,8 +106,7 @@ class ExponentialBackoffStrategy(IRetryStrategy[T]):
         @retry(
             wait=wait_random_exponential(min=self.min_wait, max=self.max_wait),
             stop=stop_after_attempt(self.max_attempts),
-            reraise=True,
-        )
+            reraise=True)
         def wrapped() -> T:
             return func(*args, **kwargs)
 

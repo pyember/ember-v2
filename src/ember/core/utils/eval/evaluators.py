@@ -27,8 +27,7 @@ class ComposedEvaluator(IEvaluator[T_out, T_truth], Generic[T_out, T_truth]):
     def __init__(
         self,
         extractor: Any,  # Expecting an extractor with an `extract` method.
-        base_evaluator: IEvaluator[Any, Any],
-    ) -> None:
+        base_evaluator: IEvaluator[Any, Any]) -> None:
         self.extractor = extractor
         self.base_evaluator = base_evaluator
 
@@ -171,8 +170,7 @@ class CodeExecutionEvaluator(IEvaluator[str, str]):
                 args=["python", "-c", system_output],
                 capture_output=True,
                 text=True,
-                timeout=self.timeout,
-            )
+                timeout=self.timeout)
             stdout_str = process_result.stdout.strip()
             expected_str = correct_answer.strip()
             is_correct = stdout_str == expected_str
@@ -183,20 +181,17 @@ class CodeExecutionEvaluator(IEvaluator[str, str]):
                     "stdout": process_result.stdout,
                     "stderr": process_result.stderr,
                     "exit_code": process_result.returncode,
-                },
-            )
+                })
         except subprocess.TimeoutExpired as timeout_error:
             return EvaluationResult(
                 is_correct=False,
                 score=0.0,
-                metadata={"error": f"TimeoutExpired: {str(timeout_error)}"},
-            )
+                metadata={"error": f"TimeoutExpired: {str(timeout_error)}"})
         except Exception as error:
             return EvaluationResult(
                 is_correct=False,
                 score=0.0,
-                metadata={"error": f"{type(error).__name__}: {str(error)}"},
-            )
+                metadata={"error": f"{type(error).__name__}: {str(error)}"})
 
 
 # Composite Evaluator Example

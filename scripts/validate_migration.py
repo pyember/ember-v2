@@ -292,8 +292,7 @@ def main():
     print("\n2. Testing operator functionality...")
     operators_to_test = [
         ("VerifierOperator", "src/ember/core/registry/operator/core/verifier.py"),
-        ("EnsembleOperator", "src/ember/core/registry/operator/core/ensemble.py"),
-    ]
+        ("EnsembleOperator", "src/ember/core/registry/operator/core/ensemble.py")]
     
     for op_class, op_path in operators_to_test:
         if Path(op_path).exists():

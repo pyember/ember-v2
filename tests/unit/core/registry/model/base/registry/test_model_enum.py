@@ -5,8 +5,7 @@ from ember.core.registry.model.config.model_enum import (
     DeepmindModelEnum,
     ModelEnum,
     OpenAIModelEnum,
-    parse_model_str,
-)
+    parse_model_str)
 
 
 def test_model_enum_creation() -> None:

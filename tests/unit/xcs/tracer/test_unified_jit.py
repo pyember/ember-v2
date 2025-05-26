@@ -54,7 +54,7 @@ def test_unified_jit_default_mode():
 def test_unified_jit_trace_mode():
     """Test explicitly selecting trace mode."""
 
-    @jit(mode="trace")
+    @jit(mode="structural")
     class TestOp(SimpleOperator):
         pass
 

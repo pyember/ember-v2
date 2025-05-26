@@ -14,18 +14,15 @@ try:
     # Import output types
     # Import operators from their actual implementation locations
     from ember.core.registry.operator.core.ensemble import (
-        EnsembleOperatorInputs as EnsembleInputs,
-    )
+        EnsembleOperatorInputs as EnsembleInputs)
     from ember.core.registry.operator.core.ensemble import (
         EnsembleOperatorOutputs,
-        UniformEnsemble,
-    )
+        UniformEnsemble)
     from ember.core.registry.operator.core.most_common import MostCommon
     from ember.core.registry.operator.core.synthesis_judge import (
         JudgeSynthesis,
         JudgeSynthesisInputs,
-        JudgeSynthesisOutputs,
-    )
+        JudgeSynthesisOutputs)
     from ember.core.registry.operator.core.verifier import Verifier
 
     # Add alias for output types if needed

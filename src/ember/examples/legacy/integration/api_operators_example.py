@@ -83,8 +83,7 @@ class MockLMModule:
         for prefix in [
             "Scientific perspective:",
             "Philosophical perspective:",
-            "Humorous perspective:",
-        ]:
+            "Humorous perspective:"]:
             if prefix in prompt:
                 if "Scientific" in prefix:
                     return f"From a {prefix} The mathematical constant 42 appears in various equations describing the universe."
@@ -278,10 +277,8 @@ def main():
         prefixes=[
             "Scientific perspective:",
             "Philosophical perspective:",
-            "Humorous perspective:",
-        ],
-        model_enum=ModelEnum.gpt_4,
-    )
+            "Humorous perspective:"],
+        model_enum=ModelEnum.gpt_4)
 
     # Generate diverse answers
     diverse_results = diverse_generator(inputs=question)

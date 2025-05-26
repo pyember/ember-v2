@@ -82,7 +82,7 @@ Ember's architecture follows a layered design with clear separations of concern:
 │  ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐    │
 │  │  Graph Definition       │  │  Tracer System          │  │  Execution Engine       │    │
 │  │                         │  │                         │  │                         │    │
-│  │  • XCSGraph IR          │  │  • Function Tracing     │  │  • Schedulers           │    │
+│  │  • Graph IR          │  │  • Function Tracing     │  │  • Schedulers           │    │
 │  │  • XCSNode Primitive    │  │  • Execution Recording  │  │  • Execution Plan       │    │
 │  │                         │  │  • JIT Compilation      │  │  • Parallel Dispatch    │    │
 │  │                         │  │  • Graph Optimization   │  │                         │    │
@@ -318,10 +318,10 @@ Key features:
 XCS handles graph-based execution:
 
 ```python
-from ember.xcs import XCSGraph, execute_graph, execution_options
+from ember.xcs import Graph, execute_graph, execution_options
 
 # Create execution graph
-graph = XCSGraph()
+graph = Graph()
 graph.add_node(operator=ensemble, node_id="ensemble")
 graph.add_node(operator=judge, node_id="judge") 
 graph.add_edge(from_id="ensemble", to_id="judge")
@@ -341,7 +341,7 @@ with execution_options(scheduler="wave", max_workers=4):
 ├────────────────────────────────────────────────────────────────────────┤
 │                                                                        │
 │  ┌─────────────────┐      ┌─────────────────┐      ┌─────────────────┐ │
-│  │    XCSGraph     │─────►│    XCSNode      │◄─────┤      Edge       │ │
+│  │    Graph     │─────►│    XCSNode      │◄─────┤      Edge       │ │
 │  └────────┬────────┘      └────────┬────────┘      └─────────────────┘ │
 │           │                        │                                   │
 │           ▼                        ▼                                   │
@@ -358,7 +358,7 @@ with execution_options(scheduler="wave", max_workers=4):
 ```
 
 Key components:
-- `XCSGraph`: Directed acyclic graph representation
+- `Graph`: Directed acyclic graph representation
 - `ExecutionPlan`: Compiled execution plan
 - `Scheduler`: Controls execution strategy
 - `Tracer`: Records execution for debugging
@@ -401,7 +401,7 @@ class Pipeline(Operator):
 
 The JIT system now supports three strategies:
 
-1. **Trace Strategy** (`JITMode.TRACE`): Traditional execution tracing for dynamic flows
+1. **structural strategy** (`JITMode.STRUCTURAL`): Traditional execution tracing for dynamic flows
 2. **Structural Strategy** (`JITMode.STRUCTURAL`): Analyzes operator structure without requiring execution 
 3. **Enhanced Strategy** (`JITMode.ENHANCED`): Combines static and dynamic analysis for optimal parallelization
 
@@ -435,7 +435,7 @@ results = execute_graph(
 │           │                        │                        │          │
 │           ▼                        ▼                        ▼          │
 │  ┌─────────────────┐      ┌─────────────────┐      ┌─────────────────┐ │
-│  │ Trace Strategy  │─────►│ Structural Strat│─────►│Enhanced Strategy│ │
+│  │ structural strategy  │─────►│ Structural Strat│─────►│Enhanced Strategy│ │
 │  └────────┬────────┘      └────────┬────────┘      └────────┬────────┘ │
 │           │                        │                        │          │
 │           ▼                        ▼                        ▼          │
@@ -670,7 +670,7 @@ The diagram below illustrates the complete dependency flow between major compone
 ├───────────────────────────────────────────────────────────────────────────────────────────┤
 │                                                                                           │
 │  ┌─────────────────────────┐     ┌─────────────────────────┐     ┌─────────────────────┐  │
-│  │       XCSGraph          │◄───►│     Graph Compiler      │◄───►│   JIT Compiler      │  │
+│  │       Graph          │◄───►│     Graph Compiler      │◄───►│   JIT Compiler      │  │
 │  └───────────┬─────────────┘     └───────────┬─────────────┘     └───────────┬─────────┘  │
 │              │                               │                               │            │
 │              ▼                               ▼                               ▼            │
@@ -824,15 +824,15 @@ class EnsembleOperator(Operator[EnsembleInput, EnsembleOutput]):
 
 ```python
 class Scheduler(Protocol):
-    def run_plan(self, plan: ExecutionPlan, global_input: Dict, graph: XCSGraph) -> Any:
+    def run_plan(self, plan: ExecutionPlan, global_input: Dict, graph: Graph) -> Any:
         ...
 
 class SerialScheduler:
-    def run_plan(self, plan: ExecutionPlan, global_input: Dict, graph: XCSGraph) -> Any:
+    def run_plan(self, plan: ExecutionPlan, global_input: Dict, graph: Graph) -> Any:
         # Serial execution implementation
 
 class ParallelScheduler:
-    def run_plan(self, plan: ExecutionPlan, global_input: Dict, graph: XCSGraph) -> Any:
+    def run_plan(self, plan: ExecutionPlan, global_input: Dict, graph: Graph) -> Any:
         # Parallel execution implementation
 ```
 

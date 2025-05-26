@@ -55,8 +55,7 @@ class VerifierOperator:
         return VerifierOperatorOutputs(
             verdict=verdict,
             explanation=explanation,
-            revised_answer=revised_answer or None,
-        )
+            revised_answer=revised_answer or None)
 
 
 class MockResponse:

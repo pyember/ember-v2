@@ -258,8 +258,7 @@ def demonstrate_basic_transforms():
     batch_texts = [
         "First sample text for batch processing.",
         "Second sample with different content.",
-        "Third sample to demonstrate batching capabilities.",
-    ]
+        "Third sample to demonstrate batching capabilities."]
 
     # Explain vmap input/output structure
     print("vmap transforms a single-item operator to process multiple inputs at once.")
@@ -538,8 +537,7 @@ def compare_transform_combinations():
             time_execution(
                 "pmap(vmap()) with max_workers=2",
                 vectorized_then_parallelized,
-                pmap_vmap_inputs,
-            )
+                pmap_vmap_inputs)
         )
 
     # Filter out failed executions
@@ -584,8 +582,7 @@ def demonstrate_structural_jit_with_vmap():
     batch_texts = [
         "This is the first sample text for the JIT + vmap example.",
         "Here is a second sample with completely different content.",
-        "A third sample text to ensure we have a good batch size.",
-    ]
+        "A third sample text to ensure we have a good batch size."]
 
     # First run: Will include JIT compilation overhead
     print("First run (includes JIT compilation)...")
@@ -631,8 +628,7 @@ def demonstrate_execution_options():
     # Create a pipeline with both vmap and pmap
     base_pipeline = TextAnalysisPipeline(
         process_type="summarize",  # More expensive operation
-        feature_type="comprehensive",
-    )
+        feature_type="comprehensive")
 
     # First vectorize, then parallelize
     # This distributes batches across workers
@@ -655,9 +651,7 @@ def demonstrate_execution_options():
         ("Sequential + caching", {"use_parallel": False, "enable_caching": True}),
         (
             "Full parallel + caching",
-            {"use_parallel": True, "max_workers": 8, "enable_caching": True},
-        ),
-    ]
+            {"use_parallel": True, "max_workers": 8, "enable_caching": True})]
 
     # Test each configuration
     results = []
@@ -839,6 +833,7 @@ def demonstrate_chunked_processing():
 
 
 def main():
+    """Example demonstrating the simplified XCS architecture."""
     """Run the transforms integration demonstrations."""
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 

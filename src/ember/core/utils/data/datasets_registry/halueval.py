@@ -71,15 +71,13 @@ class HaluEvalPrepper(IDatasetPrepper):
             knowledge=knowledge,
             question=question,
             candidate_answer=right_answer,
-            correct_choice="A",
-        )
+            correct_choice="A")
 
         hallucinated_entry: DatasetEntry = self._build_dataset_entry(
             knowledge=knowledge,
             question=question,
             candidate_answer=hallucinated_answer,
-            correct_choice="B",
-        )
+            correct_choice="B")
 
         return [not_hallucinated_entry, hallucinated_entry]
 
@@ -89,8 +87,7 @@ class HaluEvalPrepper(IDatasetPrepper):
         knowledge: str,
         question: str,
         candidate_answer: str,
-        correct_choice: str,
-    ) -> DatasetEntry:
+        correct_choice: str) -> DatasetEntry:
         """Builds a DatasetEntry with a formatted query and corresponding metadata.
 
         Args:
@@ -112,5 +109,4 @@ class HaluEvalPrepper(IDatasetPrepper):
         return DatasetEntry(
             query=query_text,
             choices={"A": "Not Hallucinated", "B": "Hallucinated"},
-            metadata={"correct_answer": correct_choice},
-        )
+            metadata={"correct_answer": correct_choice})

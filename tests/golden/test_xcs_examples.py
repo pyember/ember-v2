@@ -18,8 +18,7 @@ class TestXCSExamples(GoldenTestBase):
             r"JIT Example",
             r"Normal execution:",
             r"JIT execution:",
-            r"Results match:",
-        ]
+            r"Results match:"]
         
         results = self.run_category_tests(
             "xcs",
@@ -36,8 +35,7 @@ class TestXCSExamples(GoldenTestBase):
         expected_patterns = [
             r"Simplified XCS Example",
             r"Using jit:",
-            r"Using transforms:",
-        ]
+            r"Using transforms:"]
         
         results = self.run_category_tests(
             "xcs",
@@ -54,8 +52,7 @@ class TestXCSExamples(GoldenTestBase):
         expected_patterns = [
             r"AutoGraph Example",
             r"Creating graph",
-            r"Execution result:",
-        ]
+            r"Execution result:"]
         
         results = self.run_category_tests(
             "xcs",
@@ -83,8 +80,7 @@ class TestXCSExamples(GoldenTestBase):
         """Test the enhanced JIT example."""
         expected_patterns = [
             r"Enhanced JIT",
-            r"Performance comparison:",
-        ]
+            r"Performance comparison:"]
         
         results = self.run_category_tests(
             "xcs",
@@ -113,8 +109,7 @@ class TestXCSExamples(GoldenTestBase):
         expected_patterns = [
             r"Transforms Integration",
             r"vmap example:",
-            r"pmap example:",
-        ]
+            r"pmap example:"]
         
         results = self.run_category_tests(
             "xcs",

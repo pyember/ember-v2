@@ -64,8 +64,7 @@ class MockLMModule:
             "detailed": [
                 "In a comprehensive analysis",
                 "Considering all factors",
-                "In detail",
-            ],
+                "In detail"],
             "creative": ["Imagine", "Creatively speaking", "From a unique perspective"],
             "normal": ["", "Well,", "In response to your question"],
         }
@@ -213,6 +212,7 @@ class SimpleEnsembleOperator(Operator[EnsembleInput, EnsembleOutput]):
 
 
 def main() -> None:
+    """Example demonstrating the simplified XCS architecture."""
     """Run the ensemble operator example."""
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
@@ -226,8 +226,7 @@ def main() -> None:
         "What is the capital of France?",
         "What is the largest planet in our solar system?",
         "Who wrote Hamlet?",
-        "What is the answer to an unknown question?",
-    ]
+        "What is the answer to an unknown question?"]
 
     # Process all queries
     for query in queries:

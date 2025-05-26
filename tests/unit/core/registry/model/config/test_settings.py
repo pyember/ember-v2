@@ -50,21 +50,18 @@ def convert_model_config_to_model_info(
         ),
         output_cost_per_thousand=getattr(
             model_config.cost, "output_cost_per_thousand", 0.0
-        ),
-    )
+        ))
 
     # Create rate limit
     rate_limit = MockRateLimit(
         tokens_per_minute=getattr(model_config.rate_limit, "tokens_per_minute", 0),
-        requests_per_minute=getattr(model_config.rate_limit, "requests_per_minute", 0),
-    )
+        requests_per_minute=getattr(model_config.rate_limit, "requests_per_minute", 0))
 
     # Create provider info
     provider_info = MockProviderInfo(
         name=provider_name.capitalize(),
         default_api_key=api_key,
-        base_url=getattr(provider_config, "base_url", None),
-    )
+        base_url=getattr(provider_config, "base_url", None))
 
     # Add custom args
     if hasattr(provider_config, "model_dump") and callable(provider_config.model_dump):
@@ -79,8 +76,7 @@ def convert_model_config_to_model_info(
         cost=cost,
         rate_limit=rate_limit,
         provider=provider_info,
-        api_key=api_key,
-    )
+        api_key=api_key)
 
 
 def test_convert_model_config_to_model_info():

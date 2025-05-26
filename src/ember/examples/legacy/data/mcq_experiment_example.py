@@ -242,8 +242,7 @@ class VariedModelEnsemble:
         model_types = [
             {"name": "fact_model", "strengths": ["capital", "country", "geography"]},
             {"name": "science_model", "strengths": ["mammal", "animal", "biology"]},
-            {"name": "math_model", "strengths": ["math", "square", "number"]},
-        ]
+            {"name": "math_model", "strengths": ["math", "square", "number"]}]
 
         # Generate responses from each model
         responses = []
@@ -321,18 +320,15 @@ def create_mock_dataset() -> List[DatasetEntry]:
         DatasetEntry(
             query="What is the capital of France?",
             choices={"A": "Berlin", "B": "Madrid", "C": "Paris", "D": "Rome"},
-            metadata={"correct_answer": "C", "subject": "Geography"},
-        ),
+            metadata={"correct_answer": "C", "subject": "Geography"}),
         DatasetEntry(
             query="Which of these is a mammal?",
             choices={"A": "Shark", "B": "Snake", "C": "Eagle", "D": "Dolphin"},
-            metadata={"correct_answer": "D", "subject": "Biology"},
-        ),
+            metadata={"correct_answer": "D", "subject": "Biology"}),
         DatasetEntry(
             query="What is the square root of 144?",
             choices={"A": "10", "B": "12", "C": "14", "D": "16"},
-            metadata={"correct_answer": "B", "subject": "Mathematics"},
-        ),
+            metadata={"correct_answer": "B", "subject": "Mathematics"}),
         DatasetEntry(
             query="Who wrote 'Pride and Prejudice'?",
             choices={
@@ -341,14 +337,11 @@ def create_mock_dataset() -> List[DatasetEntry]:
                 "C": "Emily Brontë",
                 "D": "Mark Twain",
             },
-            metadata={"correct_answer": "A", "subject": "Literature"},
-        ),
+            metadata={"correct_answer": "A", "subject": "Literature"}),
         DatasetEntry(
             query="Which planet is known as the Red Planet?",
             choices={"A": "Jupiter", "B": "Venus", "C": "Mars", "D": "Saturn"},
-            metadata={"correct_answer": "C", "subject": "Astronomy"},
-        ),
-    ]
+            metadata={"correct_answer": "C", "subject": "Astronomy"})]
 
 
 def score_entry(
@@ -385,6 +378,7 @@ def parse_arguments() -> argparse.Namespace:
 
 
 def main() -> None:
+    """Example demonstrating the simplified XCS architecture."""
     """Run the MCQ experiment example."""
     # Parse command line arguments
     args = parse_arguments()
@@ -438,8 +432,7 @@ def main() -> None:
         for name, pred in [
             ("SingleModelBaseline", baseline_pred),
             ("MultiModelEnsemble", ensemble_pred),
-            ("VariedModelEnsemble", varied_pred),
-        ]:
+            ("VariedModelEnsemble", varied_pred)]:
             pipeline_name, is_correct = score_entry(entry, name, pred)
             results[pipeline_name]["total"] += 1
             if is_correct:

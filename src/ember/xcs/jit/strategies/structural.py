@@ -34,6 +34,16 @@ class StructuralStrategy(BaseStrategy, JITFallbackMixin):
     def analyze(self, func: Callable[..., Any]) -> Dict[str, Any]:
         """Analyze a function to determine if structural JIT is appropriate.
 
+        Scoring rationale:
+        - 40 points: Has nested operators (strongest indicator of structural pattern)
+        - 30 points: Has forward() method (indicates operator pattern)
+        - 20 points: Has __call__ method (callable class)
+        - 10 points: Has specification attribute (operator convention)
+        
+        Total max score: 100 (perfect operator with composition)
+        Typical operator: 60-70 (has forward + specification)
+        Typical container: 90-100 (has nested operators)
+
         Args:
             func: Function to analyze
 
@@ -43,16 +53,19 @@ class StructuralStrategy(BaseStrategy, JITFallbackMixin):
         features = self._extract_common_features(func)
         score = 0
         rationale = []
+        score_breakdown = {}
 
         # Check if it's an operator class with forward method
         if features["is_class"]:
             # Check for operator characteristics
             if hasattr(func, "forward") and callable(getattr(func, "forward", None)):
-                score += 30
+                score += 30  # Strong indicator of operator pattern
+                score_breakdown["forward_method"] = 30
                 rationale.append("Has 'forward' method (likely an operator)")
 
-            # Check for nested operators
+            # Check for nested operators - most important feature
             has_operator_fields = False
+            nested_count = 0
             for attr_name in dir(func):
                 if attr_name.startswith("_"):
                     continue
@@ -60,49 +73,52 @@ class StructuralStrategy(BaseStrategy, JITFallbackMixin):
                 attr = getattr(func, attr_name, None)
                 if inspect.isclass(attr) and hasattr(attr, "forward"):
                     has_operator_fields = True
-                    break
+                    nested_count += 1
 
             if has_operator_fields:
-                score += 40
-                rationale.append("Has nested operator fields (container pattern)")
+                score += 40  # Highest score - best indicator of structural pattern
+                score_breakdown["nested_operators"] = 40
+                rationale.append(f"Has {nested_count} nested operator fields (container pattern)")
 
         # Check for specific method signatures that indicate operator composition
         if callable(func) and callable(func.__call__):
-            score += 20
+            score += 20  # Moderate indicator
+            score_breakdown["callable_class"] = 20
             rationale.append("Has __call__ method")
 
         # Check for known operator-specific attributes
         if hasattr(func, "specification"):
-            score += 10
+            score += 10  # Weak indicator alone, but confirms operator pattern
+            score_breakdown["specification"] = 10
             rationale.append("Has 'specification' attribute (operator pattern)")
+
+        # Log score breakdown for debugging
+        logger.debug(f"Structural analysis for {func.__name__ if hasattr(func, '__name__') else func}: "
+                    f"total_score={score}, breakdown={score_breakdown}")
 
         return {
             "score": score,
             "rationale": "; ".join(rationale),
             "features": features,
+            "score_breakdown": score_breakdown,  # For debugging
         }
 
     def compile(
         self,
         func: Callable[..., Any],
-        sample_input: Optional[Dict[str, Any]] = None,
         force_trace: bool = False,
         recursive: bool = True,
         cache: Optional[JITCache] = None,
-        preserve_stochasticity: bool = False,
-        **options: Any,
-    ) -> Callable[..., Any]:
+        preserve_stochasticity: bool = False) -> Callable[..., Any]:
         """Compile a function using structural JIT.
 
         Args:
             func: Function to compile
-            sample_input: Optional sample input (not used in structural JIT)
             force_trace: Whether to force analysis on every call
             recursive: Whether to recursively analyze nested operators
             cache: JIT cache to use
             preserve_stochasticity: When True, always executes the original function
                 to maintain stochastic behavior (important for LLMs)
-            **options: Additional options
 
         Returns:
             Compiled function
@@ -177,8 +193,7 @@ class StructuralStrategy(BaseStrategy, JITFallbackMixin):
         graph: Any,
         original_func: Callable,
         inputs: Dict[str, Any],
-        cache: JITCache,
-    ) -> Any:
+        cache: JITCache) -> Any:
         """Execute a compiled graph with fallback to direct execution.
 
         Args:

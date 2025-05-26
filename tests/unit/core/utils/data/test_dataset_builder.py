@@ -213,8 +213,7 @@ class TestDatasetBuilderBuildMethod(unittest.TestCase):
         # Configure mock service
         self.mock_entries = [
             DatasetEntry(id="1", query="Test question 1"),
-            DatasetEntry(id="2", query="Test question 2"),
-        ]
+            DatasetEntry(id="2", query="Test question 2")]
         self.mock_service.load_and_prepare.return_value = self.mock_entries
 
     def tearDown(self) -> None:

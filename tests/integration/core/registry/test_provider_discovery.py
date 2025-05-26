@@ -11,19 +11,16 @@ import pytest
 
 from ember.core.registry.model.base.registry.model_registry import ModelRegistry
 from ember.core.registry.model.providers.anthropic.anthropic_discovery import (
-    AnthropicDiscovery,
-)
+    AnthropicDiscovery)
 from ember.core.registry.model.providers.deepmind.deepmind_discovery import (
-    DeepmindDiscovery,
-)
+    DeepmindDiscovery)
 from ember.core.registry.model.providers.openai.openai_discovery import OpenAIDiscovery
 
 
 @pytest.mark.integration
 @pytest.mark.skipif(
     not os.environ.get("RUN_PROVIDER_INTEGRATION_TESTS"),
-    reason="Provider integration tests only run when explicitly enabled with RUN_PROVIDER_INTEGRATION_TESTS=1",
-)
+    reason="Provider integration tests only run when explicitly enabled with RUN_PROVIDER_INTEGRATION_TESTS=1")
 class TestProviderDiscoveryIntegration:
     """Integration tests for provider discovery mechanisms.
 
@@ -90,8 +87,7 @@ class TestProviderDiscoveryIntegration:
 
     @pytest.mark.skipif(
         not os.environ.get("GOOGLE_API_KEY") and not os.environ.get("GEMINI_API_KEY"),
-        reason="Requires GOOGLE_API_KEY or GEMINI_API_KEY",
-    )
+        reason="Requires GOOGLE_API_KEY or GEMINI_API_KEY")
     def test_deepmind_discovery_integration(self):
         """Test Deepmind/Google discovery with actual API call."""
         api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")

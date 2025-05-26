@@ -99,8 +99,7 @@ class ComplexEnsembleOperator(Operator[Dict[str, Any], Dict[str, Any]]):
         num_initial: int = 3,
         num_parallel: int = 4,
         num_final: int = 2,
-        **kwargs,
-    ) -> None:
+        **kwargs) -> None:
         # Initial sequential stages
         self.initial_stages = [SimpleOperator(value=i + 1) for i in range(num_initial)]
 
@@ -303,7 +302,7 @@ class TestJITEnsembleSchedulers:
         ), f"Execution time ({execution_time:.3f}s) exceeds reasonable maximum ({reasonable_max:.3f}s)"
 
     def test_ensemble_with_trace_analysis(self) -> None:
-        """Test ensemble execution with trace-based analysis."""
+        """Test ensemble execution with structural analysis."""
         # Create a complex ensemble
         op = ComplexEnsembleOperator(num_initial=2, num_parallel=4, num_final=2)
         input_data = {"value": 5}

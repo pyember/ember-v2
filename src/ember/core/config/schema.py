@@ -74,8 +74,7 @@ class Model(BaseModel):
         # We can pass the input and output costs as named parameters
         return Cost(
             input_cost_per_thousand=self.cost_input,
-            output_cost_per_thousand=self.cost_output,
-        )
+            output_cost_per_thousand=self.cost_output)
 
     def __init__(self, **data):
         # Convert rate_limit dictionary to RateLimit model if it's a dict

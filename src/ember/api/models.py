@@ -27,14 +27,12 @@ from typing import Union, Optional, Any, Dict, TYPE_CHECKING
 
 from ember.core.registry.model.base.context import (
     ModelContext,
-    get_default_context,
-)
+    get_default_context)
 # Import model-specific errors from core
 from ember.core.exceptions import (
     ModelError,
     ModelNotFoundError,
-    ProviderAPIError,
-)
+    ProviderAPIError)
 
 if TYPE_CHECKING:
     from ember.core.registry.model.base.schemas.chat_schemas import ChatResponse
@@ -382,5 +380,4 @@ __all__ = [
     # Re-export error types for convenience
     'ModelError',
     'ModelNotFoundError',
-    'ProviderAPIError',
-]
+    'ProviderAPIError']

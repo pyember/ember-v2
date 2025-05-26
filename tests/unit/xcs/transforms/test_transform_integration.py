@@ -12,11 +12,9 @@ from typing import Any, Dict
 
 import pytest
 
-from ember.xcs.engine.xcs_engine import (
     TopologicalSchedulerWithParallelDispatch,
-    execute_graph,
-)
-from ember.xcs.graph.xcs_graph import XCSGraph
+    execute_graph)
+from ember.xcs.graph import Graph
 from tests.helpers.stub_classes import Operator
 
 # Import test operators
@@ -28,12 +26,10 @@ from tests.unit.xcs.transforms.test_transform_imports import (
     PartitionSpec,
     mesh_sharded,
     pmap,
-    vmap,
-)
+    vmap)
 from tests.unit.xcs.transforms.test_utils import (
     assert_processing_time,
-    time_function_execution,
-)
+    time_function_execution)
 
 # =============================== Fixtures ===============================
 
@@ -70,8 +66,7 @@ class TestTransformCombinations:
                 ["inner1a", "inner1b"],
                 ["inner2a", "inner2b"],
                 ["inner3a", "inner3b"],
-                ["inner4a", "inner4b"],
-            ]
+                ["inner4a", "inner4b"]]
         }
 
         # Time sequential execution (with just vmap)
@@ -275,7 +270,7 @@ class TestTransformWithXCSGraph:
         op2 = ChainOperator("second", lambda x: f"{x}_second")
 
         # Create a graph
-        graph = XCSGraph()
+        graph = Graph()
         node1 = graph.add_node(op1, name="first_op")
         node2 = graph.add_node(op2, name="second_op")
 
@@ -322,7 +317,7 @@ class TestTransformWithXCSGraph:
                 return {"result": result}
 
         # Create a graph with a chain of operators
-        graph = XCSGraph()
+        graph = Graph()
 
         # Create three nodes that will form a chain of transformations
         node1 = graph.add_node(ChainOperator("_step1"), name="step1")
@@ -392,7 +387,7 @@ class TestTransformWithXCSGraph:
         nested_op = NestedGraphOperator([layer1, layer2])
 
         # Create a simple graph with just the nested operator
-        graph = XCSGraph()
+        graph = Graph()
         node = graph.add_node(nested_op, name="nested")
 
         # Execute the graph
@@ -451,7 +446,7 @@ class TestTransformWithXCSGraph:
         op2 = VariableTimeOperator("second_step")
 
         # Create a graph with the operators
-        graph = XCSGraph()
+        graph = Graph()
         node1 = graph.add_node(op1, name="first")
         node2 = graph.add_node(op2, name="second")
 

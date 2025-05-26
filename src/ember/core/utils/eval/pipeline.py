@@ -79,8 +79,7 @@ def evaluate_batch(
     evaluator: IEvaluator[Any, Any],
     system_outputs: List[Any],
     correct_answers: List[Any],
-    **kwargs: Any,
-) -> List[EvaluationResult]:
+    **kwargs: Any) -> List[EvaluationResult]:
     """Evaluates a batch of system outputs against their corresponding correct answers.
 
     Args:
@@ -111,8 +110,7 @@ def evaluate_batch_with_summary(
     evaluator: IEvaluator[Any, Any],
     system_outputs: List[Any],
     correct_answers: List[Any],
-    **kwargs: Any,
-) -> BatchEvaluationSummary:
+    **kwargs: Any) -> BatchEvaluationSummary:
     """Evaluates a batch of samples and returns an aggregated summary.
 
     Args:
@@ -128,6 +126,5 @@ def evaluate_batch_with_summary(
         evaluator=evaluator,
         system_outputs=system_outputs,
         correct_answers=correct_answers,
-        **kwargs,
-    )
+        **kwargs)
     return summarize_batch(results)

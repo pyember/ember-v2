@@ -10,8 +10,7 @@ from . import (
     eval as eval_command,
     project as project_command,
     config as config_command,
-    version as version_command,
-)
+    version as version_command)
 
 __all__ = [
     "model_command",
@@ -19,5 +18,4 @@ __all__ = [
     "eval_command",
     "project_command",
     "config_command",
-    "version_command",
-]
+    "version_command"]

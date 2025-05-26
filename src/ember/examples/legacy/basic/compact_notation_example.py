@@ -26,13 +26,13 @@ def create_custom_registry():
                 ),
                 non.MostCommon(),  # Automatically add MostCommon to every ensemble
             ]
-        ),
-    )
+        ))
 
     return registry
 
 
 def main() -> None:
+    """Example demonstrating the simplified XCS architecture."""
     """Demonstrates various ways to build NON pipelines using compact notation."""
 
     # Example 1: Basic ensemble with judge
@@ -50,8 +50,7 @@ def main() -> None:
     standard_pipeline = non.Sequential(
         operators=[
             non.UniformEnsemble(num_units=3, model_name="gpt-4o", temperature=0.7),
-            non.JudgeSynthesis(model_name="claude-3-5-sonnet", temperature=0.0),
-        ]
+            non.JudgeSynthesis(model_name="claude-3-5-sonnet", temperature=0.0)]
     )
 
     print("Compact notation pipeline created.")
@@ -81,8 +80,7 @@ def main() -> None:
             # Second branch - Claude ensemble + verification
             ["3:E:claude-3-5-haiku:0.7", "1:V:claude-3-5-haiku:0.0"],
             # Final synthesis judge
-            "1:J:claude-3-5-sonnet:0.0",
-        ]
+            "1:J:claude-3-5-sonnet:0.0"]
     )
 
     print("Nested architecture pipeline created.")
@@ -110,8 +108,7 @@ def main() -> None:
             "$double_verification",  # Two parallel verification branches
             "1:J:claude-3-5-sonnet:0.0",  # Final synthesis
         ],
-        components=component_map,
-    )
+        components=component_map)
 
     print("Recursive reference pipeline created.")
 
@@ -127,8 +124,7 @@ def main() -> None:
             "5:CE:gpt-4o:0.7",  # Custom ensemble with built-in MostCommon
             "1:J:claude-3-5-sonnet:0.0",  # Judge to synthesize
         ],
-        type_registry=custom_registry,
-    )
+        type_registry=custom_registry)
 
     print("Custom operator type pipeline created using custom type registry.")
 
@@ -157,8 +153,7 @@ def main() -> None:
             "$sub",  # Second branch: SubNetwork instance
             "1:J:gpt-4o:0.0",  # Final Judge synthesizes results from both branches
         ],
-        components=component_map,
-    )
+        components=component_map)
 
     print(
         "NestedNetwork equivalent created with identical structure to example_architectures.py"

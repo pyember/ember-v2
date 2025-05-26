@@ -24,6 +24,7 @@ from _shared.example_utils import print_section_header, print_example_output
 
 
 def main():
+    """Example demonstrating the simplified XCS architecture."""
     """Verify Ember installation and print basic information."""
     print_section_header("Ember Hello World")
     

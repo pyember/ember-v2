@@ -31,8 +31,7 @@ def patch_openai(monkeypatch: pytest.MonkeyPatch) -> None:
         def data(self):
             return [
                 MockModel("gpt-4o"),
-                MockModel("gpt-4o-mini"),
-            ]
+                MockModel("gpt-4o-mini")]
 
     # Patch the OpenAI class
     monkeypatch.setattr(openai, "OpenAI", MockOpenAI)

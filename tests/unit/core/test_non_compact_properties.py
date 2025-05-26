@@ -12,8 +12,7 @@ from ember.core.non import (
     MostCommon,
     Sequential,
     UniformEnsemble,
-    Verifier,
-)
+    Verifier)
 from ember.core.non_compact import build_graph, parse_spec, resolve_refs
 
 # =============================================================================
@@ -43,8 +42,7 @@ class TestPropertyBasedParsing:
             ("J", JudgeSynthesis),
             ("JF", JudgeSynthesis),
             ("V", Verifier),
-            ("MC", MostCommon),
-        ]
+            ("MC", MostCommon)]
 
         for code, expected_type in type_codes_and_expected_types:
             # Skip MC with count != 1 (only needs 1 instance)

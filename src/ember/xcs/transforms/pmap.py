@@ -14,6 +14,7 @@ Key capabilities:
 """
 
 import logging
+from concurrent.futures import ThreadPoolExecutor
 import multiprocessing
 import os
 from dataclasses import dataclass
@@ -23,8 +24,7 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple, TypeVar,
 from ember.core.exceptions import (
     ParallelExecutionError,
     TransformError,
-    ValidationError,
-)
+    ValidationError)
 from ember.xcs.transforms.transform_base import BaseTransformation, ParallelOptions
 
 # Type variables for generic typing
@@ -70,15 +70,13 @@ class ShardingOptions:
                 context={
                     "strategy": self.strategy,
                     "valid_strategies": list(valid_strategies),
-                },
-            )
+                })
 
         if self.max_shard_size < 0:
             raise ValidationError(
                 f"Invalid max_shard_size: {self.max_shard_size}. "
                 "Must be >= 0 (0 means no limit)",
-                context={"max_shard_size": self.max_shard_size},
-            )
+                context={"max_shard_size": self.max_shard_size})
 
 
 @dataclass
@@ -107,15 +105,13 @@ class ExecutionOptions:
             raise ValidationError(
                 f"Invalid max_workers: {self.max_workers}. "
                 "Must be > 0 or None for automatic selection",
-                context={"max_workers": self.max_workers},
-            )
+                context={"max_workers": self.max_workers})
 
         if self.timeout is not None and self.timeout <= 0:
             raise ValidationError(
                 f"Invalid timeout: {self.timeout}. "
                 "Must be > 0 or None for no timeout",
-                context={"timeout": self.timeout},
-            )
+                context={"timeout": self.timeout})
 
 
 @dataclass
@@ -178,8 +174,7 @@ class ParallelTransformation(BaseTransformation):
         num_workers=None,
         continue_on_errors=False,
         timeout_seconds=None,
-        devices=None,
-    ):
+        devices=None):
         """Initialize the parallel transformation.
 
         Args:
@@ -193,8 +188,7 @@ class ParallelTransformation(BaseTransformation):
             num_workers=num_workers,
             continue_on_errors=continue_on_errors,
             timeout_seconds=timeout_seconds,
-            return_partial=True,
-        )
+            return_partial=True)
         self.devices = devices
 
     def __call__(self, fn):
@@ -214,9 +208,7 @@ class ParallelTransformation(BaseTransformation):
             execution_options=ExecutionOptions(
                 continue_on_errors=self.options.continue_on_errors,
                 timeout=self.options.timeout_seconds,
-                return_partial_on_timeout=self.options.return_partial,
-            ),
-        )
+                return_partial_on_timeout=self.options.return_partial))
         return self._preserve_function_metadata(fn, parallelized)
 
 
@@ -241,8 +233,7 @@ def _get_default_num_workers() -> int:
         except ValueError:
             logger.warning(
                 "Invalid XCS_NUM_WORKERS value '%s', using system-based default",
-                env_workers,
-            )
+                env_workers)
 
     # Default to CPU count minus 1 to avoid resource exhaustion
     # This typically provides good performance while leaving resources
@@ -257,8 +248,7 @@ def _get_default_num_workers() -> int:
 
 
 def _identify_shardable_inputs(
-    inputs: Mapping[str, Any],
-) -> Dict[str, Tuple[bool, int]]:
+    inputs: Mapping[str, Any]) -> Dict[str, Tuple[bool, int]]:
     """Identify input fields suitable for sharding.
 
     Args:
@@ -281,8 +271,7 @@ def _identify_shardable_inputs(
 
 def _validate_shard_inputs(
     inputs: Mapping[str, Any],
-    num_shards: int,
-) -> None:
+    num_shards: int) -> None:
     """Validate inputs for the sharding process.
 
     Args:
@@ -295,14 +284,12 @@ def _validate_shard_inputs(
     if not isinstance(inputs, Mapping):
         raise ValidationError(
             "Inputs must be a mapping (dictionary-like object)",
-            context={"input_type": type(inputs).__name__},
-        )
+            context={"input_type": type(inputs).__name__})
 
     if num_shards <= 0:
         raise ValidationError(
             f"Number of shards must be positive, got {num_shards}",
-            context={"num_shards": num_shards},
-        )
+            context={"num_shards": num_shards})
 
 
 def _check_batch_size_consistency(
@@ -335,8 +322,7 @@ def _check_batch_size_consistency(
                 message="Inconsistent batch sizes detected across shardable inputs. "
                 f"Sizes: {', '.join(f'{k}={shardable_info[k][1]}' for k in primary_keys)}. "
                 "Set strict_batch_size=False in ShardingOptions to allow different sizes.",
-                details={"shardable_sizes": sizes_dict},
-            )
+                details={"shardable_sizes": sizes_dict})
 
 
 # =============================================================================
@@ -387,8 +373,7 @@ def _create_even_shards(
     inputs: Mapping[str, Any],
     actual_shards: int,
     min_size: int,
-    shardable_keys: List[str],
-) -> List[Dict[str, Any]]:
+    shardable_keys: List[str]) -> List[Dict[str, Any]]:
     """Create evenly distributed shards.
 
     Args:
@@ -472,8 +457,7 @@ def _create_greedy_shards(
     actual_shards: int,
     min_size: int,
     shardable_keys: List[str],
-    max_items: int,
-) -> List[Dict[str, Any]]:
+    max_items: int) -> List[Dict[str, Any]]:
     """Create greedily distributed shards.
 
     Args:
@@ -529,8 +513,7 @@ def _handle_non_shardable_inputs(
 
 
 def _get_sharding_strategy_and_args(
-    context: ShardingContext,
-) -> Tuple[str, Dict[str, Any]]:
+    context: ShardingContext) -> Tuple[str, Dict[str, Any]]:
     """Determine sharding strategy and prepare arguments.
 
     Args:
@@ -581,8 +564,7 @@ def _get_sharding_strategy_and_args(
 def _shard_inputs(
     inputs: Mapping[str, Any],
     num_shards: int,
-    options: Optional[ShardingOptions] = None,
-) -> List[Dict[str, Any]]:
+    options: Optional[ShardingOptions] = None) -> List[Dict[str, Any]]:
     """Distribute input data into shards for parallel processing.
 
     Creates balanced shards from the input data, handling various input types
@@ -644,8 +626,7 @@ def _shard_inputs(
         min_size=min_size,
         shardable_keys=shardable_keys,
         options=options,
-        test_mode=test_mode,
-    )
+        test_mode=test_mode)
 
     # Determine sharding strategy and prepare arguments
     strategy, strategy_args = _get_sharding_strategy_and_args(context)
@@ -737,8 +718,7 @@ def _validate_and_prepare_pmap_args(
     func: Callable[[Mapping[str, Any]], Dict[str, Any]],
     num_workers: Optional[int] = None,
     sharding_options: Optional[ShardingOptions] = None,
-    execution_options: Optional[ExecutionOptions] = None,
-) -> Tuple[Callable, int, ShardingOptions, ExecutionOptions]:
+    execution_options: Optional[ExecutionOptions] = None) -> Tuple[Callable, int, ShardingOptions, ExecutionOptions]:
     """Validate and prepare arguments for pmap function.
 
     Args:
@@ -758,15 +738,13 @@ def _validate_and_prepare_pmap_args(
     if not callable(func):
         raise ValidationError(
             f"Expected a callable function, got {type(func)}",
-            context={"function_type": str(type(func))},
-        )
+            context={"function_type": str(type(func))})
 
     # Handle negative workers as an error
     if num_workers is not None and num_workers < 0:
         raise ValidationError(
             f"num_workers must be non-negative, got {num_workers}",
-            context={"num_workers": num_workers},
-        )
+            context={"num_workers": num_workers})
 
     # Handle zero workers as a special case - treat as None (use system default)
     if num_workers == 0:
@@ -799,8 +777,7 @@ def pmap(
     num_workers: Optional[int] = None,
     devices: Optional[List[str]] = None,  # Unused, but kept for API compatibility
     sharding_options: Optional[ShardingOptions] = None,
-    execution_options: Optional[ExecutionOptions] = None,
-) -> Union[Callable[[Dict[str, Any]], Dict[str, Any]], Callable[[Callable], Callable]]:
+    execution_options: Optional[ExecutionOptions] = None) -> Union[Callable[[Dict[str, Any]], Dict[str, Any]], Callable[[Callable], Callable]]:
     """Parallelize a function for concurrent execution.
 
     Transforms a function to execute across multiple workers in parallel,
@@ -864,8 +841,7 @@ def pmap(
                 num_workers=num_workers,
                 devices=devices,
                 sharding_options=sharding_options,
-                execution_options=execution_options,
-            )
+                execution_options=execution_options)
 
         return decorator
 
@@ -880,8 +856,7 @@ def pmap(
         func,
         resolved_workers,
         sharding_options,
-        execution_options,
-    ) = _validate_and_prepare_pmap_args(
+        execution_options) = _validate_and_prepare_pmap_args(
         func, num_workers, sharding_options, execution_options
     )
 
@@ -903,8 +878,7 @@ def pmap(
             ParallelExecutionError: If parallel execution encounters problems
         """
         # Import here to avoid circular dependencies
-        from ember.xcs.utils.executor import Dispatcher
-
+        
         try:
             # Create input shards for parallel processing
             sharded_inputs = _shard_inputs(
@@ -916,42 +890,32 @@ def pmap(
                 return func(inputs=inputs)
 
             # Extract executor type from environment
-            executor_type = os.environ.get("XCS_EXECUTION_ENGINE", "auto")
 
             # If we have a single shard, avoid overhead of parallel execution
             if len(sharded_inputs) == 1:
                 return func(inputs=sharded_inputs[0])
 
-            # Create dispatcher for parallel execution
-            dispatcher = Dispatcher(
-                max_workers=resolved_workers,
-                timeout=execution_options.timeout if execution_options else None,
-                fail_fast=not (
-                    execution_options and execution_options.continue_on_errors
-                ),
-                executor=executor_type,
-            )
-
-            try:
-                # Properly structure input for Dispatcher's ThreadExecutor
-                # ThreadExecutor expects: fn(inputs=input_dict)
-                # So we pass the function directly and format inputs correctly
-                input_dicts = sharded_inputs
-
-                # Execute tasks in parallel through Dispatcher
-                shard_results = dispatcher.map(func, input_dicts)
-
+            # Execute in parallel with ThreadPoolExecutor
+            if len(sharded_inputs) == 1:
+                return func(inputs=sharded_inputs[0])
+            
+            with ThreadPoolExecutor(max_workers=resolved_workers) as executor:
+                futures = []
+                for shard in sharded_inputs:
+                    future = executor.submit(func, inputs=shard)
+                    futures.append(future)
+                
+                # Collect results
+                shard_results = [f.result() for f in futures]
+                
                 # Check for empty results
                 if not shard_results:
                     raise ParallelExecutionError(
                         message="No results returned from parallel execution",
-                        context={"num_shards": len(sharded_inputs)},
-                    )
-
+                        context={"num_shards": len(sharded_inputs)})
+                
                 # Combine and return results
                 return _combine_results(shard_results)
-            finally:
-                dispatcher.close()
 
         except TransformError:
             # Re-raise transform errors directly
@@ -1053,8 +1017,7 @@ def pjit(
         devices=devices,
         sharding_options=sharding_options,
         execution_options=execution_options,
-        static_argnums=static_argnums,
-    )
+        static_argnums=static_argnums)
 
     # Log info about unused parameters to aid debugging
     if options.static_argnums is not None:
@@ -1071,5 +1034,4 @@ def pjit(
         num_workers=options.num_workers,
         devices=options.devices,
         sharding_options=options.sharding_options,
-        execution_options=options.execution_options,
-    )
+        execution_options=options.execution_options)

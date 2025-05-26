@@ -1,33 +1,7 @@
-"""Execution engine for XCS computation graphs.
+"""XCS engine module - now just a compatibility layer."""
 
-Provides the core execution engine for running computational graphs with
-different scheduling strategies and optimizations. This module forms the
-foundation for the XCS system's execution capabilities.
+# Engine functionality has been simplified and moved to other modules.
+from ..graph import Graph, execute_graph
+from ..execution_options import ExecutionOptions
 
-The engine follows a unified architecture with clean separation of concerns
-between graph construction, scheduling, and execution.
-"""
-
-# Core execution options API
-from ember.xcs.engine.execution_options import ExecutionOptions, execution_options
-
-# Core engine functionality
-from ember.xcs.engine.unified_engine import (
-    ExecutionMetrics,
-    GraphExecutor,
-    execute_graph,
-)
-
-# All scheduler functionality is in the schedulers package
-from ember.xcs.schedulers import create_scheduler
-
-__all__ = [
-    # Execution options
-    "ExecutionOptions",
-    "execution_options",
-    # Engine core
-    "execute_graph",
-    "GraphExecutor",
-    "ExecutionMetrics",
-    "create_scheduler",
-]
+__all__ = ["Graph", "execute_graph", "ExecutionOptions"]

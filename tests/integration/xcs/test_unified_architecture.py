@@ -17,8 +17,7 @@ from ember.xcs import (
     execution_options,
     jit,
     pmap,
-    vmap,
-)
+    vmap)
 
 
 class SimpleOperator(Operator[Dict[str, Any], Dict[str, Any]]):
@@ -159,7 +158,7 @@ class TestArchitecture:
     def test_manual_graph_execution(self) -> None:
         """Test manual graph construction and execution."""
         # Create a graph manually
-        graph = XCSGraph()
+        graph = Graph()
 
         # Add nodes
         graph.add_node(lambda inputs: {"value": inputs["value"] * 2}, node_id="double")
@@ -202,7 +201,7 @@ class TestArchitecture:
         assert len(tracer.records) > 0
 
         # Build a graph from the trace
-        graph = XCSGraph()
+        graph = Graph()
         for i, record in enumerate(tracer.records):
             # Create a replay function from the record
             def create_replay_function(rec):
@@ -218,8 +217,7 @@ class TestArchitecture:
         result = execute_graph(
             graph=graph,
             inputs={"value": 10},
-            options=ExecutionOptions(scheduler="parallel"),
-        )
+            options=ExecutionOptions(scheduler="parallel"))
 
         # Should have results from execution
         assert len(result) > 0

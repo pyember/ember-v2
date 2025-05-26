@@ -17,5 +17,4 @@ __all__ = [
     "pjit",
     "DeviceMesh",
     "PartitionSpec",
-    "mesh_sharded",
-]
+    "mesh_sharded"]

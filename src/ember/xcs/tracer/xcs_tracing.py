@@ -118,8 +118,7 @@ class TracerContext(ContextDecorator):
         self,
         exc_type: Optional[Type[BaseException]],
         exc_value: Optional[BaseException],
-        traceback: Optional[Any],
-    ) -> Optional[bool]:
+        traceback: Optional[Any]) -> Optional[bool]:
         """Exits the tracing context, clearing the active context.
 
         Args:
@@ -172,8 +171,7 @@ class TracerContext(ContextDecorator):
         self,
         call_id: str,
         outputs: Dict[str, Any],
-        exception: Optional[Exception] = None,
-    ) -> TraceRecord:
+        exception: Optional[Exception] = None) -> TraceRecord:
         """Complete a tracked call, with optional exception.
 
         Args:
@@ -199,8 +197,7 @@ class TracerContext(ContextDecorator):
             outputs=outputs,
             start_time=call_data["start_time"],
             end_time=time.time(),
-            exception=exception,
-        )
+            exception=exception)
 
         self.records.append(record)
         return record

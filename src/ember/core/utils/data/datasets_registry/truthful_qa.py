@@ -48,12 +48,10 @@ class TruthfulQAPrepper(IDatasetPrepper):
                 for index, label in enumerate(mc1_targets["labels"])
                 if label == 1
             ),
-            None,
-        )
+            None)
         return [
             DatasetEntry(
                 query=question,
                 choices=choices,
-                metadata={"correct_answer": correct_answer},
-            )
+                metadata={"correct_answer": correct_answer})
         ]

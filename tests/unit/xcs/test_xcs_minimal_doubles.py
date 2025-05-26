@@ -8,8 +8,7 @@ of "avoid overmocking" and using "minimal test doubles".
 from tests.helpers.operator_minimal_doubles import (
     MinimalOperator,
     MinimalTestModel,
-    SimpleDeterministicOperator,
-)
+    SimpleDeterministicOperator)
 
 # Import minimal test doubles instead of complex mock implementations
 from tests.helpers.xcs_minimal_doubles import minimal_autograph, minimal_jit

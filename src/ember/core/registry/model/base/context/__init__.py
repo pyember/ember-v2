@@ -108,8 +108,7 @@ class ModelContext:
             self._registry = initialize_registry(
                 config_path=self._config.config_path,
                 config_manager=self._config.config_manager,
-                auto_discover=self._config.auto_discover,
-            )
+                auto_discover=self._config.auto_discover)
 
             # Initialize the usage service
             self._usage_service = UsageService()

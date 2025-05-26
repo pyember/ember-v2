@@ -29,17 +29,14 @@ COMPONENT_GROUPS = {
         "ember.core.registry.model",
         "ember.core.registry.model.initialization",
         "ember.core.registry.model.base.registry.discovery",
-        "ember.core.registry.model.base.registry.model_registry",
-    ],
+        "ember.core.registry.model.base.registry.model_registry"],
     "model_warnings": [
         # These loggers produce too many warnings during discovery
-        "ember.core.registry.model.base.registry.discovery",
-    ],
+        "ember.core.registry.model.base.registry.discovery"],
     "model_discovery": [
         "ember.core.registry.model.providers.anthropic.anthropic_discovery",
         "ember.core.registry.model.providers.openai.openai_discovery",
-        "ember.core.registry.model.providers.deepmind.deepmind_discovery",
-    ],
+        "ember.core.registry.model.providers.deepmind.deepmind_discovery"],
     "http": [
         "httpcore",
         "httpcore.connection",
@@ -52,8 +49,7 @@ COMPONENT_GROUPS = {
         "openai._base_client",
         "openai._http_client",
         "anthropic",
-        "anthropic._base_client",
-    ],
+        "anthropic._base_client"],
 }
 
 # Reverse mapping to find group by logger name
@@ -66,8 +62,7 @@ for group_name, loggers in COMPONENT_GROUPS.items():
 def configure_logging(
     level: int = logging.INFO,
     format_str: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    verbose: bool = False,
-) -> None:
+    verbose: bool = False) -> None:
     """
     Configure logging for the Ember framework.
 
@@ -180,8 +175,7 @@ def _configure_http_library_handlers() -> None:
         "anthropic",
         "anthropic._base_client",
         "requests",
-        "requests.packages.urllib3",
-    ]
+        "requests.packages.urllib3"]
 
     # Use configured level for all HTTP libraries
     for name in http_libraries:
@@ -257,7 +251,7 @@ def log_level(level: Union[int, str], logger_name: Optional[str] = None):
     Example:
         with log_level("DEBUG", "ember.xcs"):
             # XCS logs at DEBUG level here
-            result = execute_graph(graph, inputs)
+            result = graph.run(inputs)
     """
     # Convert string level to int if needed
     if isinstance(level, str):

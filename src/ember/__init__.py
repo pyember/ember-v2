@@ -113,8 +113,7 @@ def initialize_ember(
     force_discovery: bool = False,
     api_keys: Optional[Dict[str, str]] = None,
     env_prefix: str = "EMBER_",
-    verbose_logging: bool = False,
-) -> ModelRegistryType:
+    verbose_logging: bool = False) -> ModelRegistryType:
     """Initialize core Ember components.
 
     This function configures logging, API keys, and the model registry.
@@ -152,8 +151,7 @@ def initialize_ember(
     registry = initialize_registry(
         config_manager=config_manager,
         auto_discover=auto_discover,
-        force_discovery=force_discovery,
-    )
+        force_discovery=force_discovery)
 
     # Context is initialized lazily via current_context()
 
@@ -163,8 +161,7 @@ def initialize_ember(
 
 def init(
     config: Optional[Union[Dict[str, Any], Dict[str, Any]]] = None,
-    usage_tracking: bool = False,
-) -> Callable:
+    usage_tracking: bool = False) -> Callable:
     """Initialize Ember and return a unified model service.
 
     This function provides a simple entry point for initializing Ember and accessing
@@ -233,5 +230,4 @@ __all__ = [
     "init",  # Simple initialization function (matches README examples)
     "configure_logging",  # Logging configuration utility
     "set_component_level",  # Fine-grained logging control
-    "__version__",
-]
+    "__version__"]

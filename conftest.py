@@ -99,20 +99,17 @@ def pytest_addoption(parser):
         "--run-perf-tests",
         action="store_true",
         default=False,
-        help="Run performance tests that are skipped by default",
-    )
+        help="Run performance tests that are skipped by default")
     parser.addoption(
         "--run-all-tests",
         action="store_true",
         default=False,
-        help="Run all tests including skipped tests (except those requiring API keys)",
-    )
+        help="Run all tests including skipped tests (except those requiring API keys)")
     parser.addoption(
         "--run-api-tests",
         action="store_true", 
         default=False,
-        help="Run tests that require API keys and external services",
-    )
+        help="Run tests that require API keys and external services")
 
 @pytest.fixture(scope="session", autouse=True)
 def _add_config_helper(request):

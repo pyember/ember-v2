@@ -46,25 +46,21 @@ from ember.core.registry.operator.base.operator_base import Operator
 from ember.core.registry.operator.core.ensemble import (
     EnsembleOperator,
     EnsembleOperatorInputs,
-    EnsembleOperatorOutputs,
-)
+    EnsembleOperatorOutputs)
 from ember.core.registry.operator.core.most_common import (
     MostCommonAnswerSelectorOperator,
     MostCommonAnswerSelectorOperatorInputs,
-    MostCommonAnswerSelectorOutputs,
-)
+    MostCommonAnswerSelectorOutputs)
 from ember.core.registry.operator.core.synthesis_judge import (
     JudgeSynthesisInputs,
     JudgeSynthesisOperator,
     JudgeSynthesisOutputs,
-    JudgeSynthesisSpecification,
-)
+    JudgeSynthesisSpecification)
 from ember.core.registry.operator.core.verifier import (
     VerifierOperator,
     VerifierOperatorInputs,
     VerifierOperatorOutputs,
-    VerifierSpecification,
-)
+    VerifierSpecification)
 from ember.core.registry.specification.specification import Specification
 from ember.core.types.ember_model import EmberModel
 
@@ -121,8 +117,7 @@ class UniformEnsemble(Operator[EnsembleInputs, EnsembleOperatorOutputs]):
         num_units: int,
         model_name: str,
         temperature: float,
-        max_tokens: Optional[int] = None,
-    ) -> None:
+        max_tokens: Optional[int] = None) -> None:
         # Normal, conventional __init__ assignments:
         self.num_units = num_units
         self.model_name = model_name
@@ -267,8 +262,7 @@ class JudgeSynthesis(Operator[JudgeSynthesisInputs, JudgeSynthesisOutputs]):
         *,
         model_name: str = "gpt-4o",
         temperature: float = 1.0,
-        max_tokens: Optional[int] = None,
-    ) -> None:
+        max_tokens: Optional[int] = None) -> None:
         self.model_name = model_name
         self.temperature = temperature
         self.max_tokens = max_tokens
@@ -350,8 +344,7 @@ class Verifier(Operator[VerifierInputs, VerifierOutputs]):
         *,
         model_name: str,
         temperature: float,
-        max_tokens: Optional[int] = None,
-    ) -> None:
+        max_tokens: Optional[int] = None) -> None:
         self.model_name = model_name
         self.temperature = temperature
         self.max_tokens = max_tokens
@@ -526,5 +519,4 @@ __all__ = [
     "VariedEnsembleInputs",
     "VariedEnsembleOutputs",
     # Compact notation
-    "build_graph",
-]
+    "build_graph"]

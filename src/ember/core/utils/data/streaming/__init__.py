@@ -17,8 +17,7 @@ Example:
     dataset = StreamingDataset(
         "mmlu",
         transformers=[transformer],
-        batch_size=32,
-    )
+        batch_size=32)
 
     # Limit the number of items
     for item in dataset.limit(10):
@@ -27,10 +26,8 @@ Example:
 
 from ember.core.utils.data.streaming.dataset import (
     StreamingDataset,
-    StreamingTransformer,
-)
+    StreamingTransformer)
 
 __all__ = [
     "StreamingDataset",
-    "StreamingTransformer",
-]
+    "StreamingTransformer"]

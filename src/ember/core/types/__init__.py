@@ -9,8 +9,7 @@ This module centralizes and exports all type-related functionality.
 from ember.core.types.config_types import (
     ConfigManager,
     EmberConfigDict,
-    ModelConfigDict,
-)
+    ModelConfigDict)
 from ember.core.types.ember_model import EmberModel
 from ember.core.types.protocols import EmberSerializable  # Legacy alias
 from ember.core.types.protocols import EmberTyped  # Legacy alias
@@ -18,8 +17,7 @@ from ember.core.types.protocols import Serializable, TypedProtocol, TypeInfo
 from ember.core.types.type_check import (
     type_check,
     validate_instance_attrs,
-    validate_type,
-)
+    validate_type)
 from ember.core.types.type_vars import (
     ConfigT,
     InputT,
@@ -28,15 +26,13 @@ from ember.core.types.type_vars import (
     OutputT,
     ProviderT,
     T,
-    V,
-)
+    V)
 from ember.core.types.xcs_types import (
     XCSGraph,
     XCSNode,
     XCSNodeAttributes,
     XCSNodeResult,
-    XCSPlan,
-)
+    XCSPlan)
 
 __all__ = [
     # Core model
@@ -70,5 +66,4 @@ __all__ = [
     # Type checking utilities
     "validate_type",
     "validate_instance_attrs",
-    "type_check",
-]
+    "type_check"]

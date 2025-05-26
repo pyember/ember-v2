@@ -23,8 +23,7 @@ from typing import (
     TypeVar,
     cast,
     final,
-    runtime_checkable,
-)
+    runtime_checkable)
 
 from typing_extensions import Literal, NotRequired, TypedDict
 
@@ -152,8 +151,7 @@ class XCSNodeImpl(Generic[NodeInputT, NodeOutputT]):
         self,
         node_id: str,
         operator: Callable[[NodeInputT], NodeOutputT],
-        attributes: Optional[XCSNodeAttributes] = None,
-    ):
+        attributes: Optional[XCSNodeAttributes] = None):
         self.node_id = node_id
         self.operator = operator
         self.inbound_edges: List[str] = []
@@ -228,8 +226,7 @@ class XCSGraph(Protocol[NodeInputT, NodeOutputT]):
         self,
         node_id: str,
         operator: Callable[[NodeInputT], NodeOutputT],
-        **attributes: object,
-    ) -> None:
+        **attributes: object) -> None:
         """
         Add a node to the graph.
 
@@ -301,8 +298,7 @@ class XCSGraphImpl(Generic[NodeInputT, NodeOutputT]):
         self,
         node_id: str,
         operator: Callable[[NodeInputT], NodeOutputT],
-        **attributes: object,
-    ) -> None:
+        **attributes: object) -> None:
         """Add a node to the graph."""
         if node_id in self.nodes:
             raise ValueError(f"Node {node_id} already exists in the graph")
@@ -310,8 +306,7 @@ class XCSGraphImpl(Generic[NodeInputT, NodeOutputT]):
         node = XCSNodeImpl(
             node_id=node_id,
             operator=operator,
-            attributes=cast(XCSNodeAttributes, attributes),
-        )
+            attributes=cast(XCSNodeAttributes, attributes))
         self.nodes[node_id] = node
 
     def add_edge(self, from_node: str, to_node: str) -> None:
@@ -382,8 +377,7 @@ class XCSPlanImpl(Generic[NodeInputT, NodeOutputT]):
     def __init__(
         self,
         tasks: Dict[str, XCSTaskDefinition],
-        original_graph: XCSGraph[NodeInputT, NodeOutputT],
-    ):
+        original_graph: XCSGraph[NodeInputT, NodeOutputT]):
         self.tasks = tasks
         self.original_graph = original_graph
 

@@ -15,8 +15,7 @@ from ember.core.registry.model.base.registry.factory import ModelFactory
 from ember.core.registry.model.base.registry.model_registry import ModelRegistry
 from ember.core.registry.model.base.schemas.chat_schemas import (
     ChatRequest,
-    ChatResponse,
-)
+    ChatResponse)
 from ember.core.registry.model.base.schemas.cost import ModelCost, RateLimit
 from ember.core.registry.model.base.schemas.model_info import ModelInfo, ProviderInfo
 from ember.core.registry.model.providers.base_provider import BaseProviderModel
@@ -52,8 +51,7 @@ def create_dummy_model_info(model_id: str) -> ModelInfo:
         cost=ModelCost(),
         rate_limit=RateLimit(),
         provider=ProviderInfo(name="TestProvider"),
-        api_key="dummy_key",
-    )
+        api_key="dummy_key")
 
 
 @pytest.fixture
@@ -148,7 +146,7 @@ def test_concurrent_registration():
             model_registry.register_model(info)
 
         threads = [
-            threading.Thread(target=register_model, args=(f"dummy:thread{i}",))
+            threading.Thread(target=register_model, args=(f"dummy:thread{i}"))
             for i in range(10)
         ]
         for t in threads:

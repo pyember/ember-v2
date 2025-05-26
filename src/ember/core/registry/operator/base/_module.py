@@ -35,13 +35,11 @@ from typing import (
     Tuple,
     Type,
     TypeVar,
-    final,
-)
+    final)
 
 from ember.core.registry.operator.exceptions import (
     BoundMethodNotInitializedError,
-    FlattenError,
-)
+    FlattenError)
 from ember.xcs.utils.tree_util import register_tree, tree_flatten
 
 T = TypeVar("T")
@@ -50,8 +48,7 @@ FuncT = TypeVar("FuncT", bound=Callable[..., Any])
 
 logging.basicConfig(
     level=logging.DEBUG,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-)
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
@@ -99,8 +96,7 @@ class ModuleCache:
         self._max_cache_size: int = max_cache_size or self.DEFAULT_MAX_CACHE_SIZE
 
     def _get_cache(
-        self,
-    ) -> Tuple[
+        self) -> Tuple[
         Dict[int, Tuple[List[object], Dict[str, object]]], collections.OrderedDict
     ]:
         """Initializes and returns the thread-local cache structures.
@@ -211,8 +207,7 @@ class ModuleCache:
         return len(cache)
 
     def iter_entries(
-        self,
-    ) -> Iterator[Tuple[int, Tuple[List[object], Dict[str, object]]]]:
+        self) -> Iterator[Tuple[int, Tuple[List[object], Dict[str, object]]]]:
         """Iterates over all cache entries in LRU order (least recently used first).
 
         This method is primarily intended for diagnostics and debugging.
@@ -276,8 +271,7 @@ def ember_field(
     default: object = dataclasses.MISSING,
     default_factory: Any = dataclasses.MISSING,
     init: bool = True,
-    **kwargs: Any,
-) -> Field:
+    **kwargs: Any) -> Field:
     """Factory function that creates a dataclass field with Ember-specific functionality.
 
     Creates a dataclass field with Ember-specific functionality.
@@ -570,8 +564,7 @@ class EmberModuleMeta(abc.ABCMeta):
         name: str,
         bases: Tuple[Type[Any], ...],
         namespace: Dict[str, Any],
-        **kwargs: Any,
-    ) -> Type:
+        **kwargs: Any) -> Type:
         """Creates a new EmberModule subclass with automatic registration.
 
         Args:
@@ -619,8 +612,7 @@ class EmberModuleMeta(abc.ABCMeta):
         register_tree(
             cls=new_class,
             flatten_func=flatten,
-            unflatten_func=unflatten,
-        )
+            unflatten_func=unflatten)
         return new_class
 
     # pylint: disable=too-many-locals,too-many-branches
@@ -924,8 +916,7 @@ class EmberModule(metaclass=EmberModuleMeta):
 
     @classmethod
     def iter_cache_entries(
-        cls,
-    ) -> Iterator[Tuple[object, Tuple[List[object], Dict[str, object]]]]:
+        cls) -> Iterator[Tuple[object, Tuple[List[object], Dict[str, object]]]]:
         """Iterates over all cache entries in LRU order.
 
         This advanced debugging method provides visibility into the cache contents

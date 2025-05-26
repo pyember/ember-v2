@@ -9,13 +9,11 @@ from ember.core.utils.data.context.data_context import (
     DataContext,
     get_default_context,
     reset_default_context,
-    set_default_context,
-)
+    set_default_context)
 
 __all__ = [
     "DataConfig",
     "DataContext",
     "get_default_context",
     "reset_default_context",
-    "set_default_context",
-]
+    "set_default_context"]

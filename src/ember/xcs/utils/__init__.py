@@ -14,8 +14,7 @@ from .structured_logging import (
     log_context,
     set_context_value,
     time_operation,
-    with_context,
-)
+    with_context)
 
 __all__ = [
     "LoggingConfig",
@@ -27,5 +26,4 @@ __all__ = [
     "log_context",
     "set_context_value",
     "time_operation",
-    "with_context",
-]
+    "with_context"]

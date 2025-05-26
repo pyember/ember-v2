@@ -518,6 +518,7 @@ def visualize_comparison(all_results: Dict[str, Dict[str, Any]]) -> None:
 
 
 def main() -> None:
+    """Example demonstrating the simplified XCS architecture."""
     """Run the model benchmark on specialized datasets."""
     parser = argparse.ArgumentParser(
         description="Benchmark models on specialized datasets"
@@ -526,8 +527,7 @@ def main() -> None:
         "--dataset",
         choices=["aime", "gpqa", "codeforces", "all"],
         default="all",
-        help="Dataset to evaluate",
-    )
+        help="Dataset to evaluate")
     parser.add_argument(
         "--samples", type=int, default=5, help="Number of samples to evaluate"
     )
@@ -537,8 +537,7 @@ def main() -> None:
     models_config = [
         ("gpt-4o", models.openai.gpt4o()),
         ("claude-3-opus", models.anthropic.claude_3_opus()),
-        ("claude-3-sonnet", models.anthropic.claude_3_sonnet()),
-    ]
+        ("claude-3-sonnet", models.anthropic.claude_3_sonnet())]
 
     results = {}
 

@@ -4,8 +4,7 @@ import unittest
 
 from ember.core.utils.data.datasets_registry.codeforces import (
     CodeForcesConfig,
-    CodeForcesPrepper,
-)
+    CodeForcesPrepper)
 
 
 class TestCodeForcesConfig(unittest.TestCase):
@@ -80,8 +79,7 @@ class TestCodeForcesPrepper(unittest.TestCase):
             "tags": ["math", "implementation"],
             "examples": [
                 {"input": "6 6 4", "output": "4"},
-                {"input": "1 1 1", "output": "1"},
-            ],
+                {"input": "1 1 1", "output": "1"}],
         }
 
         # Create a higher difficulty item
@@ -139,8 +137,7 @@ class TestCodeForcesPrepper(unittest.TestCase):
             "description",
             "input_format",
             "output_format",
-            "examples",
-        ]
+            "examples"]
         self.assertEqual(set(expected_keys), set(required_keys))
 
     def test_create_dataset_entries_basic(self) -> None:

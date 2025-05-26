@@ -2,8 +2,7 @@
 
 from ember.core.utils.eval.numeric_answer import (
     AIMEAnswerEvaluator,
-    NumericAnswerEvaluator,
-)
+    NumericAnswerEvaluator)
 
 
 class TestNumericAnswerEvaluator:
@@ -123,8 +122,7 @@ class TestAIMEAnswerEvaluator:
             "The answer is 42",
             "Therefore, the answer = 42",
             "We get 42 as our final answer",
-            "The final answer is 42",
-        ]
+            "The final answer is 42"]
 
         for case in cases:
             result = evaluator.evaluate(case, "42")

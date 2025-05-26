@@ -58,6 +58,7 @@ class AdvancedOperator(Operator[QueryInput, QueryOutput]):
 
 
 def main():
+    """Example demonstrating the simplified XCS architecture."""
     """Run the example demonstrating simplified XCS imports."""
     print("\n=== Simplified XCS Import Example ===\n")
 

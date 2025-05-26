@@ -41,8 +41,7 @@ class MockModelResponse:
             MockModel("claude-3-opus-20240229"),
             MockModel("claude-3-haiku-20240307"),
             MockModel("claude-3-5-sonnet-20240620"),
-            MockModel("claude-3.7-sonnet-20250219"),
-        ]
+            MockModel("claude-3.7-sonnet-20250219")]
 
 
 # Add to the mock module
@@ -57,8 +56,7 @@ sys.modules["anthropic"] = mock_anthropic
 
 # Import after mocking
 from ember.core.registry.model.providers.anthropic.anthropic_discovery import (
-    AnthropicDiscovery,
-)
+    AnthropicDiscovery)
 
 
 @pytest.fixture
@@ -81,8 +79,7 @@ def test_anthropic_discovery_fetch_models(discovery_instance, monkeypatch) -> No
             {"id": "claude-3-opus-20240229", "object": "model"},
             {"id": "claude-3-haiku-20240307", "object": "model"},
             {"id": "claude-3-5-sonnet-20240620", "object": "model"},
-            {"id": "claude-3.7-sonnet-20250219", "object": "model"},
-        ]
+            {"id": "claude-3.7-sonnet-20250219", "object": "model"}]
     }
     mock_response.raise_for_status = lambda: None
 
@@ -125,8 +122,7 @@ def test_anthropic_fallback_models() -> None:
 
         # Import after clearing environment variable
         from ember.core.registry.model.providers.base_discovery import (
-            ModelDiscoveryError,
-        )
+            ModelDiscoveryError)
 
         # Now the constructor should raise ModelDiscoveryError
         with pytest.raises(ModelDiscoveryError):
@@ -181,8 +177,7 @@ def test_extract_base_model_id(discovery_instance) -> None:
 
 def test_anthropic_discovery_fetch_models_error(
     discovery_instance,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
+    monkeypatch: pytest.MonkeyPatch) -> None:
     """Test error handling when fetch_models encounters an exception."""
 
     # Instead of patching models.list, patching the Anthropic client itself
@@ -201,8 +196,7 @@ def test_anthropic_discovery_fetch_models_error(
 
 def test_anthropic_discovery_timeout_handling(
     discovery_instance,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
+    monkeypatch: pytest.MonkeyPatch) -> None:
     """Test the improved timeout handling in the Anthropic provider."""
 
     # Mock requests.get to raise a timeout exception
@@ -225,8 +219,7 @@ def test_anthropic_discovery_timeout_handling(
 
 def test_anthropic_discovery_response_format_handling(
     discovery_instance,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
+    monkeypatch: pytest.MonkeyPatch) -> None:
     """Test handling of different response formats from the Anthropic API."""
     from unittest.mock import MagicMock
 
@@ -243,8 +236,7 @@ def test_anthropic_discovery_response_format_handling(
                 "id": "claude-3-sonnet-20240229",
                 "object": "model",
                 "display_name": "Claude 3 Sonnet",
-            },
-        ]
+            }]
     }
     dict_response.raise_for_status = lambda: None
 
@@ -255,8 +247,7 @@ def test_anthropic_discovery_response_format_handling(
             "id": "claude-3-haiku-20240307",
             "object": "model",
             "display_name": "Claude 3 Haiku",
-        },
-    ]
+        }]
     list_response.raise_for_status = lambda: None
 
     # Mock requests.get to return our test responses in sequence

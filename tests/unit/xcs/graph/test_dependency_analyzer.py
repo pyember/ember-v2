@@ -7,7 +7,7 @@ wave computation for parallel scheduling.
 
 import pytest
 
-from ember.xcs import DependencyAnalyzer, XCSGraph
+from ember.xcs import DependencyAnalyzer, Graph
 
 
 class TestDependencyAnalyzer:
@@ -16,7 +16,7 @@ class TestDependencyAnalyzer:
     def test_basic_dependency_analysis(self) -> None:
         """Test analysis of simple linear dependencies."""
         # Create a simple graph with linear dependencies
-        graph = XCSGraph()
+        graph = Graph()
         graph.add_node(lambda x: x, "node1")
         graph.add_node(lambda x: x, "node2")
         graph.add_node(lambda x: x, "node3")
@@ -61,7 +61,7 @@ class TestDependencyAnalyzer:
     def test_topological_sort(self) -> None:
         """Test topological sorting of graph nodes."""
         # Create a DAG
-        graph = XCSGraph()
+        graph = Graph()
         graph.add_node(lambda x: x, "A")
         graph.add_node(lambda x: x, "B")
         graph.add_node(lambda x: x, "C")
@@ -95,7 +95,7 @@ class TestDependencyAnalyzer:
     def test_topological_sort_with_cycle(self) -> None:
         """Test topological sorting fails with cycles."""
         # Create a cyclic graph
-        graph = XCSGraph()
+        graph = Graph()
         graph.add_node(lambda x: x, "A")
         graph.add_node(lambda x: x, "B")
         graph.add_node(lambda x: x, "C")
@@ -113,7 +113,7 @@ class TestDependencyAnalyzer:
     def test_execution_waves(self) -> None:
         """Test computation of execution waves for parallel scheduling."""
         # Create a graph with multiple levels
-        graph = XCSGraph()
+        graph = Graph()
         graph.add_node(lambda x: x, "A1")
         graph.add_node(lambda x: x, "A2")
         graph.add_node(lambda x: x, "B1")
@@ -142,7 +142,7 @@ class TestDependencyAnalyzer:
     def test_execution_waves_with_cycle(self) -> None:
         """Test execution wave computation fails with cycles."""
         # Create a cyclic graph
-        graph = XCSGraph()
+        graph = Graph()
         graph.add_node(lambda x: x, "A")
         graph.add_node(lambda x: x, "B")
 

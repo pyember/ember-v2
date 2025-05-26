@@ -59,8 +59,7 @@ class ProgressTracker:
             desc=self.description,
             leave=True,
             position=0,
-            file=sys.stdout,
-        )
+            file=sys.stdout)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
@@ -222,8 +221,7 @@ class SimpleOperator(Operator[SimpleInput, SimpleOutput]):
                     y_max: float,
                     width: int,
                     height: int,
-                    max_iterations: int,
-                ) -> int:
+                    max_iterations: int) -> int:
                     """Compute Mandelbrot set density in a region (highly parallelizable)."""
                     total = 0
 
@@ -540,7 +538,7 @@ def create_adaptive_mesh() -> Tuple[DeviceMesh, Dict[str, PartitionSpec]]:
         }
     else:
         # For fewer cores, create a simple 1D mesh
-        mesh_shape = (len(devices),)
+        mesh_shape = (len(devices))
         partition_spec = {"prompts": PartitionSpec(0)}  # Shard along the only dimension
 
     # Create the mesh with explicit devices and shape
@@ -666,12 +664,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--heavy",
         action="store_true",
-        help="Enable heavyweight computation to demonstrate significant parallelization benefits",
-    )
+        help="Enable heavyweight computation to demonstrate significant parallelization benefits")
     return parser.parse_args()
 
 
 def main() -> None:
+    """Example demonstrating the simplified XCS architecture."""
     """Run all transformation demonstrations with CPU-intensive workloads.
 
     This example demonstrates three different parallelization strategies:

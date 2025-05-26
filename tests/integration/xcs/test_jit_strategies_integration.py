@@ -10,7 +10,7 @@ from typing import Any, Dict, Tuple
 import pytest
 
 from ember.xcs.jit import jit
-from ember.xcs.jit.strategies import EnhancedStrategy, StructuralStrategy, TraceStrategy
+from ember.xcs.jit.strategies import EnhancedStrategy, StructuralStrategy
 
 # Define different operator patterns for testing
 
@@ -126,7 +126,7 @@ def benchmark_strategy(
     return execution_time, result
 
 
-@pytest.mark.parametrize("strategy_name", ["structural", "trace", "enhanced"])
+@pytest.mark.parametrize("strategy_name", ["structural", "enhanced"])
 def test_jit_correctness_simple_operator(strategy_name):
     """Test correctness of JIT strategies with simple operator."""
     operator = SimpleOperator()
@@ -150,7 +150,7 @@ def test_jit_correctness_simple_operator(strategy_name):
         ), f"Results for {strategy_name} don't match with inputs {inputs}"
 
 
-@pytest.mark.parametrize("strategy_name", ["structural", "trace", "enhanced"])
+@pytest.mark.parametrize("strategy_name", ["structural", "enhanced"])
 def test_jit_correctness_container_operator(strategy_name):
     """Test correctness of JIT strategies with container operator."""
     operator = ContainerOperator()
@@ -174,7 +174,7 @@ def test_jit_correctness_container_operator(strategy_name):
         ), f"Results for {strategy_name} don't match with inputs {inputs}"
 
 
-@pytest.mark.parametrize("strategy_name", ["structural", "trace", "enhanced"])
+@pytest.mark.parametrize("strategy_name", ["structural", "enhanced"])
 def test_jit_correctness_ensemble_operator(strategy_name):
     """Test correctness of JIT strategies with ensemble operator."""
     operator = EnsembleOperator(model_count=5)
@@ -198,7 +198,7 @@ def test_jit_correctness_ensemble_operator(strategy_name):
         ), f"Results for {strategy_name} don't match with inputs {inputs}"
 
 
-@pytest.mark.parametrize("strategy_name", ["structural", "trace", "enhanced"])
+@pytest.mark.parametrize("strategy_name", ["structural", "enhanced"])
 def test_jit_correctness_conditional_operator(strategy_name):
     """Test correctness of JIT strategies with conditional operator."""
     operator = ConditionalOperator()
@@ -242,18 +242,15 @@ def test_strategy_recommendations(operator_name):
 
     # Create strategies
     structural = StructuralStrategy()
-    trace = TraceStrategy()
     enhanced = EnhancedStrategy()
 
     # Get scores from each strategy
     structural_analysis = structural.analyze(operator)
-    trace_analysis = trace.analyze(operator)
     enhanced_analysis = enhanced.analyze(operator)
 
     # Get scores
     scores = {
         "structural": structural_analysis["score"],
-        "trace": trace_analysis["score"],
         "enhanced": enhanced_analysis["score"],
     }
 
@@ -263,11 +260,10 @@ def test_strategy_recommendations(operator_name):
         print(f"  {name}: {score}")
 
     # Expected best strategies for each operator type - verify they each get a score
-    # The implementation details might make trace win for more cases than we ideally want
-    # but we're just verifying that the scoring system gives reasonable scores
+    # Verify that the scoring system gives reasonable scores
     if operator_name == "simple":
-        # Simple operators should favor trace
-        assert scores["trace"] > 0
+        # Simple operators should work with structural
+        assert scores["structural"] > 0
     elif operator_name == "container":
         # Container operators should score well with structural
         assert scores["structural"] > 0
@@ -289,7 +285,7 @@ def test_strategy_performance_comparison():
         "conditional": ConditionalOperator(),
     }
 
-    strategies = ["structural", "trace", "enhanced"]
+    strategies = ["structural", "enhanced"]
     iterations = 100
 
     # Run benchmarks
@@ -328,5 +324,5 @@ def test_strategy_performance_comparison():
 
     # Basic assertions that JIT should be faster than baseline for appropriate cases
     assert results["container"]["structural"] <= results["container"]["baseline"] * 1.5
-    assert results["simple"]["trace"] <= results["simple"]["baseline"] * 1.5
+    assert results["simple"]["structural"] <= results["simple"]["baseline"] * 1.5
     assert results["ensemble"]["enhanced"] <= results["ensemble"]["baseline"] * 1.5

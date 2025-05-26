@@ -49,8 +49,7 @@ class TestXCSBasic(unittest.TestCase):
             "mesh_sharded",
             "execute_graph",
             "XCSGraph",
-            "ExecutionOptions",
-        ]
+            "ExecutionOptions"]
         for export in expected_exports:
             self.assertIn(export, module.__all__)
 
