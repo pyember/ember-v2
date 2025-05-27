@@ -40,7 +40,21 @@ from typing import (
 from ember.core.registry.operator.exceptions import (
     BoundMethodNotInitializedError,
     FlattenError)
-from ember.xcs.utils.tree_util import register_tree, tree_flatten
+
+
+# Simple tree utilities (removed complex tree_util module)
+def register_tree(cls=None, node_type=None, flatten_func=None, flatten_fn=None, unflatten_func=None, unflatten_fn=None):
+    """Register a type for tree operations (no-op for now)."""
+    # Accept various parameter names for compatibility
+    pass
+
+
+def tree_flatten(tree):
+    """Flatten a tree structure to a list (simple implementation)."""
+    if hasattr(tree, '__pytree_flatten__'):
+        return tree.__pytree_flatten__()
+    return [], tree
+
 
 T = TypeVar("T")
 EmberT = TypeVar("EmberT", bound="EmberModule")

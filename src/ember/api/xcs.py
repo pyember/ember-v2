@@ -13,7 +13,6 @@ from ember.xcs import (
     trace_execution,
     Graph,
     Node,
-    execute_graph,
     ExecutionOptions,
     get_jit_stats,
     explain_jit_selection)
@@ -26,7 +25,6 @@ from ember.xcs import XCSGraph  # Deprecated, use Graph
 from ember.xcs.execution_options import get_execution_options
 
 # Aliases for compatibility
-execute = execute_graph
 autograph = trace  # Similar functionality
 
 __all__ = [
@@ -43,8 +41,6 @@ __all__ = [
     # Graph
     "Graph", 
     "Node",
-    "execute_graph",
-    "execute",  # Alias
     "ExecutionOptions",
     "get_execution_options",
     
