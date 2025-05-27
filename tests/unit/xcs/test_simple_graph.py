@@ -2,8 +2,7 @@
 
 import time
 import pytest
-from ember.xcs.graph import Graph, Node, detect_patterns, vmap
-
+from ember.xcs.graph.graph import Graph, Node
 
 class TestSimpleGraph:
     """Test the new simplified graph."""
@@ -14,8 +13,8 @@ class TestSimpleGraph:
         
         # Add some nodes
         n1 = g.add(lambda: 10)
-        n2 = g.add(lambda x: x * 2, deps=[n1])
-        n3 = g.add(lambda x: x + 5, deps=[n2])
+        n2 = g.add(lambda x: x * 2, deps=(n1,))
+        n3 = g.add(lambda x: x + 5, deps=(n2,))
         
         # Execute
         results = g.run()
@@ -32,11 +31,11 @@ class TestSimpleGraph:
         source = g.add(lambda: {"a": 10, "b": 20})
         
         # Parallel branches
-        left = g.add(lambda d: d["a"] * 2, deps=[source])
-        right = g.add(lambda d: d["b"] + 5, deps=[source])
+        left = g.add(lambda d: d["a"] * 2, deps=(source,))
+        right = g.add(lambda d: d["b"] + 5, deps=(source,))
         
         # Merge
-        final = g.add(lambda a, b: a + b, deps=[left, right])
+        final = g.add(lambda a, b: a + b, deps=(left, right))
         
         results = g.run()
         assert results[source] == {"a": 10, "b": 20}
@@ -50,16 +49,15 @@ class TestSimpleGraph:
         
         # Create diamond pattern
         top = g.add(lambda: 1)
-        left = g.add(lambda x: x * 2, deps=[top])
-        right = g.add(lambda x: x + 3, deps=[top]) 
-        bottom = g.add(lambda a, b: a + b, deps=[left, right])
+        left = g.add(lambda x: x * 2, deps=(top,))
+        right = g.add(lambda x: x + 3, deps=(top,)) 
+        bottom = g.add(lambda a, b: a + b, deps=(left, right))
         
         stats = g.stats
         assert stats['nodes'] == 4
         assert stats['edges'] == 4  # top->left, top->right, left->bottom, right->bottom
         assert stats['waves'] == 3  # top -> left/right -> bottom
         assert stats['parallelism'] == 2  # left and right in parallel
-
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

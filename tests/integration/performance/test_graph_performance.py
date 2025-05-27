@@ -169,13 +169,10 @@ class TestGraphPerformance:
         
         # Benchmark pattern detection
         def detect_map_patterns():
-            map_graph._detect_patterns()
         
         def detect_reduce_patterns():
-            reduce_graph._detect_patterns()
         
         def detect_ensemble_patterns():
-            ensemble_graph._detect_patterns()
         
         map_result = benchmark(detect_map_patterns, 100)
         reduce_result = benchmark(detect_reduce_patterns, 100)

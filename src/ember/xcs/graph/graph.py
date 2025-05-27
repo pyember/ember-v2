@@ -48,15 +48,15 @@ class Graph:
         self._waves: Optional[List[List[str]]] = None
         self._is_dag: Optional[bool] = None
     
-    def add(self, func: Callable, *, deps: List[str] = None) -> str:
+    def add(self, func: Callable, *, deps: Union[List[str], Tuple[str, ...]] = None) -> str:
         """Add a computation. Returns node id."""
         # Generate ID from function name and counter
         name = getattr(func, '__name__', 'lambda')
         node_id = f"{name}_{self._counter}"
         self._counter += 1
         
-        # Validate dependencies
-        deps = deps or []
+        # Validate dependencies - handle both lists and tuples
+        deps = list(deps) if deps else []
         for dep in deps:
             if dep not in self._nodes:
                 raise ValueError(f"Unknown dependency: {dep}")
