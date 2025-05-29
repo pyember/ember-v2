@@ -62,8 +62,7 @@ def demo_enum_access() -> None:
         response = model.generate(
             prompt="What's your favorite programming language?",
             temperature=0.8,
-            max_tokens=150,
-        )
+            max_tokens=150)
         print(f"Enum-based model response: {response.data}")
     except Exception as error:
         logger.exception("Error with enum access: %s", error)

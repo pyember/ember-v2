@@ -23,8 +23,7 @@ def load_dataset(
     transformers: Optional[List[Any]] = None,
     config: Optional[Any] = None,
     context: Optional[Union[EmberContext, DataContext]] = None,
-    **kwargs,
-) -> Union[List[DatasetEntry], Iterator[Any]]:
+    **kwargs) -> Union[List[DatasetEntry], Iterator[Any]]:
     """Load a dataset with thread safety and context awareness.
 
     This provides a simple, unified interface for loading datasets
@@ -81,5 +80,4 @@ def load_dataset(
         dataset_info=dataset_entry.info,
         prepper=dataset_entry.prepper,
         config=config,
-        num_samples=limit,
-    )
+        num_samples=limit)

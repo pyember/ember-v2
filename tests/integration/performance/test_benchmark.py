@@ -10,8 +10,7 @@ from typing import Any, ClassVar, Dict, List, Optional
 
 from ember.core.registry.operator.base.operator_base import Operator, Specification
 from ember.core.registry.specification.specification import (
-    Specification as CoreSpecification,
-)
+    Specification as CoreSpecification)
 from ember.core.types.ember_model import EmberModel
 
 
@@ -68,8 +67,7 @@ class MockEnsembleOperator(Operator[MCQInput, MCQOutputList]):
         """Initialize the mock operator with model configs."""
         self.model_configs = model_configs or [
             {"model_name": "mock-model-1", "temperature": 0.0},
-            {"model_name": "mock-model-2", "temperature": 0.7},
-        ]
+            {"model_name": "mock-model-2", "temperature": 0.7}]
         self.lm_modules = list(range(len(self.model_configs)))  # Just for length
 
     def forward(self, *, inputs: MCQInput) -> MCQOutputList:
@@ -88,8 +86,7 @@ class MockEnsembleOperator(Operator[MCQInput, MCQOutputList]):
                 MCQOutput(
                     answer=inputs.choices[choice_letter],
                     reasoning=f"Mock reasoning from model {i+1}",
-                    confidence=random.random(),
-                )
+                    confidence=random.random())
             )
 
         return MCQOutputList(results=responses)
@@ -124,8 +121,7 @@ class MockJudgeOperator(Operator[EnsembleJudgeInput, EnsembleJudgeOutput]):
             candidate_responses=inputs.candidate_responses,
             selected_answer=selected.answer,
             confidence=random.random(),
-            justification=f"Mock justification for selecting {selected.answer}",
-        )
+            justification=f"Mock justification for selecting {selected.answer}")
 
     def __call__(self, *, inputs: EnsembleJudgeInput) -> EnsembleJudgeOutput:
         """Handle direct calls with inputs parameter."""
@@ -139,8 +135,7 @@ class MockEnsembleJudgePipeline:
     def __init__(
         self,
         model_configs: Optional[List[Dict[str, Any]]] = None,
-        judge_model: str = "mock-judge",
-    ) -> None:
+        judge_model: str = "mock-judge") -> None:
         """Initialize the mock pipeline."""
         self.ensemble_operator = MockEnsembleOperator(model_configs=model_configs)
         self.judge_operator = MockJudgeOperator(model_name=judge_model)
@@ -161,13 +156,11 @@ class MockEnsembleJudgePipeline:
                 MCQOutput(
                     answer=choices[choice_letter],
                     reasoning="Mock reasoning",
-                    confidence=0.8,
-                )
+                    confidence=0.8)
             ],
             selected_answer=choices[choice_letter],
             confidence=0.9,
-            justification="Mock justification",
-        )
+            justification="Mock justification")
 
 
 # Mock dataset entry for testing
@@ -175,8 +168,7 @@ def create_mock_input() -> MCQInput:
     """Create a mock MCQInput object."""
     return MCQInput(
         question="What is the capital of France?",
-        choices={"A": "London", "B": "Paris", "C": "Berlin", "D": "Rome"},
-    )
+        choices={"A": "London", "B": "Paris", "C": "Berlin", "D": "Rome"})
 
 
 # Run a benchmark test with the mock pipeline
@@ -188,8 +180,7 @@ def run_mock_benchmark() -> Dict[str, Any]:
     model_configs = [
         {"model_name": "mock-model-1", "temperature": 0.0},
         {"model_name": "mock-model-2", "temperature": 0.7},
-        {"model_name": "mock-model-3", "temperature": 0.5},
-    ]
+        {"model_name": "mock-model-3", "temperature": 0.5}]
 
     # Create pipeline and test input
     pipeline = MockEnsembleJudgePipeline(model_configs=model_configs)
@@ -336,8 +327,7 @@ def plot_acceleration_comparison(
             bar.get_y() + bar.get_height() / 2,
             f"{width:.4f}s",
             va="center",
-            fontsize=10,
-        )
+            fontsize=10)
 
     # Plot speedups - use horizontal bars for consistency
     bars2 = ax2.barh(strategies, speedups, color=colors)
@@ -357,8 +347,7 @@ def plot_acceleration_comparison(
             bar.get_y() + bar.get_height() / 2,
             f"{width:.2f}x",
             va="center",
-            fontweight="bold",
-        )
+            fontweight="bold")
 
     # Plot JIT metrics if available
     jit_metrics = benchmark_results.get("jit_metrics", {})
@@ -371,8 +360,7 @@ def plot_acceleration_comparison(
             ("Cache Hits", jit_metrics.get("cache_hits", 0), ""),
             ("Cache Misses", jit_metrics.get("cache_misses", 0), ""),
             ("Compilation Count", jit_metrics.get("compilation_count", 0), ""),
-            ("Execution Count", jit_metrics.get("execution_count", 0), ""),
-        ]
+            ("Execution Count", jit_metrics.get("execution_count", 0), "")]
 
         # Create bar chart of metrics
         metric_names = [m[0] for m in metrics_to_show]
@@ -393,8 +381,7 @@ def plot_acceleration_comparison(
                 height + 0.1,
                 f"{height:.2f}{unit}",
                 ha="center",
-                fontsize=9,
-            )
+                fontsize=9)
 
         # Add log scale if needed for large values
         if any(v > 1000 for v in metric_values):
@@ -408,8 +395,7 @@ def plot_acceleration_comparison(
             ha="center",
             va="center",
             fontsize=14,
-            transform=ax3.transAxes,
-        )
+            transform=ax3.transAxes)
 
     # Add a note about the best strategy
     best_strategy = benchmark_results.get("best_strategy", "auto").capitalize()
@@ -421,8 +407,7 @@ def plot_acceleration_comparison(
         f"Best strategy: {best_strategy} ({speedup:.2f}x speedup vs Sequential)",
         ha="center",
         fontsize=12,
-        bbox={"facecolor": "lightyellow", "alpha": 0.5, "pad": 5},
-    )
+        bbox={"facecolor": "lightyellow", "alpha": 0.5, "pad": 5})
 
     plt.tight_layout(rect=[0, 0.05, 1, 0.95])
 

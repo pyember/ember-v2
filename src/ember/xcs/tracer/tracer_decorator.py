@@ -89,7 +89,7 @@ class StateDependency(Protocol):
 import weakref
 
 # Forward import execution components to avoid circular imports
-from ember.xcs.graph.xcs_graph import XCSGraph
+from ember.xcs.graph import Graph
 
 # Type variable for cache value type
 T = TypeVar("T")
@@ -240,7 +240,7 @@ class JITCache(Generic[T]):
 
 
 # Cache to store compiled execution graphs for each operator class instance
-_jit_cache = JITCache[XCSGraph]()
+_jit_cache = JITCache[Graph]()
 
 
 def jit(
@@ -248,8 +248,7 @@ def jit(
     *,
     sample_input: Optional[Dict[str, Any]] = None,
     force_trace: bool = False,
-    recursive: bool = True,
-):
+    recursive: bool = True):
     """Just-In-Time compilation decorator for Ember Operators.
 
     The @jit decorator transforms Operator classes to automatically trace their execution
@@ -405,10 +404,7 @@ def jit(
             if graph is not None:
                 try:
                     # Import execution components
-                    from ember.xcs.engine.xcs_engine import (
-                        TopologicalSchedulerWithParallelDispatch,
-                        execute_graph,
-                    )
+                    from ember.xcs.graph import execute_graph
 
                     logger.debug(
                         f"Using optimized graph for {self.__class__.__name__} (nodes: {len(graph.nodes)})"
@@ -419,8 +415,7 @@ def jit(
                     results = execute_graph(
                         graph=graph,
                         global_input=inputs,
-                        scheduler=TopologicalSchedulerWithParallelDispatch(),
-                    )
+                        parallel=True)
                     execution_duration = time.time() - execution_start
                     _jit_cache.metrics.record_execution(execution_duration)
 

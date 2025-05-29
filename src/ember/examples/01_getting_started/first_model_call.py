@@ -25,6 +25,7 @@ from _shared.example_utils import print_section_header, print_example_output, en
 
 
 def main():
+    """Example demonstrating the simplified XCS architecture."""
     """Make your first LLM API call with Ember."""
     print_section_header("First Model Call")
     

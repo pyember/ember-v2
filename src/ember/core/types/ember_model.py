@@ -1,8 +1,7 @@
-"""
-EmberModel - Base class for validated data models in the Ember framework.
+"""EmberModel base class for validated data models.
 
-Provides a consistent foundation for all data models with validation,
-serialization, and type inspection capabilities.
+Provides validation, serialization, and type inspection capabilities
+for all data models in the Ember framework.
 """
 
 from __future__ import annotations
@@ -20,64 +19,44 @@ T = TypeVar("T", bound="EmberModel")
 
 
 class EmberModel(BaseModel, Mapping):
-    """
-    Base class for all data models in the Ember framework.
+    """Base class for all data models in Ember.
 
-    Combines Pydantic's validation with consistent serialization capabilities,
-    serving as the foundation for data structures throughout the framework.
+    Combines Pydantic validation with serialization capabilities.
 
     Features:
-    - Strong validation through Pydantic
-    - Consistent serialization to/from different formats
-    - Type introspection for generic programming
-    - Full Mapping protocol implementation for dictionary compatibility
-    - Seamless integration with transformation functions
+        - Strong validation through Pydantic
+        - Consistent serialization to/from different formats
+        - Type introspection for generic programming
+        - Full Mapping protocol for dictionary compatibility
     """
 
     # Use the new ConfigDict style for Pydantic v2 compatibility
     model_config = ConfigDict(extra="forbid")
 
-    # TypedProtocol implementation
     def get_type_info(self) -> TypeInfo:
-        """
-        Return metadata about this model's type structure.
-
-        Analyzes type annotations to provide runtime type information.
+        """Return metadata about this model's type structure.
 
         Returns:
-            TypeInfo with details about this model's type structure
+            TypeInfo with details about type structure.
         """
         type_hints = get_type_hints(self.__class__)
         return TypeInfo(
             origin_type=self.__class__,
             type_args=tuple(type_hints.values()) if type_hints else None,
             is_container=False,
-            is_optional=False,
-        )
+            is_optional=False)
 
-    # Serializable protocol implementation
     def to_dict(self) -> Dict[str, Any]:
-        """
-        Convert this model to a dictionary representation.
-
-        Returns:
-            Dict representation of this model
-        """
+        """Convert to dictionary representation."""
         return self.model_dump()
 
     def to_json(self) -> str:
-        """
-        Convert this model to a JSON string representation.
-
-        Returns:
-            JSON string representation of this model
-        """
+        """Convert to JSON string representation."""
         return self.model_dump_json()
 
     @classmethod
     def from_dict(cls: Type[T], data: Dict[str, Any]) -> T:
-        """
-        Create a model instance from a dictionary.
+        """Create a model instance from a dictionary.
 
         Args:
             data: Dictionary containing field values
@@ -283,7 +262,7 @@ class EmberModel(BaseModel, Mapping):
         }
 
         # Create the model class directly as a subclass
-        model_class = type(name, (cls,), model_attrs)
+        model_class = type(name, (cls), model_attrs)
 
         # Explicitly cast to the correct return type
         return cast(Type["EmberModel"], model_class)

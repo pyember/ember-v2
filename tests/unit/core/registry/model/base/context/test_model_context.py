@@ -14,8 +14,7 @@ from ember.core.registry.model.base.context import (
     ModelConfig,
     ModelContext,
     create_context,
-    get_default_context,
-)
+    get_default_context)
 
 
 class TestModelContext(unittest.TestCase):
@@ -142,8 +141,7 @@ class TestModelContext(unittest.TestCase):
         # Patch the initializer to return our mock
         with patch(
             "ember.core.registry.model.base.context.initialize_registry",
-            return_value=mock_registry,
-        ):
+            return_value=mock_registry):
             context = ModelContext()
             # Access the registry property
             registry = context.registry
@@ -163,8 +161,7 @@ class TestModelContext(unittest.TestCase):
         # Patch the initializer
         with patch(
             "ember.core.registry.model.base.context.initialize_registry",
-            return_value=mock_registry,
-        ):
+            return_value=mock_registry):
             # Create a context with our mock service class
             context = ModelContext(config=ModelConfig(service_class=mock_service_class))
 
@@ -186,8 +183,7 @@ class TestModelContext(unittest.TestCase):
         with patch("ember.core.registry.model.base.context.initialize_registry"):
             with patch(
                 "ember.core.registry.model.base.context.UsageService",
-                return_value=mock_usage,
-            ):
+                return_value=mock_usage):
                 context = ModelContext()
                 # Access the usage_service property
                 usage = context.usage_service
@@ -206,12 +202,10 @@ class TestModelContext(unittest.TestCase):
         # Patch the registry initializer
         with patch(
             "ember.core.registry.model.base.context.initialize_registry",
-            return_value=mock_reg_init,
-        ):
+            return_value=mock_reg_init):
             with patch(
                 "ember.core.registry.model.base.context.UsageService",
-                return_value=mock_usage_init,
-            ):
+                return_value=mock_usage_init):
                 # Create a context with our mock service class
                 context = ModelContext(
                     config=ModelConfig(service_class=mock_service_class)

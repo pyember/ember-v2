@@ -26,6 +26,7 @@ from ember.core.utils.logging import suppress_logs
 
 
 def main():
+    """Example demonstrating the simplified XCS architecture."""
     """Run the list models example."""
     # Set up argument parser
     parser = create_argument_parser("List and inspect available Ember models")

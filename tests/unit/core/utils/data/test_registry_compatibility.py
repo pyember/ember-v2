@@ -35,8 +35,7 @@ class TestRegistryCompatibility(unittest.TestCase):
             name="test_dataset",
             description="Test dataset",
             source="test_source",
-            task_type=TaskType.MULTIPLE_CHOICE,
-        )
+            task_type=TaskType.MULTIPLE_CHOICE)
 
         # Create mocks
         mock_loader_factory = mock.MagicMock()
@@ -47,8 +46,7 @@ class TestRegistryCompatibility(unittest.TestCase):
         # Call the initialization function with our test registry
         initialize_dataset_registry(
             metadata_registry=self.test_registry,
-            loader_factory=mock_loader_factory,
-        )
+            loader_factory=mock_loader_factory)
 
         # Verify the registry can find our test dataset
         retrieved_info = self.test_registry.get_info(name="test_dataset")
@@ -71,8 +69,7 @@ class TestRegistryCompatibility(unittest.TestCase):
             name="test_dataset",
             description="Test dataset",
             source="test_source",
-            task_type=TaskType.MULTIPLE_CHOICE,
-        )
+            task_type=TaskType.MULTIPLE_CHOICE)
 
         # Register using standard register method
         registry.register(name=test_info.name, info=test_info)

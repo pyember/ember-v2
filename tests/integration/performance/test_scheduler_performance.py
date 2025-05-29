@@ -11,11 +11,10 @@ import statistics
 import time
 
 from ember.xcs.engine.unified_engine import ExecutionOptions, execute_graph
-from ember.xcs.graph.xcs_graph import XCSGraph
+from ember.xcs.graph import Graph
 from ember.xcs.schedulers.unified_scheduler import (
     ParallelScheduler,
-    SequentialScheduler,
-)
+    SequentialScheduler)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -28,7 +27,7 @@ def test_sequential_vs_parallel_scheduler():
     This test creates a graph with multiple independent nodes, each with a sleep delay,
     and compares execution times using sequential vs parallel schedulers.
     """
-    graph = XCSGraph()
+    graph = Graph()
     num_nodes = 10
     delay = 0.1  # seconds
 
@@ -38,8 +37,7 @@ def test_sequential_vs_parallel_scheduler():
         # Simple sleep operator using a lambda
         sleep_op = lambda inputs, i=i: (
             time.sleep(delay),
-            {"result": f"node_{i}_result"},
-        )[1]
+            {"result": f"node_{i}_result"})[1]
         graph.add_node(operator=sleep_op, node_id=node_id)
 
     # Test with sequential scheduler
@@ -114,7 +112,7 @@ def test_sequential_with_dependencies():
     each node depends on the previous one. In this case, parallel execution
     should provide no benefit.
     """
-    graph = XCSGraph()
+    graph = Graph()
     num_nodes = 5
     delay = 0.1  # seconds
 
@@ -125,8 +123,7 @@ def test_sequential_with_dependencies():
         # Simple sleep operator using a lambda
         sleep_op = lambda inputs, i=i: (
             time.sleep(delay),
-            {"result": f"node_{i}_result"},
-        )[1]
+            {"result": f"node_{i}_result"})[1]
         graph.add_node(operator=sleep_op, node_id=node_id)
 
         # Add edge from previous node if it exists
@@ -202,7 +199,7 @@ def test_diamond_pattern():
     Where B and C can be executed in parallel after A, and D requires both B and C.
     Parallel execution should provide a benefit for the middle nodes.
     """
-    graph = XCSGraph()
+    graph = Graph()
     delay = 0.1  # seconds
 
     # Create nodes for the diamond pattern

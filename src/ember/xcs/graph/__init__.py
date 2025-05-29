@@ -1,26 +1,30 @@
-"""
-Graph representation and analysis for XCS.
+"""XCS Graph - Simplified.
 
-Provides data structures and utilities for representing, analyzing, and
-manipulating computational graphs.
+The graph IS the intermediate representation.
+Simple, powerful, automatic parallelism detection.
 """
 
-# Dependency analysis
+# The only graph implementation you need
+from ember.xcs.graph.graph import Graph, Node
+
+# Kept for compatibility
 from ember.xcs.graph.dependency_analyzer import DependencyAnalyzer
 
-# Graph building
-from ember.xcs.graph.graph_builder import EnhancedTraceGraphBuilder, GraphBuilder
+# Backward compatibility aliases
+XCSGraph = Graph
+XCSNode = Node
 
-# Core graph representation
-from ember.xcs.graph.xcs_graph import XCSGraph, XCSNode
+# Legacy imports for compatibility
+try:
+    from ember.xcs.graph.graph_builder import GraphBuilder
+except ImportError:
+    GraphBuilder = None
 
 __all__ = [
-    # Core graph representation
+    "Graph",
+    "Node",
+    "DependencyAnalyzer",
+    # Compatibility
     "XCSGraph",
     "XCSNode",
-    # Dependency analysis
-    "DependencyAnalyzer",
-    # Graph building
-    "GraphBuilder",
-    "EnhancedTraceGraphBuilder",
-]
+    "GraphBuilder"]

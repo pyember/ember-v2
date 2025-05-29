@@ -84,7 +84,7 @@ The `autograph` context manager provides explicit control over graph constructio
 
 **Returns:**
 
-- `XCSGraph`: A computational graph representing the recorded operations
+- `Graph`: A computational graph representing the recorded operations
 
 **When to use:**
 - When you need explicit control over graph construction
@@ -106,7 +106,7 @@ Executes a computational graph with the specified inputs.
 
 **Parameters:**
 
-- `graph` (XCSGraph): The graph to execute
+- `graph` (Graph): The graph to execute
 - `inputs` (Dict[str, Any]): Input values for the graph
 - `options` (Optional[XCSExecutionOptions]): Execution configuration
 

@@ -81,8 +81,7 @@ def test_lm_module_assemble_full_prompt() -> None:
         id="openai:gpt-4o",
         temperature=0.8,
         cot_prompt="Chain of Thought",
-        persona="Friendly",
-    )
+        persona="Friendly")
     lm = LMModule(config=config, simulate_api=True)
     # Access the private method directly (acceptable in tests)
     full_prompt = lm._assemble_full_prompt("What is AI?")

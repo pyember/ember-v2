@@ -13,8 +13,7 @@ from ember.core.exceptions import (
     ModelNotFoundError,
     OperatorExecutionError,
     TransformError,
-    ValidationError,
-)
+    ValidationError)
 
 
 def test_base_exception_with_context():
@@ -80,8 +79,7 @@ def test_error_group():
     # Create some errors
     errors = [
         ValidationError("Error 1"),
-        ValidationError("Error 2"),
-    ]
+        ValidationError("Error 2")]
 
     # Create error group
     group = ErrorGroup("Multiple errors occurred", errors)
@@ -140,8 +138,7 @@ def test_transform_error_factory_method():
     exc = TransformError.for_transform(
         "vmap",
         details={"axis": 0, "batch_size": 10},
-        cause=ValueError("Inconsistent batch size"),
-    )
+        cause=ValueError("Inconsistent batch size"))
 
     # Verify message and context
     assert "Error in XCS transform 'vmap'" in str(exc)

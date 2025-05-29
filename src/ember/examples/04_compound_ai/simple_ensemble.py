@@ -28,6 +28,7 @@ from ember.api import operators
 
 
 def main():
+    """Example demonstrating the simplified XCS architecture."""
     """Build your first ensemble system."""
     print_section_header("Simple Ensemble System")
     
@@ -80,8 +81,7 @@ def main():
         ExpertOperator(name="Prof. Precise", style="concise"),
         ExpertOperator(name="Scholar Sam", style="academic"),
         ExpertOperator(name="Practical Pat", style="practical"),
-        ExpertOperator(name="Neutral Nancy", style="neutral"),
-    ]
+        ExpertOperator(name="Neutral Nancy", style="neutral")]
     
     # Part 2: Sequential Execution
     print("="*50)

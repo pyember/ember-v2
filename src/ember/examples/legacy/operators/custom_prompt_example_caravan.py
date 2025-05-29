@@ -32,8 +32,7 @@ from ember.api.operators import EmberModel, Field, Operator, Specification
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
-    stream=sys.stdout,
-)
+    stream=sys.stdout)
 logger = logging.getLogger(__name__)
 
 # ------------------------------------------------------------------------------------
@@ -348,8 +347,7 @@ class CaravanLabelingOperator(Operator[CaravanLabelingInputs, CaravanLabelingOut
 # Graph/Pipeline Constructors
 # ------------------------------------------------------------------------------------
 def create_simple_pipeline(
-    model_name: str,
-) -> Operator[SimplePromptInputs, SimplePromptOutput]:
+    model_name: str) -> Operator[SimplePromptInputs, SimplePromptOutput]:
     """Create a single-step operator for simple question answering.
 
     Args:
@@ -362,8 +360,7 @@ def create_simple_pipeline(
 
 
 def create_caravan_pipeline(
-    model_name: str,
-) -> Operator[CaravanLabelingInputs, CaravanLabelingOutput]:
+    model_name: str) -> Operator[CaravanLabelingInputs, CaravanLabelingOutput]:
     """Create a single-step operator for network flow labeling.
 
     Args:
@@ -386,12 +383,12 @@ def parse_arguments() -> argparse.Namespace:
         "--non",
         type=str,
         default=SIMPLE_NON,
-        help="Which pipeline to run: 'simple' or 'caravan'.",
-    )
+        help="Which pipeline to run: 'simple' or 'caravan'.")
     return parser.parse_args()
 
 
 def main():
+    """Example demonstrating the simplified XCS architecture."""
     logger.info("Starting refactored custom prompt with old context ...")
     check_env()
     register_custom_model()

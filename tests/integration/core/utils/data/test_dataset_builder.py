@@ -41,8 +41,7 @@ def test_dataset_registration_and_retrieval():
         name="test-dataset",
         source="test/source",
         task_type=TaskType.MULTIPLE_CHOICE,
-        description="Test dataset",
-    )
+        description="Test dataset")
     
     # List datasets and verify our test dataset is included
     datasets = api.list()
@@ -63,8 +62,7 @@ def test_dataset_builder_chain():
     ctx.register_dataset(
         name="mmlu",
         source="test/source",
-        task_type=TaskType.MULTIPLE_CHOICE,
-    )
+        task_type=TaskType.MULTIPLE_CHOICE)
     
     # Create and configure builder
     api = DataAPI(context=ctx)

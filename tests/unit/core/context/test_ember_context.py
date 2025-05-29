@@ -17,8 +17,7 @@ from ember.core.context.ember_context import (
     EmberContext,
     current_context,
     scoped_context,
-    temp_component,
-)
+    temp_component)
 
 
 def test_context_creation():
@@ -84,7 +83,7 @@ def test_thread_local_isolation():
 
     # Create and start threads
     for i in range(2):
-        thread = threading.Thread(target=thread_func, args=(i,))
+        thread = threading.Thread(target=thread_func, args=(i))
         thread.daemon = True  # Make threads daemon so they don't block test exit
         threads.append(thread)
         thread.start()

@@ -28,8 +28,7 @@ from typing import Any, Dict, Optional, Type
 
 from ember.core.registry.model.base.schemas.model_info import ModelInfo
 from ember.core.registry.model.base.utils.model_registry_exceptions import (
-    ProviderConfigError,
-)
+    ProviderConfigError)
 from ember.core.registry.model.config.model_enum import parse_model_str
 from ember.core.registry.model.providers.base_provider import BaseProviderModel
 from ember.core.registry.model.providers.registry import PROVIDER_REGISTRY
@@ -151,8 +150,7 @@ class ModelFactory:
                     str, Type[BaseProviderModel]
                 ] = discover_providers_in_package(
                     package_name=provider_package_name,
-                    package_path=provider_package_path,
-                )
+                    package_path=provider_package_path)
                 for name, provider_class in dynamic_providers.items():
                     if name not in cls._provider_cache:
                         cls._provider_cache[name] = provider_class
@@ -254,8 +252,7 @@ class ModelFactory:
                     LOGGER.warning(
                         "Provider name case mismatch: '%s' vs '%s'. Using the registered provider.",
                         provider_name,
-                        avail_name,
-                    )
+                        avail_name)
         if provider_class is None:
             available_providers: str = ", ".join(sorted(discovered_providers.keys()))
             raise ProviderConfigError(
@@ -265,6 +262,5 @@ class ModelFactory:
         LOGGER.debug(
             "Creating model '%s' using provider class '%s'.",
             model_info.id,
-            provider_class.__name__,
-        )
+            provider_class.__name__)
         return provider_class(model_info=model_info)

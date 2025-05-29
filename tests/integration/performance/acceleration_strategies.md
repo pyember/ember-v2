@@ -7,7 +7,7 @@ This document describes the acceleration strategies available in Ember's XCS exe
 Ember's XCS module provides several complementary strategies for accelerating LLM workflows:
 
 1. **JIT Compilation Strategies**
-   - **Trace-based JIT**: Traditional execution trace recording and replay
+   - **structural JIT**: Traditional execution trace recording and replay
    - **Structural JIT**: Analysis of operator structure for optimization
    - **Enhanced JIT**: Advanced analysis combining tracing and structural patterns
 

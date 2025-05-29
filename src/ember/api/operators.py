@@ -1,45 +1,30 @@
-"""Operators API for Ember.
+"""Operators API for composable language model operations.
 
-This module provides a unified interface for creating, composing, and executing operators
-in the Ember framework. Operators are the fundamental computational units in Ember,
-allowing for type-safe composition of language model operations.
+Operators are the fundamental computational units in Ember, providing type-safe
+composition of language model operations.
 
-Examples:
-    # Creating a basic operator
-    from ember.api.operators import Operator, EmberModel, Field
-
-    class QuestionInput(EmberModel):
-        question: str = Field(..., description="Question to answer")
-
-    class AnswerOutput(EmberModel):
-        answer: str = Field(..., description="Response to the question")
-
-    class QuestionAnswerer(Operator[QuestionInput, AnswerOutput]):
-        def forward(self, inputs: QuestionInput) -> AnswerOutput:
-            # Process the input using a language model
-            response = self.model.generate(inputs.question)
-            return AnswerOutput(answer=response)
-
-    # Using ensemble operators
-    from ember.api.operators import EnsembleOperator
-
-    ensemble = EnsembleOperator(
-        operators=[
-            QuestionAnswerer(model="gpt-4"),
-            QuestionAnswerer(model="claude-3"),
-        ]
-    )
-
-    # Using selector operators
-    from ember.api.operators import MostCommonAnswerSelector
-
-    pipeline = MostCommonAnswerSelector(
-        operator=ensemble
-    )
-
-    # Execute the pipeline
-    result = pipeline(QuestionInput(question="What is machine learning?"))
-    print(result.answer)
+Example:
+    >>> from ember.api.operators import Operator, EmberModel, Field
+    >>> 
+    >>> class QuestionInput(EmberModel):
+    ...     question: str = Field(..., description="Question to answer")
+    >>> 
+    >>> class AnswerOutput(EmberModel):
+    ...     answer: str = Field(..., description="Response to the question")
+    >>> 
+    >>> class QuestionAnswerer(Operator[QuestionInput, AnswerOutput]):
+    ...     def forward(self, inputs: QuestionInput) -> AnswerOutput:
+    ...         response = self.model.generate(inputs.question)
+    ...         return AnswerOutput(answer=response)
+    >>> 
+    >>> # Ensemble multiple operators
+    >>> from ember.api.operators import EnsembleOperator
+    >>> ensemble = EnsembleOperator(
+    ...     operators=[
+    ...         QuestionAnswerer(model="gpt-4"),
+    ...         QuestionAnswerer(model="claude-3")
+    ...     ]
+    ... )
 """
 
 # Define improved type variables with explicit bounds and variance
@@ -61,8 +46,7 @@ from typing import Any, Dict, List, Optional, TypeVar, Union
 # Core operator implementations
 from ember.core.registry.operator.core.ensemble import EnsembleOperator
 from ember.core.registry.operator.core.most_common import (
-    MostCommonAnswerSelectorOperator as MostCommonAnswerSelector,
-)
+    MostCommonAnswerSelectorOperator as MostCommonAnswerSelector)
 from ember.core.registry.operator.core.selector_judge import SelectorJudgeOperator
 from ember.core.registry.operator.core.synthesis_judge import JudgeSynthesisOperator
 from ember.core.registry.operator.core.verifier import VerifierOperator
@@ -87,5 +71,4 @@ __all__ = [
     "Any",
     "Optional",
     "Union",
-    "TypeVar",
-]
+    "TypeVar"]

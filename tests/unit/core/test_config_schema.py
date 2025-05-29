@@ -124,8 +124,7 @@ def test_model_creation():
         id="gpt-4",
         name="GPT-4",
         provider="openai",
-        cost=Cost(input_cost_per_thousand=5.0, output_cost_per_thousand=15.0),
-    )
+        cost=Cost(input_cost_per_thousand=5.0, output_cost_per_thousand=15.0))
     assert model.id == "gpt-4"
     assert model.name == "GPT-4"
     assert model.provider == "openai"
@@ -139,8 +138,7 @@ def test_provider_get_model():
     provider = Provider(
         enabled=True,
         models=[model1, model2],
-        api_keys={"default": ApiKey(key="test-key")},
-    )
+        api_keys={"default": ApiKey(key="test-key")})
     provider.__root_key__ = "openai"
 
     # Test getting by ID

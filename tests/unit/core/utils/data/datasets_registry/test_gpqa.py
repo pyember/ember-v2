@@ -130,8 +130,7 @@ class TestGPQAPrepper(unittest.TestCase):
             "choices",
             "answer",
             "domain",
-            "difficulty",
-        ]
+            "difficulty"]
         self.assertEqual(set(expected_keys), set(required_keys))
 
     def test_create_dataset_entries_basic(self) -> None:

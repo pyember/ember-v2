@@ -26,7 +26,7 @@ def examine_metric_objects():
     # Examine the counter
     print("\n=== COUNTER EXAMINATION ===")
 
-    label_values = ("test",)
+    label_values = ("test")
     counter_metric = counter._metrics.get(label_values)
 
     print(f"Counter metric object type: {type(counter_metric)}")

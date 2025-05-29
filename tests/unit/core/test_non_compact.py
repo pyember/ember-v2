@@ -16,15 +16,13 @@ from ember.core.non import (
     MostCommon,
     Sequential,
     UniformEnsemble,
-    Verifier,
-)
+    Verifier)
 from ember.core.non_compact import (
     OpRegistry,
     build_graph,
     get_default_registry,
     parse_spec,
-    resolve_refs,
-)
+    resolve_refs)
 
 # =============================================================================
 # OpRegistry Tests
@@ -47,8 +45,7 @@ class TestOpRegistry:
             "TEST",
             lambda count, model, temp: UniformEnsemble(
                 num_units=count, model_name=model, temperature=temp
-            ),
-        )
+            ))
 
         assert registry.has_type("TEST")
         assert registry.get_codes() == ["TEST"]
@@ -60,8 +57,7 @@ class TestOpRegistry:
             "TEST",
             lambda count, model, temp: UniformEnsemble(
                 num_units=count, model_name=model, temperature=temp
-            ),
-        )
+            ))
 
         op = registry.create("TEST", 3, "model-name", 0.5)
         assert isinstance(op, UniformEnsemble)
@@ -158,10 +154,8 @@ class TestParseSpec:
                     UniformEnsemble(
                         num_units=count, model_name=model, temperature=temp
                     ),
-                    MostCommon(),
-                ]
-            ),
-        )
+                    MostCommon()]
+            ))
 
         op = parse_spec("5:CE:gpt-4o:0.7", registry=custom_registry)
         assert isinstance(op, Sequential)
@@ -231,10 +225,8 @@ class TestResolveRefs:
             [
                 ["3:E:gpt-4o:0.7", "$verifier"],
                 ["3:E:claude-3-5-haiku:0.7", "$verifier"],
-                "1:J:claude-3-5-sonnet:0.0",
-            ],
-            components,
-        )
+                "1:J:claude-3-5-sonnet:0.0"],
+            components)
 
         assert isinstance(resolved, Sequential)
         assert len(resolved.operators) == 3
@@ -293,8 +285,7 @@ class TestBuildGraph:
                 # Second branch - Claude ensemble + verification
                 ["3:E:claude-3-5-haiku:0.7", "1:V:claude-3-5-haiku:0.0"],
                 # Final synthesis judge
-                "1:J:claude-3-5-sonnet:0.0",
-            ]
+                "1:J:claude-3-5-sonnet:0.0"]
         )
 
         assert isinstance(architecture, Sequential)
@@ -332,10 +323,8 @@ class TestBuildGraph:
             [
                 "$verification_pipeline",
                 ["$claude_ensemble", "$verifier"],
-                "1:J:claude-3-5-sonnet:0.0",
-            ],
-            components=components,
-        )
+                "1:J:claude-3-5-sonnet:0.0"],
+            components=components)
 
         assert isinstance(pipeline, Sequential)
         assert len(pipeline.operators) == 3
@@ -367,16 +356,14 @@ class TestBuildGraph:
                     ),
                     MostCommon(),  # Automatically add MostCommon to every ensemble
                 ]
-            ),
-        )
+            ))
 
         pipeline = build_graph(
             [
                 "5:CE:gpt-4o:0.7",  # Custom ensemble with built-in MostCommon
                 "1:J:claude-3-5-sonnet:0.0",  # Judge to synthesize
             ],
-            type_registry=custom_registry,
-        )
+            type_registry=custom_registry)
 
         assert isinstance(pipeline, Sequential)
         assert len(pipeline.operators) == 2
@@ -414,8 +401,7 @@ class TestEndToEndFunctionality:
         standard_pipeline = Sequential(
             operators=[
                 UniformEnsemble(num_units=3, model_name="gpt-4o", temperature=0.7),
-                JudgeSynthesis(model_name="claude-3-5-sonnet", temperature=0.0),
-            ]
+                JudgeSynthesis(model_name="claude-3-5-sonnet", temperature=0.0)]
         )
 
         # Verify structure equality
@@ -460,8 +446,7 @@ class TestEndToEndFunctionality:
                 "$sub",  # Second branch: SubNetwork instance
                 "1:J:gpt-4o:0.0",  # Final Judge synthesizes results
             ],
-            components=component_map,
-        )
+            components=component_map)
 
         # Verify the structure
         assert isinstance(nested_network, Sequential)
@@ -500,9 +485,7 @@ class TestProperties:
             (3, "E", "gpt-4o", 0.7),
             (5, "E", "claude-3-5-sonnet", 1.0),
             (1, "J", "gpt-4o", 0.5),
-            (1, "V", "claude-3-5-haiku", 0.2),
-        ],
-    )
+            (1, "V", "claude-3-5-haiku", 0.2)])
     def test_property_parse_spec_valid(self, count, type_code, model, temp):
         """Test property: parse_spec correctly parses valid specifications."""
         spec = f"{count}:{type_code}:{model}:{temp}"
@@ -527,9 +510,7 @@ class TestProperties:
         [
             [["3:E:gpt-4o:0.7"], ["1:J:claude-3-5-sonnet:0.0"]],
             [["3:E:gpt-4o:0.7", "1:V:gpt-4o:0.0"], "1:J:claude-3-5-sonnet:0.0"],
-            ["3:E:gpt-4o:0.7", ["1:V:gpt-4o:0.0", "1:J:claude-3-5-sonnet:0.0"]],
-        ],
-    )
+            ["3:E:gpt-4o:0.7", ["1:V:gpt-4o:0.0", "1:J:claude-3-5-sonnet:0.0"]]])
     def test_property_nested_structures(self, elements):
         """Test property: build_graph correctly builds nested structures."""
         graph = build_graph(elements)

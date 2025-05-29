@@ -44,8 +44,7 @@ logger = logging.getLogger(__name__)
 
 # Only run these tests when explicitly enabled
 pytestmark = [
-    pytest.mark.integration,
-]
+    pytest.mark.integration]
 
 
 class SummarizeInput(EmberModel):
@@ -190,8 +189,7 @@ class JudgeSynthesisOperator(Operator[JudgeSynthesisInputs, JudgeSynthesisOutput
             "Format:\n"
             "Reasoning: <your reasoning for synthesizing this answer in this way>\n"
             "Final Answer: <the single best answer>\n"
-        ),
-    )
+        ))
 
     # Define static fields
     model: Any = static_field()
@@ -312,8 +310,7 @@ def execute_graph(
     graph: XCSGraph,
     global_input: Dict[str, Any],
     concurrency: bool = False,
-    executor=None,
-):
+    executor=None):
     """Simplified graph execution for testing."""
     results = {}
 
@@ -410,7 +407,7 @@ class TestEndToEndWorkflows:
         judge = JudgeSynthesisOperator(model=judge_model)
 
         # Build execution graph
-        graph = XCSGraph()
+        graph = Graph()
         graph.add_node(operator=ensemble, node_id="ensemble")
         graph.add_node(operator=judge, node_id="judge")
         graph.add_edge(from_id="ensemble", to_id="judge")
@@ -419,8 +416,7 @@ class TestEndToEndWorkflows:
         result = execute_graph(
             graph=graph,
             global_input={"query": "Summarize this text: " + sample_text[:200]},
-            concurrency=True,
-        )
+            concurrency=True)
 
         # Verify the graph execution structure
         assert result is not None

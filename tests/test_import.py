@@ -13,8 +13,7 @@ from ember.xcs.engine.unified_engine import execute_graph
 from ember.xcs.jit import JITMode, jit
 from ember.xcs.schedulers.unified_scheduler import (
     ParallelScheduler,
-    SequentialScheduler,
-)
+    SequentialScheduler)
 from ember.xcs.transforms import vmap
 
 # Print basic info to confirm imports work

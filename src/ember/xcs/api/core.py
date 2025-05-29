@@ -17,18 +17,16 @@ from ember.xcs.api.types import (
     ExecutionResult,
     JITOptions,
     TransformOptions,
-    XCSExecutionOptions,
-)
-from ember.xcs.engine.unified_engine import ExecutionOptions, execute_graph
+    XCSExecutionOptions)
+from ember.xcs.graph import Graph
 from ember.xcs.exceptions import (
     CompilationError,
     DataFlowError,
     ExecutionError,
     TraceError,
     TransformError,
-    XCSError,
-)
-from ember.xcs.graph.xcs_graph import XCSGraph
+    XCSError)
+from ember.xcs.graph import Graph
 from ember.xcs.jit import jit as raw_jit
 from ember.xcs.tracer.autograph import AutoGraphBuilder
 from ember.xcs.tracer.xcs_tracing import TraceRecord
@@ -86,8 +84,7 @@ class XCSAPI:
         target: Optional[Type[T]] = None,
         *,
         options: Optional[JITOptions] = None,
-        **kwargs: Any,
-    ) -> Union[Type[T], Callable[[Type[T]], Type[T]]]:
+        **kwargs: Any) -> Union[Type[T], Callable[[Type[T]], Type[T]]]:
         """
         Just-In-Time compilation decorator for Ember Operators.
 
@@ -153,7 +150,7 @@ class XCSAPI:
         # When used as @xcs.jit() or @xcs.jit(options=...)
         return lambda cls: raw_jit(**jit_kwargs)(cls)
 
-    def autograph(self, records: List[TraceRecord]) -> XCSGraph:
+    def autograph(self, records: List[TraceRecord]) -> Graph:
         """Build execution graph from trace records.
 
         Analyzes trace records to create a dependency graph for execution.
@@ -199,10 +196,9 @@ class XCSAPI:
 
     def execute(
         self,
-        graph: XCSGraph,
+        graph: Graph,
         inputs: Dict[str, Any],
-        options: Optional[XCSExecutionOptions] = None,
-    ) -> ExecutionResult:
+        options: Optional[XCSExecutionOptions] = None) -> ExecutionResult:
         """Execute XCS graph with given inputs.
 
         Args:
@@ -228,19 +224,15 @@ class XCSAPI:
         """
         opts = options or XCSExecutionOptions()
 
-        engine_options = ExecutionOptions(
-            scheduler_type="parallel",  # Always use parallel execution for performance
-            max_workers=opts.max_workers,
-            timeout_seconds=opts.timeout / 1000 if opts.timeout else None,
-            collect_metrics=True,
-        )
-
         start_time = time.time()
 
         try:
+            # Use simplified API - parallel with optional worker count and timeout
             outputs = execute_graph(
-                graph=graph, global_input=inputs, options=engine_options
-            )
+                graph=graph,
+                inputs=inputs,
+                parallel=opts.max_workers if opts.max_workers else True,
+                timeout=opts.timeout / 1000 if opts.timeout else None)
         except Exception as e:
             # Convert generic exceptions to proper XCS exceptions
             if "timeout" in str(e).lower():
@@ -277,8 +269,7 @@ class XCSAPI:
         self,
         fn: Callable[..., ResultT],
         options: Optional[TransformOptions] = None,
-        **kwargs: Any,
-    ) -> Callable[..., Dict[str, Any]]:
+        **kwargs: Any) -> Callable[..., Dict[str, Any]]:
         """Vectorize function across its inputs.
 
         Args:
@@ -321,8 +312,7 @@ class XCSAPI:
         self,
         fn: Callable[..., ResultT],
         options: Optional[TransformOptions] = None,
-        **kwargs: Any,
-    ) -> Callable[..., Dict[str, Any]]:
+        **kwargs: Any) -> Callable[..., Dict[str, Any]]:
         """Parallelize function across multiple devices.
 
         Args:
@@ -379,8 +369,7 @@ class XCSAPI:
         fn: Callable[..., ResultT],
         mesh: DeviceMesh,
         partition_spec: PartitionSpec,
-        **kwargs: Any,
-    ) -> Callable[..., Dict[str, Any]]:
+        **kwargs: Any) -> Callable[..., Dict[str, Any]]:
         """Apply mesh-based sharding to a function.
 
         Args:

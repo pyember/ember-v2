@@ -30,6 +30,7 @@ from ember.api import operators
 
 
 def main():
+    """Example demonstrating the simplified XCS architecture."""
     """Build evaluation frameworks for AI systems."""
     print_section_header("Accuracy Evaluation Framework")
     
@@ -56,8 +57,7 @@ def main():
                     {"text": "Decent value for the price point.", "label": "neutral", "difficulty": "medium"},
                     {"text": "Revolutionary product that changes everything!", "label": "positive", "difficulty": "easy"},
                     {"text": "Complete disaster, nothing works.", "label": "negative", "difficulty": "easy"},
-                    {"text": "Has pros and cons, depends on use case.", "label": "neutral", "difficulty": "hard"},
-                ]
+                    {"text": "Has pros and cons, depends on use case.", "label": "neutral", "difficulty": "hard"}]
             elif task_type == "math":
                 # Simple math problems
                 test_cases = [
@@ -68,8 +68,7 @@ def main():
                     {"question": "What is sqrt(169)?", "answer": 13, "difficulty": "medium"},
                     {"question": "What is 2^8?", "answer": 256, "difficulty": "medium"},
                     {"question": "What is 15% of 80?", "answer": 12, "difficulty": "hard"},
-                    {"question": "What is 7! (factorial)?", "answer": 5040, "difficulty": "hard"},
-                ]
+                    {"question": "What is 7! (factorial)?", "answer": 5040, "difficulty": "hard"}]
             else:
                 test_cases = []
             

@@ -1,8 +1,7 @@
 """Core JIT compilation system for XCS.
 
-Provides a unified Just-In-Time compilation mechanism that optimizes operators
-and functions by analyzing their structure and execution patterns. The system
-selects the most appropriate compilation strategy based on target characteristics.
+Provides Just-In-Time compilation that optimizes operators and functions
+by analyzing their structure and execution patterns.
 """
 
 import inspect
@@ -18,32 +17,23 @@ logger = logging.getLogger(__name__)
 
 
 class JITSettings:
-    """Settings for JIT compilation behavior.
-
-    Encapsulates all configuration options for the JIT system.
-    """
+    """Settings for JIT compilation behavior."""
 
     def __init__(
         self,
         mode: Union[JITMode, str] = JITMode.AUTO,
         force_trace: bool = False,
-        sample_input: Optional[Dict[str, Any]] = None,
         custom_cache: Optional[JITCache] = None,
         recursive: bool = True,
-        preserve_stochasticity: bool = False,
-        **kwargs: Any,
-    ) -> None:
+        preserve_stochasticity: bool = False) -> None:
         """Initialize JIT settings.
 
         Args:
-            mode: JIT compilation mode to use
-            force_trace: Whether to force retracing
-            sample_input: Optional sample input for eager compilation
-            custom_cache: Custom cache instance
-            recursive: Whether to apply JIT recursively
-            preserve_stochasticity: Whether to preserve stochastic behavior by 
-                always executing the original function instead of using cached results
-            **kwargs: Additional strategy-specific options
+            mode: JIT compilation mode (default: AUTO).
+            force_trace: Whether to force retracing.
+            custom_cache: Custom cache instance.
+            recursive: Whether to apply JIT recursively.
+            preserve_stochasticity: Whether to preserve stochastic behavior.
         """
         # Normalize mode to enum
         if isinstance(mode, str):
@@ -56,30 +46,22 @@ class JITSettings:
             self.mode = mode
 
         self.force_trace = force_trace
-        self.sample_input = sample_input
         self.custom_cache = custom_cache
         self.recursive = recursive
         self.preserve_stochasticity = preserve_stochasticity
-        self.options = kwargs
 
 
 class StrategySelector:
-    """Selects the optimal JIT strategy for target functions.
-
-    Implements heuristic policy for determining the most appropriate
-    compilation strategy based on function or class characteristics.
-    """
+    """Selects optimal JIT strategy for target functions."""
 
     def __init__(self) -> None:
-        """Initializes strategy registry with implementations."""
+        """Initialize strategy registry."""
         # Import strategies lazily to avoid circular dependencies
         from ember.xcs.jit.strategies.enhanced import EnhancedStrategy
         from ember.xcs.jit.strategies.structural import StructuralStrategy
-        from ember.xcs.jit.strategies.trace import TraceStrategy
 
         # Map modes to strategy implementations
         self._strategies: Dict[JITMode, Strategy] = {
-            JITMode.TRACE: TraceStrategy(),
             JITMode.STRUCTURAL: StructuralStrategy(),
             JITMode.ENHANCED: EnhancedStrategy(),
         }
@@ -87,17 +69,18 @@ class StrategySelector:
     def select_strategy(
         self, func: Callable[..., Any], mode: JITMode = JITMode.AUTO
     ) -> Strategy:
-        """Selects optimal strategy for the target function or class.
+        """Select optimal strategy for the target.
 
         Args:
-            func: Target function or class to optimize
-            mode: User-specified mode or AUTO for automatic selection
+            func: Target function or class to optimize.
+            mode: JIT mode (default: AUTO for automatic selection).
 
         Returns:
-            Most appropriate strategy implementation
+            Most appropriate strategy implementation.
         """
         # Use explicit strategy when specified
         if mode != JITMode.AUTO:
+            logger.debug(f"Using explicitly requested {mode.value} strategy")
             return self._strategies[mode]
 
         # Collect and score strategies for auto-selection
@@ -109,12 +92,21 @@ class StrategySelector:
         # Sort by score in descending order
         analyses.sort(key=lambda x: x[2].get("score", 0), reverse=True)
 
-        # Log selection rationale for debugging
+        # Log detailed selection process for debugging
+        func_name = getattr(func, "__name__", str(func))
+        logger.debug(f"JIT strategy selection for {func_name}:")
+        
         for mode, _, analysis in analyses:
+            score_breakdown = analysis.get("score_breakdown", {})
             logger.debug(
-                f"Strategy {mode.value}: score={analysis.get('score', 0)}, "
+                f"  {mode.value}: score={analysis.get('score', 0)}, "
+                f"breakdown={score_breakdown}, "
                 f"reason={analysis.get('rationale', 'No rationale provided')}"
             )
+
+        # Log final selection
+        selected_mode = analyses[0][0]
+        logger.debug(f"Selected {selected_mode.value} strategy (highest score)")
 
         # Return highest-scoring strategy
         return analyses[0][1]
@@ -139,12 +131,10 @@ def _jit_function(
     """
     return strategy.compile(
         func,
-        sample_input=settings.sample_input,
         force_trace=settings.force_trace,
         recursive=settings.recursive,
         cache=settings.custom_cache or get_cache(),
-        **settings.options,
-    )
+        preserve_stochasticity=settings.preserve_stochasticity)
 
 
 def _create_operator_forward_proxy(strategy: Strategy, settings: JITSettings):
@@ -254,12 +244,10 @@ def _jit_operator_class(cls: Type, strategy: Strategy, settings: JITSettings) ->
         # Compile the function
         self._compiled_func = strategy.compile(
             self._forward_proxy,
-            sample_input=settings.sample_input,
             force_trace=settings.force_trace,
             recursive=settings.recursive,
             cache=cache,
-            **settings.options,
-        )
+            preserve_stochasticity=settings.preserve_stochasticity)
         
         # Store the strategy name for metrics reporting
         self._jit_strategy = strategy_name
@@ -311,26 +299,23 @@ def _jit_operator_class(cls: Type, strategy: Strategy, settings: JITSettings) ->
     # Create the JIT-optimized class
     return type(
         class_name,
-        (cls,),
+        (cls),
         {
             "__init__": jit_init,
             "__call__": jit_call,
             "__doc__": cls.__doc__,
-        },
-    )
+        })
 
 
 def jit(
     func: Optional[Callable[..., Any]] = None,
     *,
     mode: Union[str, JITMode] = JITMode.AUTO,
+    force_strategy: Optional[Union[str, JITMode]] = None,
     force_trace: bool = False,
-    sample_input: Optional[Dict[str, Any]] = None,
     cache: Optional[JITCache] = None,
     recursive: bool = True,
-    preserve_stochasticity: bool = False,
-    **kwargs: Any,
-) -> Any:
+    preserve_stochasticity: bool = False) -> Any:
     """Optimizes functions and operators with Just-In-Time compilation.
 
     Core optimization decorator that analyzes and compiles functions or
@@ -340,14 +325,13 @@ def jit(
     Args:
         func: Target function or operator class
         mode: Compilation strategy to use (auto, trace, structural, enhanced)
+        force_strategy: Alias for mode - explicitly select a strategy
         force_trace: Whether to force retracing on each call
-        sample_input: Example input for eager compilation
         cache: Custom cache implementation
         recursive: Whether to recursively optimize nested functions
         preserve_stochasticity: If True, always executes the original function even
             when inputs match previous calls. This is important for LLMs where
             multiple calls with the same prompts should produce different outputs.
-        **kwargs: Strategy-specific configuration options
 
     Returns:
         Optimized function or operator class
@@ -360,10 +344,15 @@ def jit(
             def forward(self, *, inputs):
                 return process(inputs)
 
+        # Force a specific strategy
+        @jit(force_strategy="structural")
+        class ComplexOperator(Operator):
+            def forward(self, *, inputs):
+                return self.complex_logic(inputs)
+
         # Advanced configuration
         @jit(
             mode="structural",
-            sample_input={"data": "example"},
             recursive=False
         )
         def process_data(*, inputs):
@@ -382,24 +371,24 @@ def jit(
         return lambda f: jit(
             f,
             mode=mode,
+            force_strategy=force_strategy,
             force_trace=force_trace,
-            sample_input=sample_input,
             cache=cache,
             recursive=recursive,
-            preserve_stochasticity=preserve_stochasticity,
-            **kwargs,
-        )
+            preserve_stochasticity=preserve_stochasticity)
+
+    # Handle force_strategy as an alias for mode
+    if force_strategy is not None:
+        mode = force_strategy
+        logger.debug(f"Using force_strategy={force_strategy} as mode")
 
     # Prepare optimization configuration
     settings = JITSettings(
         mode=mode,
         force_trace=force_trace,
-        sample_input=sample_input,
         custom_cache=cache,
         recursive=recursive,
-        preserve_stochasticity=preserve_stochasticity,
-        **kwargs,
-    )
+        preserve_stochasticity=preserve_stochasticity)
 
     # Get optimal compilation strategy
     strategy = _selector.select_strategy(func, settings.mode)
@@ -443,10 +432,8 @@ def explain_jit_selection(func: Callable[..., Any]) -> Dict[str, Any]:
     """
     from ember.xcs.jit.strategies.enhanced import EnhancedStrategy
     from ember.xcs.jit.strategies.structural import StructuralStrategy
-    from ember.xcs.jit.strategies.trace import TraceStrategy
-
+    
     strategies = {
-        "trace": TraceStrategy(),
         "structural": StructuralStrategy(),
         "enhanced": EnhancedStrategy(),
     }

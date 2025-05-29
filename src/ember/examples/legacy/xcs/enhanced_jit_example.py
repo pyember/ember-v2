@@ -16,7 +16,7 @@ To run:
 
 import logging
 
-from ember.xcs.graph.xcs_graph import XCSGraph
+from ember.xcs.graph import Graph
 
 # For tracing with the autograph module
 from ember.xcs.tracer.autograph import AutoGraphBuilder
@@ -39,8 +39,7 @@ def build_graph_example() -> None:
             inputs={"query": "What is machine learning?"},
             outputs={"result": "pipeline_result"},
             start_time=1.0,
-            end_time=1.2,
-        ),
+            end_time=1.2),
         TraceRecord(
             operator_name="Refiner",
             node_id="refiner1",
@@ -91,8 +90,7 @@ def build_graph_example() -> None:
             outputs={"new_query": "Tell me more about supervised learning"},
             start_time=2.0,
             end_time=2.1,  # Executed after pipeline
-        ),
-    ]
+        )]
 
     # Build graph with standard dependency analysis (no hierarchy awareness)
     basic_builder = AutoGraphBuilder()
@@ -157,7 +155,7 @@ def build_graph_example() -> None:
             print()
 
 
-def print_graph_dependencies(graph: XCSGraph) -> None:
+def print_graph_dependencies(graph: Graph) -> None:
     """Print the dependencies in a graph."""
     for node_id, node in graph.nodes.items():
         if node.inbound_edges:
@@ -170,6 +168,7 @@ def print_graph_dependencies(graph: XCSGraph) -> None:
 # Main Demonstration
 ###############################################################################
 def main() -> None:
+    """Example demonstrating the simplified XCS architecture."""
     """Run the nested operator analysis demonstration."""
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 

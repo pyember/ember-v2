@@ -186,8 +186,7 @@ class AIMEPrepper(IDatasetPrepper):
                     "task_type": "short_answer",
                     "domain": "mathematics",
                     "difficulty": "challenging",
-                },
-            )
+                })
         ]
 
 

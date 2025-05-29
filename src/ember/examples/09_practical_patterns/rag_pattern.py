@@ -28,6 +28,7 @@ from ember.api import operators
 
 
 def main():
+    """Example demonstrating the simplified XCS architecture."""
     """Build a complete RAG system with Ember operators."""
     print_section_header("RAG Pattern Implementation")
     

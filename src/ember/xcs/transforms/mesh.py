@@ -23,8 +23,7 @@ from typing import (
     Protocol,
     Tuple,
     Union,
-    runtime_checkable,
-)
+    runtime_checkable)
 
 import numpy as np
 
@@ -63,8 +62,7 @@ class DeviceMesh:
     def __init__(
         self,
         devices: Optional[List[str]] = None,
-        shape: Optional[Tuple[int, ...]] = None,
-    ) -> None:
+        shape: Optional[Tuple[int, ...]] = None) -> None:
         """Initializing a device mesh with specified resources and dimensions.
 
         If no devices are specified, the mesh uses available CPU cores (minus one to
@@ -73,7 +71,7 @@ class DeviceMesh:
 
         Args:
             devices: List of device identifiers. Defaults to CPU cores.
-            shape: Logical shape of the mesh. Defaults to (num_devices,).
+            shape: Logical shape of the mesh. Defaults to (num_devices).
 
         Raises:
             MeshConfigurationError: If the mesh shape does not match the number of devices.
@@ -97,7 +95,7 @@ class DeviceMesh:
         num_devices = len(devices)
 
         if shape is None:
-            shape = (num_devices,)
+            shape = (num_devices)
         self.shape: Tuple[int, ...] = shape
 
         mesh_size: int = int(np.prod(shape))
@@ -109,8 +107,7 @@ class DeviceMesh:
                     "shape": shape,
                     "mesh_size": mesh_size,
                     "num_devices": num_devices,
-                },
-            )
+                })
 
         device_indices: List[int] = list(range(num_devices))
         self.device_grid: np.ndarray = np.array(device_indices).reshape(shape)
@@ -170,7 +167,7 @@ class DeviceMesh:
             )
 
             # Extract the first row (1x3 submesh)
-            row_mesh = mesh.get_submesh(0, slice(None))  # Shape (3,)
+            row_mesh = mesh.get_submesh(0, slice(None))  # Shape (3)
 
             # Extract a 2x2 submesh from the first two columns
             submesh = mesh.get_submesh(slice(None), slice(0, 2))  # Shape (2, 2)
@@ -253,8 +250,7 @@ class PartitionSpec:
                         "position": i,
                         "mesh_shape": mesh.shape,
                         "mesh_ndim": mesh_ndim,
-                    },
-                )
+                    })
 
 
 class InputOutputMapper:
@@ -347,8 +343,7 @@ class InputOutputMapper:
 def _distribute_inputs(
     inputs: Dict[str, Any],
     mesh: DeviceMesh,
-    partition_specs: Optional[Dict[str, PartitionSpec]] = None,
-) -> Dict[Tuple[int, ...], Dict[str, Any]]:
+    partition_specs: Optional[Dict[str, PartitionSpec]] = None) -> Dict[Tuple[int, ...], Dict[str, Any]]:
     """Distributing input data across devices based on partition specifications.
 
     Shards input data across the device mesh according to the provided partition
@@ -392,7 +387,7 @@ def _distribute_inputs(
     batch_size = io_mapper.extract_batch_size(inputs)
     if batch_size == 0:
         # For non-shardable inputs, just use the first device and replicate
-        distributed[(0,) * len(mesh_shape)] = inputs.copy()
+        distributed[(0) * len(mesh_shape)] = inputs.copy()
         return distributed
 
     # Iterate through all possible device coordinates
@@ -417,7 +412,7 @@ def _distribute_inputs(
                 except Exception as e:
                     # Log the error and fall back to replication on the first device
                     logging.error(f"Error sharding input '{key}': {e}")
-                    if coords == (0,) * len(mesh_shape):
+                    if coords == (0) * len(mesh_shape):
                         device_inputs[key] = value
                         is_processing_device = True
                     else:
@@ -432,7 +427,7 @@ def _distribute_inputs(
 
     # If we somehow ended up with no devices, use the first one
     if not distributed:
-        distributed[(0,) * len(mesh_shape)] = inputs.copy()
+        distributed[(0) * len(mesh_shape)] = inputs.copy()
 
     return distributed
 
@@ -441,8 +436,7 @@ def _distribute_inputs_test_mode(
     inputs: Dict[str, Any],
     mesh: DeviceMesh,
     partition_specs: Optional[Dict[str, PartitionSpec]] = None,
-    io_mapper: InputOutputMapper = None,
-) -> Dict[Tuple[int, ...], Dict[str, Any]]:
+    io_mapper: InputOutputMapper = None) -> Dict[Tuple[int, ...], Dict[str, Any]]:
     """Simplified input distribution for test mode.
 
     A simplified distribution algorithm that prioritizes correctness over
@@ -468,7 +462,7 @@ def _distribute_inputs_test_mode(
     batch_size = io_mapper.extract_batch_size(inputs)
     if batch_size == 0:
         # For non-shardable inputs, just use the first device
-        distributed[(0,) * len(mesh_shape)] = inputs.copy()
+        distributed[(0) * len(mesh_shape)] = inputs.copy()
         return distributed
 
     # Get shardable keys
@@ -500,8 +494,7 @@ def _calculate_input_shard(
     value: List[Any],
     spec: PartitionSpec,
     coords: Tuple[int, ...],
-    mesh_shape: Tuple[int, ...],
-) -> Tuple[List[Any], bool]:
+    mesh_shape: Tuple[int, ...]) -> Tuple[List[Any], bool]:
     """Calculating the appropriate shard of input data for a device.
 
     Args:
@@ -522,7 +515,7 @@ def _calculate_input_shard(
         # Validate mesh_dim is within bounds
         if mesh_dim >= len(mesh_shape):
             # Fall back to replication if PartitionSpec uses an invalid axis
-            if coords == (0,) * len(mesh_shape):  # Only use first device
+            if coords == (0) * len(mesh_shape):  # Only use first device
                 return value, True
             else:
                 return [], False
@@ -552,14 +545,14 @@ def _calculate_input_shard(
     # Handle full replication cases
     elif spec.mesh_axes == (None, None) or not spec.mesh_axes:
         # Full replication - only use first device to avoid duplicates
-        if coords == (0,) * len(mesh_shape):
+        if coords == (0) * len(mesh_shape):
             return value, True
         else:
             return [], False
 
     # Default case - replicate on first device only
     else:
-        if coords == (0,) * len(mesh_shape):
+        if coords == (0) * len(mesh_shape):
             return value, True
         else:
             return [], False
@@ -574,8 +567,7 @@ class OutputAggregator:
 
     @staticmethod
     def handle_non_dict_outputs(
-        outputs: Dict[Tuple[int, ...], Any],
-    ) -> Optional[Dict[str, List[Any]]]:
+        outputs: Dict[Tuple[int, ...], Any]) -> Optional[Dict[str, List[Any]]]:
         """Handling non-dictionary outputs by wrapping them in a results dictionary.
 
         Args:
@@ -592,8 +584,7 @@ class OutputAggregator:
 
     @staticmethod
     def handle_scalar_results(
-        outputs: Dict[Tuple[int, ...], Dict[str, Any]],
-    ) -> Optional[Dict[str, List[Any]]]:
+        outputs: Dict[Tuple[int, ...], Dict[str, Any]]) -> Optional[Dict[str, List[Any]]]:
         """Handling scalar (non-list) results from a single device.
 
         Args:
@@ -614,8 +605,7 @@ class OutputAggregator:
 
     @staticmethod
     def aggregate_device_outputs(
-        outputs: Dict[Tuple[int, ...], Dict[str, Any]],
-    ) -> Dict[str, List[Any]]:
+        outputs: Dict[Tuple[int, ...], Dict[str, Any]]) -> Dict[str, List[Any]]:
         """Aggregating dictionary outputs from multiple devices.
 
         Args:
@@ -655,8 +645,7 @@ class OutputAggregator:
 def _collect_outputs(
     outputs: Dict[Tuple[int, ...], Any],
     mesh: DeviceMesh,
-    partition_specs: Optional[Dict[str, PartitionSpec]] = None,
-) -> Dict[str, Any]:
+    partition_specs: Optional[Dict[str, PartitionSpec]] = None) -> Dict[str, Any]:
     """Aggregating and combining outputs resulting from distributed execution.
 
     Combines results from different devices into a single coherent output,
@@ -716,16 +705,14 @@ def _collect_outputs(
                 transform_name="mesh",
                 message=f"Failed to aggregate outputs: {e}",
                 details={"output_count": len(outputs)},
-                cause=e,
-            )
+                cause=e)
 
 
 def mesh_sharded(
     operator_or_fn: Union[Operator, Callable[..., Any]],
     mesh: DeviceMesh,
     in_partition: Optional[Dict[str, PartitionSpec]] = None,
-    out_partition: Optional[Dict[str, PartitionSpec]] = None,
-) -> Callable[..., Any]:
+    out_partition: Optional[Dict[str, PartitionSpec]] = None) -> Callable[..., Any]:
     """Transforming an operator or function to execute in a sharded manner across a device mesh.
 
     Partitions inputs and aggregates outputs to enable sophisticated distributed execution
@@ -790,8 +777,7 @@ def mesh_sharded(
         raise TransformError.for_transform(
             transform_name="mesh",
             message="Device mesh has no devices",
-            details={"mesh_devices": mesh.devices},
-        )
+            details={"mesh_devices": mesh.devices})
 
     # Validate partition specs
     if in_partition:
@@ -803,8 +789,7 @@ def mesh_sharded(
                     transform_name="mesh",
                     message=f"Invalid input partition spec for key '{key}': {e}",
                     details={"key": key, "spec": str(spec)},
-                    cause=e,
-                )
+                    cause=e)
 
     if out_partition:
         for key, spec in out_partition.items():
@@ -815,15 +800,13 @@ def mesh_sharded(
                     transform_name="mesh",
                     message=f"Invalid output partition spec for key '{key}': {e}",
                     details={"key": key, "spec": str(spec)},
-                    cause=e,
-                )
+                    cause=e)
 
     def _execute_sharded(
         op: Callable[..., Any],
         inputs_to_distribute: Dict[Tuple[int, ...], Dict[str, Any]],
         mesh_obj: DeviceMesh,
-        out_spec: Optional[Dict[str, PartitionSpec]],
-    ) -> Dict[str, Any]:
+        out_spec: Optional[Dict[str, PartitionSpec]]) -> Dict[str, Any]:
         """Executing the sharded operation across multiple devices in parallel.
 
         Args:
@@ -868,8 +851,7 @@ def mesh_sharded(
                 details={
                     "device_count": len(inputs_to_distribute),
                     "error_count": error_count,
-                },
-            )
+                })
 
         return _collect_outputs(mesh_results, mesh_obj, out_spec)
 
@@ -894,8 +876,7 @@ def mesh_sharded(
             ] = _distribute_inputs(
                 inputs=inputs,
                 mesh=mesh,
-                partition_specs=in_partition,
-            )
+                partition_specs=in_partition)
             return _execute_sharded(
                 operator_or_fn, distributed_inputs, mesh, out_partition
             )
@@ -923,8 +904,7 @@ def mesh_sharded(
             ] = _distribute_inputs(
                 inputs=inputs,
                 mesh=mesh,
-                partition_specs=in_partition,
-            )
+                partition_specs=in_partition)
             return _execute_sharded(
                 operator_or_fn, distributed_inputs, mesh, out_partition
             )
@@ -939,8 +919,7 @@ def pjit(
     mesh_shape: Optional[Tuple[int, ...]] = None,
     in_specs: Optional[Dict[str, PartitionSpec]] = None,
     out_specs: Optional[Dict[str, PartitionSpec]] = None,
-    mode: str = "enhanced",
-) -> Callable[..., Any]:
+    mode: str = "enhanced") -> Callable[..., Any]:
     """Just-in-time compiled parallel execution across a device mesh.
 
     Combines the benefits of JIT compilation with parallel execution across
@@ -978,8 +957,7 @@ def pjit(
             mesh_shape=mesh_shape,
             in_specs=in_specs,
             out_specs=out_specs,
-            mode=mode,
-        )
+            mode=mode)
 
     # Create the device mesh
     mesh = DeviceMesh(devices=devices, shape=mesh_shape)

@@ -65,8 +65,7 @@ MMLU_SUBJECTS = [
     "high_school_physics",
     "professional_medicine",
     "college_biology",
-    "philosophy",
-]
+    "philosophy"]
 
 
 class MCQInput(EmberModel):
@@ -184,8 +183,7 @@ class MMLUDataset:
                     "question": "What is the area of a circle with radius 5?",
                     "choices": {"A": "25π", "B": "10π", "C": "5π", "D": "100π"},
                     "answer": "A",
-                },
-            ],
+                }],
             "high_school_physics": [
                 {
                     "question": "What is the SI unit of force?",
@@ -206,8 +204,7 @@ class MMLUDataset:
                         "D": "Boyle's Law",
                     },
                     "answer": "B",
-                },
-            ],
+                }],
             "philosophy": [
                 {
                     "question": "Who wrote 'Critique of Pure Reason'?",
@@ -228,8 +225,7 @@ class MMLUDataset:
                         "D": "Plato",
                     },
                     "answer": "C",
-                },
-            ],
+                }],
         }
 
         # Get the specified subject or default to mathematics
@@ -274,8 +270,7 @@ class BaselineMCQOperator(Operator[MCQInput, MCQOutput]):
         self,
         model_name: str = "anthropic:claude-3-sonnet-20240229",
         temperature: float = 0.0,
-        max_tokens: int = 1024,
-    ) -> None:
+        max_tokens: int = 1024) -> None:
         """Initialize the baseline operator with model configuration.
 
         Args:
@@ -462,8 +457,7 @@ Select your answer and provide comprehensive reasoning.
 
 Answer: [Option Letter]
 Reasoning: [Explanation]
-""",
-    ]
+"""]
 
 
 class VariedEnsembleMCQOperator(Operator[MCQInput, List[MCQOutput]]):
@@ -478,8 +472,7 @@ class VariedEnsembleMCQOperator(Operator[MCQInput, List[MCQOutput]]):
 
     def __init__(
         self,
-        model_configs: Optional[List[Dict[str, Any]]] = None,
-    ) -> None:
+        model_configs: Optional[List[Dict[str, Any]]] = None) -> None:
         """Initialize the varied ensemble operator with multiple model configurations.
 
         Args:
@@ -503,8 +496,7 @@ class VariedEnsembleMCQOperator(Operator[MCQInput, List[MCQOutput]]):
                 models.instance(
                     config["model_name"],
                     temperature=config["temperature"],
-                    max_tokens=config.get("max_tokens", 1024),
-                )
+                    max_tokens=config.get("max_tokens", 1024))
             )
 
     def _process_with_model(
@@ -576,8 +568,7 @@ class VariedEnsembleMCQOperator(Operator[MCQInput, List[MCQOutput]]):
                     question=inputs.question,
                     choices=inputs.choices,
                     model=model,
-                    template=template,
-                )
+                    template=template)
             )
 
         return responses
@@ -684,8 +675,7 @@ class JudgeOperator(Operator[EnsembleJudgeInput, EnsembleJudgeOutput]):
         self,
         model_name: str = "anthropic:claude-3-sonnet-20240229",
         temperature: float = 0.0,
-        max_tokens: int = 1024,
-    ) -> None:
+        max_tokens: int = 1024) -> None:
         """Initialize the judge operator with model configuration.
 
         Args:
@@ -743,8 +733,7 @@ class JudgeOperator(Operator[EnsembleJudgeInput, EnsembleJudgeOutput]):
             candidate_responses=inputs.candidate_responses,
             selected_answer=selected_answer,
             confidence=confidence,
-            justification=justification,
-        )
+            justification=justification)
 
     def _parse_judge_response(
         self, response: str, choices: Dict[str, str]
@@ -819,8 +808,7 @@ class EnsembleJudgePipeline(Operator[MCQInput, EnsembleJudgeOutput]):
         self,
         *,  # Add explicit keyword-only marker to ensure parameters are passed by name
         model_configs: Optional[List[Dict[str, Any]]] = None,
-        judge_model: str = "anthropic:claude-3-sonnet-20240229",
-    ) -> None:
+        judge_model: str = "anthropic:claude-3-sonnet-20240229") -> None:
         """Initialize the pipeline with ensemble and judge operators.
 
         Args:
@@ -850,8 +838,7 @@ class EnsembleJudgePipeline(Operator[MCQInput, EnsembleJudgeOutput]):
         judge_input = EnsembleJudgeInput(
             question=inputs.question,
             choices=inputs.choices,
-            candidate_responses=ensemble_outputs,
-        )
+            candidate_responses=ensemble_outputs)
 
         # Get judge decision
         return self.judge_operator(inputs=judge_input)
@@ -864,8 +851,7 @@ EnsembleJudgePipeline = jit(EnsembleJudgePipeline)
 # Simplified pipeline creation function
 def create_pipeline(
     model_configs: Optional[List[Dict[str, Any]]] = None,
-    judge_model: str = "anthropic:claude-3-sonnet-20240229",
-) -> EnsembleJudgePipeline:
+    judge_model: str = "anthropic:claude-3-sonnet-20240229") -> EnsembleJudgePipeline:
     """Create a pipeline combining ensemble and judge operators.
 
     Args:
@@ -889,8 +875,7 @@ class MMLUExperiment:
         model_configs: Optional[List[Dict[str, Any]]] = None,
         baseline_model: str = "anthropic:claude-3-sonnet-20240229",
         judge_model: str = "anthropic:claude-3-sonnet-20240229",
-        use_acceleration: bool = True,
-    ) -> None:
+        use_acceleration: bool = True) -> None:
         """Initialize the experiment.
 
         Args:
@@ -1074,14 +1059,12 @@ class ExperimentVisualizer:
         table.add_row(
             "Accuracy",
             f"{results['baseline']['accuracy']:.2%}",
-            f"{results['ensemble_judge']['accuracy']:.2%}",
-        )
+            f"{results['ensemble_judge']['accuracy']:.2%}")
 
         table.add_row(
             "Execution Time",
             f"{results['baseline']['time']:.2f}s",
-            f"{results['ensemble_judge']['time']:.2f}s",
-        )
+            f"{results['ensemble_judge']['time']:.2f}s")
 
         if results.get("speedup"):
             relative_performance = (
@@ -1101,8 +1084,7 @@ class ExperimentVisualizer:
             table.add_row(
                 "Improvement",
                 "Baseline",
-                f"{relative_performance} {accuracy_diff:.2f}% accuracy",
-            )
+                f"{relative_performance} {accuracy_diff:.2f}% accuracy")
 
             # Show the number of models used, not a theoretical speedup
             table.add_row("Models Used", "1", f"{results.get('num_models', 'N/A')}")
@@ -1138,8 +1120,7 @@ class ExperimentVisualizer:
             ensemble_accuracy,
             width,
             label="Ensemble+Judge",
-            color="forestgreen",
-        )
+            color="forestgreen")
 
         ax1.set_ylabel("Accuracy")
         ax1.set_title("Accuracy by Subject")
@@ -1160,8 +1141,7 @@ class ExperimentVisualizer:
             ensemble_time,
             width,
             label="Ensemble+Judge",
-            color="forestgreen",
-        )
+            color="forestgreen")
 
         ax2.set_ylabel("Execution Time (s)")
         ax2.set_title("Execution Time by Subject")
@@ -1244,8 +1224,7 @@ class ExperimentVisualizer:
                 bar.get_y() + bar.get_height() / 2,
                 f"{width:.4f}s",
                 va="center",
-                fontsize=10,
-            )
+                fontsize=10)
 
         # Plot speedups - use horizontal bars for consistency
         bars2 = ax2.barh(strategies, speedups, color=colors)
@@ -1265,8 +1244,7 @@ class ExperimentVisualizer:
                 bar.get_y() + bar.get_height() / 2,
                 f"{width:.2f}x",
                 va="center",
-                fontweight="bold",
-            )
+                fontweight="bold")
 
         # Plot JIT metrics if available
         jit_metrics = benchmark_results.get("jit_metrics", {})
@@ -1277,14 +1255,12 @@ class ExperimentVisualizer:
                 (
                     "Avg Compilation",
                     jit_metrics.get("avg_compilation_time_ms", 0),
-                    "ms",
-                ),
+                    "ms"),
                 ("Avg Execution", jit_metrics.get("avg_execution_time_ms", 0), "ms"),
                 ("Cache Hits", jit_metrics.get("cache_hits", 0), ""),
                 ("Cache Misses", jit_metrics.get("cache_misses", 0), ""),
                 ("Compilation Count", jit_metrics.get("compilation_count", 0), ""),
-                ("Execution Count", jit_metrics.get("execution_count", 0), ""),
-            ]
+                ("Execution Count", jit_metrics.get("execution_count", 0), "")]
 
             # Create bar chart of metrics
             metric_names = [m[0] for m in metrics_to_show]
@@ -1305,8 +1281,7 @@ class ExperimentVisualizer:
                     height + 0.1,
                     f"{height:.2f}{unit}",
                     ha="center",
-                    fontsize=9,
-                )
+                    fontsize=9)
 
             # Add log scale if needed for large values
             if any(v > 1000 for v in metric_values):
@@ -1320,8 +1295,7 @@ class ExperimentVisualizer:
                 ha="center",
                 va="center",
                 fontsize=14,
-                transform=ax3.transAxes,
-            )
+                transform=ax3.transAxes)
 
         # Add a note about the best strategy
         best_strategy = benchmark_results.get("best_strategy", "auto").capitalize()
@@ -1333,8 +1307,7 @@ class ExperimentVisualizer:
             f"Best strategy: {best_strategy} ({speedup:.2f}x speedup vs Sequential)",
             ha="center",
             fontsize=12,
-            bbox={"facecolor": "lightyellow", "alpha": 0.5, "pad": 5},
-        )
+            bbox={"facecolor": "lightyellow", "alpha": 0.5, "pad": 5})
 
         plt.tight_layout(rect=[0, 0.05, 1, 0.95])
 
@@ -1396,8 +1369,7 @@ def run_acceleration_benchmark(
         sample_item = mmlu_data[0]
         test_input = MCQInput(
             question=sample_item["question"],
-            choices={k: v for k, v in sample_item["choices"].items()},
-        )
+            choices={k: v for k, v in sample_item["choices"].items()})
 
         # Create pipeline for benchmarking with multiple models
         pipeline = EnsembleJudgePipeline(model_configs=model_configs)
@@ -1434,8 +1406,7 @@ def run_acceleration_benchmark(
                     "max_workers": max_workers,
                     "enable_caching": False,
                 },
-            },
-        ]
+            }]
 
         results = {}
 
@@ -1507,6 +1478,7 @@ def run_acceleration_benchmark(
 
 
 def main() -> None:
+    """Example demonstrating the simplified XCS architecture."""
     """Main function to run the ensemble-judge MMLU evaluation example with enhanced JIT.
 
     Environment variables:
@@ -1555,16 +1527,14 @@ def main() -> None:
                 "  export ANTHROPIC_API_KEY=sk_ant_xxxx\n\n"
                 "This example will showcase the code structure and architecture without making actual API calls.",
                 title="API Keys Required",
-                style="yellow",
-            )
+                style="yellow")
         )
         return
 
     # Define model configurations
     model_configs = [
         {"model_name": "anthropic:claude-3-opus-20240229", "temperature": 0.0},
-        {"model_name": "anthropic:claude-3-sonnet-20240229", "temperature": 0.7},
-    ]
+        {"model_name": "anthropic:claude-3-sonnet-20240229", "temperature": 0.7}]
 
     # Get subjects from environment with sensible default
     subjects_env = os.environ.get("MMLU_SUBJECTS", "")
@@ -1593,8 +1563,7 @@ def main() -> None:
                 subject=subject,
                 sample_size=sample_size,
                 model_configs=model_configs[:model_count],
-                use_acceleration=True,
-            )
+                use_acceleration=True)
 
             results = experiment.run()
             all_results.append(results)
@@ -1610,8 +1579,7 @@ def main() -> None:
         benchmark_results = run_acceleration_benchmark(
             subject=subjects_to_evaluate[0],  # Use first subject
             sample_size=sample_size,
-            model_configs=model_configs[:model_count],
-        )
+            model_configs=model_configs[:model_count])
 
         # Print comparison
         acc_table = Table(title="Enhanced JIT Acceleration Strategy Comparison")
@@ -1626,8 +1594,7 @@ def main() -> None:
             f"{benchmark_results['sequential_time']:.4f}s",
             f"{benchmark_results['wave_time']:.4f}s",
             f"{benchmark_results['parallel_time']:.4f}s",
-            f"{benchmark_results['auto_time']:.4f}s",
-        )
+            f"{benchmark_results['auto_time']:.4f}s")
 
         # Calculate speedups
         wave_speedup = benchmark_results["sequential_time"] / max(
@@ -1645,8 +1612,7 @@ def main() -> None:
             "Baseline",
             f"{wave_speedup:.2f}x",
             f"{parallel_speedup:.2f}x",
-            f"{auto_speedup:.2f}x",
-        )
+            f"{auto_speedup:.2f}x")
 
         # Highlight the best strategy
         best_strategy = benchmark_results.get("best_strategy", "auto").capitalize()
@@ -1655,8 +1621,7 @@ def main() -> None:
             "",
             "[bold green]✓[/bold green]" if best_strategy == "Wave" else "",
             "[bold green]✓[/bold green]" if best_strategy == "Parallel" else "",
-            "[bold green]✓[/bold green]" if best_strategy == "Auto" else "",
-        )
+            "[bold green]✓[/bold green]" if best_strategy == "Auto" else "")
 
         # Display JIT metrics
         jit_metrics = benchmark_results.get("jit_metrics", {})
@@ -1672,12 +1637,10 @@ def main() -> None:
             )
             jit_table.add_row(
                 "Avg Compilation Time",
-                f"{jit_metrics.get('avg_compilation_time_ms', 0):.2f}ms",
-            )
+                f"{jit_metrics.get('avg_compilation_time_ms', 0):.2f}ms")
             jit_table.add_row(
                 "Avg Execution Time",
-                f"{jit_metrics.get('avg_execution_time_ms', 0):.2f}ms",
-            )
+                f"{jit_metrics.get('avg_execution_time_ms', 0):.2f}ms")
             jit_table.add_row("Cache Hits", str(jit_metrics.get("cache_hits", 0)))
             jit_table.add_row("Cache Misses", str(jit_metrics.get("cache_misses", 0)))
             jit_table.add_row(
@@ -1696,8 +1659,7 @@ def main() -> None:
         try:
             ExperimentVisualizer.plot_acceleration_comparison(
                 benchmark_results=benchmark_results,
-                output_path="acceleration_strategies.png",
-            )
+                output_path="acceleration_strategies.png")
             console.print(
                 "[green]Acceleration visualization saved to acceleration_strategies.png[/green]"
             )
@@ -1723,8 +1685,7 @@ def main() -> None:
                 "This example requires properly configured API keys and model availability.\n"
                 "Please check your API keys and available models.",
                 title="Execution Error",
-                style="red",
-            )
+                style="red")
         )
 
 

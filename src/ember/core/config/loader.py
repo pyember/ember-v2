@@ -159,8 +159,7 @@ def _normalize_env_key(env_key: str) -> List[str]:
         "api_key",
         "api_keys",
         "cost_input",
-        "cost_output",
-    ]
+        "cost_output"]
 
     # Check if any adjacent elements in path should be merged
     i = 0

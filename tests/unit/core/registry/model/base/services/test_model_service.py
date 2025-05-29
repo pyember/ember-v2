@@ -12,8 +12,7 @@ from ember.core.registry.model.base.registry.factory import ModelFactory
 from ember.core.registry.model.base.registry.model_registry import ModelRegistry
 from ember.core.registry.model.base.schemas.chat_schemas import (
     ChatRequest,
-    ChatResponse,
-)
+    ChatResponse)
 from ember.core.registry.model.base.schemas.cost import ModelCost, RateLimit
 from ember.core.registry.model.base.schemas.model_info import ModelInfo
 from ember.core.registry.model.base.schemas.provider_info import ProviderInfo
@@ -99,8 +98,7 @@ def register_test_providers(monkeypatch):
     monkeypatch.setattr(
         ModelFactory,
         "create_model_from_info",
-        staticmethod(mock_create_model_from_info),
-    )
+        staticmethod(mock_create_model_from_info))
 
     yield
 
@@ -116,8 +114,7 @@ def create_dummy_model_info(model_id: str = "dummy:service") -> ModelInfo:
         cost=ModelCost(input_cost_per_thousand=1.0, output_cost_per_thousand=2.0),
         rate_limit=RateLimit(tokens_per_minute=1000, requests_per_minute=100),
         provider=ProviderInfo(name="DummyService", default_api_key="dummy_key"),
-        api_key="dummy_key",
-    )
+        api_key="dummy_key")
 
 
 @pytest.fixture
@@ -144,8 +141,7 @@ def test_get_model() -> None:
         provider=ProviderInfo(name="DummyService"),
         cost=ModelCost(),
         rate_limit=RateLimit(),
-        api_key="dummy",
-    )
+        api_key="dummy")
     registry.register_model(info)
 
     # Directly inject a model instance into registry's cache
@@ -173,8 +169,7 @@ def test_invoke_model() -> None:
         provider=ProviderInfo(name="DummyService"),
         cost=ModelCost(),
         rate_limit=RateLimit(),
-        api_key="dummy",
-    )
+        api_key="dummy")
     registry.register_model(info)
 
     # Directly inject a model instance into registry's cache
@@ -243,8 +238,7 @@ async def test_invoke_model_async_sync() -> None:
         provider=ProviderInfo(name="DummyService"),
         cost=ModelCost(),
         rate_limit=RateLimit(),
-        api_key="dummy",
-    )
+        api_key="dummy")
     registry.register_model(info)
 
     # Directly inject a model instance into registry's cache
@@ -274,8 +268,7 @@ async def test_invoke_model_async_coroutine() -> None:
         provider=ProviderInfo(name="DummyAsyncService"),
         cost=ModelCost(),
         rate_limit=RateLimit(),
-        api_key="dummy",
-    )
+        api_key="dummy")
     registry.register_model(info)
 
     # Directly inject a model instance into registry's cache
@@ -305,8 +298,7 @@ async def test_invoke_model_async_error() -> None:
         provider=ProviderInfo(name="DummyErrorService"),
         cost=ModelCost(),
         rate_limit=RateLimit(),
-        api_key="dummy",
-    )
+        api_key="dummy")
     registry.register_model(info)
 
     # Directly inject a model instance into registry's cache

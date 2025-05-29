@@ -68,8 +68,7 @@ class BaselineEnsemble(Operator):
         *,
         num_units: int = 3,
         model_name: str = "openai:gpt-4o-mini",
-        temperature: float = 0.7,
-    ) -> None:
+        temperature: float = 0.7) -> None:
         """Initialize with sequential execution options."""
         self.num_units = num_units
         self.model_name = model_name
@@ -104,8 +103,7 @@ class ParallelEnsemble(Operator):
         *,
         num_units: int = 3,
         model_name: str = "openai:gpt-4o-mini",
-        temperature: float = 0.7,
-    ) -> None:
+        temperature: float = 0.7) -> None:
         """Initialize with standard configuration."""
         self.num_units = num_units
         self.model_name = model_name
@@ -144,8 +142,7 @@ class JITEnsemble(ParallelEnsemble):
         *,
         num_units: int = 3,
         model_name: str = "openai:gpt-4o-mini",
-        temperature: float = 0.7,
-    ) -> None:
+        temperature: float = 0.7) -> None:
         """Initialize with JIT capabilities."""
         super().__init__(
             num_units=num_units, model_name=model_name, temperature=temperature
@@ -170,8 +167,7 @@ def run_operator_queries(
     operator_instance: Operator,
     queries: List[str],
     name: str,
-    mode: str = "parallel",
-) -> Tuple[List[float], float, List[EnsembleOutput]]:
+    mode: str = "parallel") -> Tuple[List[float], float, List[EnsembleOutput]]:
     """Execute the given ensemble operator for each query and measure execution times.
 
     Args:
@@ -211,8 +207,7 @@ def run_operator_queries(
                 name.upper(),
                 query,
                 response_count,
-                elapsed_time,
-            )
+                elapsed_time)
 
     total_end_time: float = time.perf_counter()
     total_elapsed_time: float = total_end_time - total_start_time
@@ -223,6 +218,7 @@ def run_operator_queries(
 # Main Demonstration
 ###############################################################################
 def main() -> None:
+    """Example demonstrating the simplified XCS architecture."""
     """Run demonstrations comparing Baseline, Parallel, and JIT ensembles.
 
     This function constructs ensemble operator instances, executes a series of queries
@@ -252,8 +248,7 @@ def main() -> None:
         "Summarize quantum entanglement in simple terms.",
         "What is the longest river in Europe?",
         "Explain synergy in a business context.",
-        "Who wrote Pride and Prejudice?",
-    ]
+        "Who wrote Pride and Prejudice?"]
 
     print(f"\n=== JIT Ensemble Comparison ({num_units} units per ensemble) ===")
     print(f"Model: {model_name}")
@@ -266,8 +261,7 @@ def main() -> None:
         operator_instance=baseline_op,
         queries=queries,
         name="Baseline",
-        mode="sequential",
-    )
+        mode="sequential")
 
     print("\nRunning parallel ensemble...")
     parallel_times, total_parallel_time, parallel_results = run_operator_queries(
@@ -290,8 +284,7 @@ def main() -> None:
             "Baseline (s)",
             "Parallel (s)",
             "JIT (s)",
-            "Speedup",
-        ]
+            "Speedup"]
 
         for index in range(len(queries)):
             # Calculate speedup percentage of JIT over baseline safely
@@ -315,8 +308,7 @@ def main() -> None:
                     f"{baseline_times[index]:.4f}",
                     f"{parallel_times[index]:.4f}",
                     f"{jit_times[index]:.4f}",
-                    f"{speedup:.1f}%",
-                ]
+                    f"{speedup:.1f}%"]
             )
 
         print("\n=== Timing Results ===")

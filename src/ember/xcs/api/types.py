@@ -1,3 +1,4 @@
+import dataclasses
 """
 Type definitions for the XCS API.
 
@@ -18,10 +19,9 @@ from typing import (
     Protocol,
     TypeVar,
     Union,
-    runtime_checkable,
-)
+    runtime_checkable)
 
-from ember.xcs.graph.xcs_graph import XCSGraph
+from ember.xcs.graph import Graph
 from ember.xcs.tracer.xcs_tracing import TraceRecord
 
 # Type variables for generic operators
@@ -44,8 +44,7 @@ OptionValue = Union[
     List[Any],
     tuple,
     # Function references
-    Callable[..., Any],
-]
+    Callable[..., Any]]
 
 # Strong typing for execution context dictionaries
 ContextDict = Dict[str, OptionValue]
@@ -117,7 +116,7 @@ class TransformOptions:
 class GraphBuilder(Protocol):
     """Protocol for graph builders."""
 
-    def build_graph(self, records: List[TraceRecord]) -> XCSGraph:
+    def build_graph(self, records: List[TraceRecord]) -> Graph:
         """
         Build a graph from trace records.
 
@@ -144,5 +143,69 @@ __all__ = [
     "JITOptions",
     "TransformOptions",
     # Protocols
-    "GraphBuilder",
-]
+    "GraphBuilder"]
+
+
+@dataclasses.dataclass
+class ExecutionResult:
+    """Result of executing a computation graph.
+
+    Contains the outputs of each node in the graph as well as metrics
+    about the execution.
+
+    Attributes:
+        node_outputs: Dictionary mapping node IDs to their outputs
+        metrics: Execution metrics (timing, etc.)
+        errors: Dictionary of errors encountered during execution
+    """
+
+    node_outputs: Dict[str, Dict[str, Any]] = dataclasses.field(default_factory=dict)
+    metrics: Dict[str, Any] = dataclasses.field(default_factory=dict)
+    errors: Dict[str, Exception] = dataclasses.field(default_factory=dict)
+
+    def get_result(self, node_id: str) -> Optional[Dict[str, Any]]:
+        """Get the result for a specific node.
+
+        Args:
+            node_id: ID of the node to retrieve results for
+
+        Returns:
+            Node's output or None if not found
+        """
+        return self.node_outputs.get(node_id)
+
+    def get_error(self, node_id: str) -> Optional[Exception]:
+        """Get the error for a specific node.
+
+        Args:
+            node_id: ID of the node to retrieve error for
+
+        Returns:
+            Node's error or None if no error occurred
+        """
+        return self.errors.get(node_id)
+
+    def has_error(self) -> bool:
+        """Check if any errors occurred during execution.
+
+        Returns:
+            True if at least one node had an error
+        """
+        return len(self.errors) > 0
+
+    def is_complete(self) -> bool:
+        """Check if execution completed without errors.
+
+        Returns:
+            True if execution completed successfully
+        """
+        return not self.has_error()
+
+    def update_metrics(self, metrics: Dict[str, Any]) -> None:
+        """Update execution metrics.
+
+        Args:
+            metrics: New metrics to add
+        """
+        self.metrics.update(metrics)
+

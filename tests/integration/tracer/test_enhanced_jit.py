@@ -256,7 +256,7 @@ class TestEnhancedJIT:
         """Compare enhanced JIT with other strategies."""
 
         # Create the same operator using different strategies
-        @jit(mode="trace")
+        @jit(mode="structural")
         class TraceOperator(ComplexOperator):
             pass
 

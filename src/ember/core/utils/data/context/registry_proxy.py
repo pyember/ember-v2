@@ -50,8 +50,7 @@ class DatasetRegistryProxy:
                 if not datasets:
                     # Registry might be empty - ensure it's initialized
                     from ember.core.utils.data.initialization import (
-                        initialize_dataset_registry,
-                    )
+                        initialize_dataset_registry)
 
                     initialize_dataset_registry(metadata_registry=registry)
 
@@ -75,8 +74,7 @@ class DatasetRegistryProxy:
             # Fallback to legacy global registry to maintain compatibility
             try:
                 from ember.core.utils.data.registry import (
-                    DATASET_REGISTRY as global_registry,
-                )
+                    DATASET_REGISTRY as global_registry)
 
                 if hasattr(global_registry.__class__, name):
                     original_attr = getattr(global_registry.__class__, name)

@@ -4,8 +4,7 @@ import unittest
 
 from ember.core.utils.data.datasets_registry.halueval import (
     HaluEvalConfig,
-    HaluEvalPrepper,
-)
+    HaluEvalPrepper)
 
 
 class TestHaluEvalConfig(unittest.TestCase):
@@ -71,8 +70,7 @@ class TestHaluEvalPrepper(unittest.TestCase):
         # Assert
         self.assertEqual(
             ["knowledge", "question", "right_answer", "hallucinated_answer"],
-            required_keys,
-        )
+            required_keys)
 
     def test_create_dataset_entries(self) -> None:
         """create_dataset_entries() should create two entries for each item."""
@@ -89,8 +87,7 @@ class TestHaluEvalPrepper(unittest.TestCase):
         self.assertIn(self.test_item["right_answer"], not_hallucinated_entry.query)
         self.assertEqual(
             {"A": "Not Hallucinated", "B": "Hallucinated"},
-            not_hallucinated_entry.choices,
-        )
+            not_hallucinated_entry.choices)
         self.assertEqual("A", not_hallucinated_entry.metadata["correct_answer"])
 
         # Check second entry (hallucinated)
@@ -116,8 +113,7 @@ class TestHaluEvalPrepper(unittest.TestCase):
             knowledge=knowledge,
             question=question,
             candidate_answer=candidate_answer,
-            correct_choice=correct_choice,
-        )
+            correct_choice=correct_choice)
 
         # Assert
         expected_query = (

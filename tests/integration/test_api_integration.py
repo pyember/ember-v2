@@ -30,8 +30,7 @@ def test_evaluator_basic():
             return EvaluationResult(
                 is_correct=is_match,
                 score=1.0 if is_match else 0.0,
-                metadata={"exact_match": is_match},
-            )
+                metadata={"exact_match": is_match})
 
     # Create evaluator instance
     evaluator = ExactMatchEvaluator()
@@ -99,8 +98,7 @@ def test_evaluation_pipeline():
             return EvaluationResult(
                 is_correct=is_long_enough,
                 score=min(1.0, output_len / 50),  # Normalize
-                metadata={"length": output_len},
-            )
+                metadata={"length": output_len})
 
     # Create evaluator instances
     exact_match = ExactMatchEvaluator()
@@ -162,8 +160,7 @@ class ExactMatchEvaluator(IEvaluator):
         return EvaluationResult(
             is_correct=is_match,
             score=1.0 if is_match else 0.0,
-            metadata={"exact_match": is_match},
-        )
+            metadata={"exact_match": is_match})
 
 
 # Run all tests using pytest fixtures

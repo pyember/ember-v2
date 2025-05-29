@@ -93,8 +93,7 @@ def integrate_data_context() -> None:
             streaming: Optional[bool] = None,
             limit: Optional[int] = None,
             transformers: Optional[List[Any]] = None,
-            **kwargs,
-        ) -> Union[List[DatasetEntry], Iterator[DatasetEntry]]:
+            **kwargs) -> Union[List[DatasetEntry], Iterator[DatasetEntry]]:
             """Load dataset with current context.
 
             Args:
@@ -115,8 +114,7 @@ def integrate_data_context() -> None:
                 streaming=streaming,
                 limit=limit,
                 transformers=transformers,
-                **kwargs,
-            )
+                **kwargs)
 
         # Add properties to EmberContext using descriptor protocol
         EmberContext.data_context = property(get_data_context)
@@ -138,5 +136,4 @@ integrate_data_context()
 
 # Import all context components at module scope for cleaner imports
 __all__ = [
-    "DataContext",
-]
+    "DataContext"]

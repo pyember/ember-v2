@@ -37,8 +37,7 @@ class LMModuleConfig:
         self,
         model_name: str,
         temperature: float = 0.7,
-        max_tokens: Optional[int] = None,
-    ):
+        max_tokens: Optional[int] = None):
         """Initialize LM module configuration.
 
         Args:
@@ -103,8 +102,7 @@ class EnsembleSpecification(Specification):
         """Initialize with appropriate models."""
         super().__init__(
             input_model=EnsembleOperatorInputs,
-            structured_output=EnsembleOperatorOutputs,
-        )
+            structured_output=EnsembleOperatorOutputs)
 
 
 class UniformEnsemble(Operator[EnsembleOperatorInputs, EnsembleOperatorOutputs]):
@@ -118,8 +116,7 @@ class UniformEnsemble(Operator[EnsembleOperatorInputs, EnsembleOperatorOutputs])
         num_units: int,
         model_name: str,
         temperature: float = 0.7,
-        max_tokens: Optional[int] = None,
-    ):
+        max_tokens: Optional[int] = None):
         """Initialize the ensemble.
 
         Args:
@@ -140,8 +137,7 @@ class UniformEnsemble(Operator[EnsembleOperatorInputs, EnsembleOperatorOutputs])
                 config=LMModuleConfig(
                     model_name=model_name,
                     temperature=temperature,
-                    max_tokens=max_tokens,
-                )
+                    max_tokens=max_tokens)
             )
             for _ in range(num_units)
         ]
@@ -255,8 +251,7 @@ class Verifier(Operator[VerifierInputs, VerifierOutputs]):
         *,
         model_name: str,
         temperature: float = 0.2,
-        max_tokens: Optional[int] = None,
-    ):
+        max_tokens: Optional[int] = None):
         """Initialize the verifier.
 
         Args:
@@ -339,8 +334,7 @@ class JudgeSynthesis(Operator[JudgeSynthesisInputs, JudgeSynthesisOutputs]):
         *,
         model_name: str,
         temperature: float = 0.2,
-        max_tokens: Optional[int] = None,
-    ):
+        max_tokens: Optional[int] = None):
         """Initialize the judge.
 
         Args:
@@ -431,5 +425,4 @@ __all__ = [
     "JudgeSynthesisInputs",
     "JudgeSynthesisOutputs",
     "JudgeSynthesis",
-    "Sequential",
-]
+    "Sequential"]

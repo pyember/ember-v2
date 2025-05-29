@@ -7,12 +7,10 @@ from typing import Any, Dict, List
 from ember.core.exceptions import ModelDiscoveryError
 from ember.core.registry.model.base.schemas.model_info import ModelInfo
 from ember.core.registry.model.providers.anthropic.anthropic_discovery import (
-    AnthropicDiscovery,
-)
+    AnthropicDiscovery)
 from ember.core.registry.model.providers.base_discovery import BaseDiscoveryProvider
 from ember.core.registry.model.providers.deepmind.deepmind_discovery import (
-    DeepmindDiscovery,
-)
+    DeepmindDiscovery)
 from ember.core.registry.model.providers.openai.openai_discovery import OpenAIDiscovery
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -66,19 +64,15 @@ class ModelDiscoveryService:
             (
                 OpenAIDiscovery,
                 "OPENAI_API_KEY",
-                lambda: {"api_key": os.environ.get("OPENAI_API_KEY", "")},
-            ),
+                lambda: {"api_key": os.environ.get("OPENAI_API_KEY", "")}),
             (
                 AnthropicDiscovery,
                 "ANTHROPIC_API_KEY",
-                lambda: {"api_key": os.environ.get("ANTHROPIC_API_KEY", "")},
-            ),
+                lambda: {"api_key": os.environ.get("ANTHROPIC_API_KEY", "")}),
             (
                 DeepmindDiscovery,
                 "GOOGLE_API_KEY",
-                lambda: {"api_key": os.environ.get("GOOGLE_API_KEY", "")},
-            ),
-        ]
+                lambda: {"api_key": os.environ.get("GOOGLE_API_KEY", "")})]
 
         # Initializing providers with available credentials
         providers: List[BaseDiscoveryProvider] = []
@@ -105,14 +99,12 @@ class ModelDiscoveryService:
                     logger.debug(
                         "%s found, initialized %s successfully",
                         env_var_name,
-                        provider_class.__name__,
-                    )
+                        provider_class.__name__)
                 except Exception as init_error:
                     logger.error(
                         "Failed to initialize %s: %s",
                         provider_class.__name__,
-                        init_error,
-                    )
+                        init_error)
             else:
                 logger.debug(
                     "%s not found, skipping %s", env_var_name, provider_class.__name__
@@ -122,8 +114,7 @@ class ModelDiscoveryService:
             logger.warning(
                 "No API keys found for any providers. "
                 "Set one of %s environment variables to enable discovery.",
-                ", ".join(env_var for _, env_var, _ in provider_configs),
-            )
+                ", ".join(env_var for _, env_var, _ in provider_configs))
 
         return providers
 
@@ -157,8 +148,7 @@ class ModelDiscoveryService:
                 pname=provider_name,
                 ev=event,
                 res=result_container,
-                err=error_container,
-            ):
+                err=error_container):
                 try:
                     start = time.time()
                     result = prov.fetch_models()
@@ -183,8 +173,7 @@ class ModelDiscoveryService:
             event,
             result_container,
             error_container,
-            t,
-        ) in provider_threads:
+            t) in provider_threads:
             if not event.wait(15.0):
                 logger.error(f"Timeout while fetching models from {provider_name}")
                 errors.append(f"{provider_name}: Timeout after 15 seconds")
@@ -295,8 +284,7 @@ class ModelDiscoveryService:
                 # For discovered models not in local config, create reasonable defaults
                 logger.debug(
                     "Model %s discovered via API but not in local config; using defaults with environment API key.",
-                    model_id,
-                )
+                    model_id)
 
                 # Extract provider prefix from model ID
                 provider_prefix = provider_name.capitalize()
@@ -359,8 +347,7 @@ class ModelDiscoveryService:
                 logger.error(
                     "Discovery returned non-dict result: %s (type: %s). Converting to empty dict.",
                     discovered,
-                    type(discovered).__name__,
-                )
+                    type(discovered).__name__)
                 discovered = {}
             elif discovered and isinstance(discovered, dict):
                 # Check each value to ensure it's a dict for merge_with_config to work properly
@@ -370,8 +357,7 @@ class ModelDiscoveryService:
                             "Model data for %s is not a dict: %s (type: %s). Removing from results.",
                             k,
                             v,
-                            type(v).__name__,
-                        )
+                            type(v).__name__)
                         discovered.pop(k)
 
             # Only merge and update cache in a separate lock acquisition
@@ -416,8 +402,7 @@ class ModelDiscoveryService:
         errors: List[str] = []
 
         async def fetch_from_provider(
-            provider: BaseDiscoveryProvider,
-        ) -> Dict[str, Any]:
+            provider: BaseDiscoveryProvider) -> Dict[str, Any]:
             """Async wrapper for provider fetch with proper error handling."""
             provider_name = provider.__class__.__name__
             logger.debug(f"Starting async model discovery for: {provider_name}")
@@ -501,8 +486,7 @@ class ModelDiscoveryService:
             logger.error(
                 "Async discovery returned non-dict result: %s (type: %s). Converting to empty dict.",
                 aggregated_models,
-                type(aggregated_models).__name__,
-            )
+                type(aggregated_models).__name__)
             aggregated_models = {}
         else:
             # Check each value to ensure it's a dict
@@ -512,8 +496,7 @@ class ModelDiscoveryService:
                         "Async model data for %s is not a dict: %s (type: %s). Removing from results.",
                         k,
                         v,
-                        type(v).__name__,
-                    )
+                        type(v).__name__)
                     aggregated_models.pop(k)
 
         # Update cache with minimal lock scope

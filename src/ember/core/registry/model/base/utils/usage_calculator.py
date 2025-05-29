@@ -75,18 +75,15 @@ class DefaultUsageCalculator(UsageCalculator):
         total_tokens: int = self._get_token_count(
             usage=usage,
             primary_field="total_tokens",
-            fallback_field="total_token_count",
-        )
+            fallback_field="total_token_count")
         prompt_tokens: int = self._get_token_count(
             usage=usage,
             primary_field="prompt_tokens",
-            fallback_field="prompt_token_count",
-        )
+            fallback_field="prompt_token_count")
         completion_tokens: int = self._get_token_count(
             usage=usage,
             primary_field="completion_tokens",
-            fallback_field="candidates_token_count",
-        )
+            fallback_field="candidates_token_count")
 
         input_cost: float = (
             prompt_tokens / 1000.0
@@ -100,5 +97,4 @@ class DefaultUsageCalculator(UsageCalculator):
             total_tokens=total_tokens,
             prompt_tokens=prompt_tokens,
             completion_tokens=completion_tokens,
-            cost_usd=total_cost,
-        )
+            cost_usd=total_cost)

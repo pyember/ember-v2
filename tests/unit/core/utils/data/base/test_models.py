@@ -67,8 +67,7 @@ class TestDatasetInfo(unittest.TestCase):
                 name="",  # Empty name should fail validation
                 description="Test description",
                 source="test_source",
-                task_type=TaskType.MULTIPLE_CHOICE,
-            )
+                task_type=TaskType.MULTIPLE_CHOICE)
 
     def test_model_serialization(self) -> None:
         """DatasetInfo should serialize to and deserialize from JSON correctly."""
@@ -77,8 +76,7 @@ class TestDatasetInfo(unittest.TestCase):
             name="test_dataset",
             description="Test dataset description",
             source="test_source",
-            task_type=TaskType.MULTIPLE_CHOICE,
-        )
+            task_type=TaskType.MULTIPLE_CHOICE)
 
         # Act
         json_str = original.model_dump_json()
@@ -148,8 +146,7 @@ class TestDatasetEntry(unittest.TestCase):
         original = DatasetEntry(
             query="What is the capital of France?",
             choices={"A": "Paris", "B": "London", "C": "Berlin"},
-            metadata={"correct_answer": "A", "difficulty": "easy"},
-        )
+            metadata={"correct_answer": "A", "difficulty": "easy"})
 
         # Act
         json_str = original.model_dump_json()

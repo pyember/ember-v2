@@ -43,8 +43,7 @@ class TestAggregatorEvaluator(unittest.TestCase):
         # Arrange
         self.mock_evaluator.evaluate.side_effect = [
             EvaluationResult(is_correct=True, score=1.0),
-            EvaluationResult(is_correct=False, score=0.5),
-        ]
+            EvaluationResult(is_correct=False, score=0.5)]
 
         # Act
         self.aggregator.update("output1", "answer1", param1="value1")
@@ -55,8 +54,7 @@ class TestAggregatorEvaluator(unittest.TestCase):
         self.mock_evaluator.evaluate.assert_has_calls(
             [
                 mock.call("output1", "answer1", param1="value1"),
-                mock.call("output2", "answer2", param2="value2"),
-            ]
+                mock.call("output2", "answer2", param2="value2")]
         )
         self.assertTrue(self.aggregator.results[0].is_correct)
         self.assertFalse(self.aggregator.results[1].is_correct)
@@ -77,8 +75,7 @@ class TestAggregatorEvaluator(unittest.TestCase):
         self.aggregator.results = [
             EvaluationResult(is_correct=True, score=1.0),
             EvaluationResult(is_correct=True, score=0.8),
-            EvaluationResult(is_correct=False, score=0.4),
-        ]
+            EvaluationResult(is_correct=False, score=0.4)]
 
         # Act
         result = self.aggregator.compute()
@@ -94,8 +91,7 @@ class TestAggregatorEvaluator(unittest.TestCase):
         self.aggregator.results = [
             EvaluationResult(is_correct=True, score=1.0),
             EvaluationResult(is_correct=True, score=0.8),
-            EvaluationResult(is_correct=True, score=0.9),
-        ]
+            EvaluationResult(is_correct=True, score=0.9)]
 
         # Act
         result = self.aggregator.compute()
@@ -132,8 +128,7 @@ class TestAggregatorEvaluator(unittest.TestCase):
         self.mock_evaluator.evaluate.side_effect = [
             EvaluationResult(is_correct=True, score=1.0),
             EvaluationResult(is_correct=False, score=0.0),
-            EvaluationResult(is_correct=True, score=0.8),
-        ]
+            EvaluationResult(is_correct=True, score=0.8)]
 
         # Act - Call evaluate multiple times
         result1 = self.aggregator.evaluate("output1", "answer1")

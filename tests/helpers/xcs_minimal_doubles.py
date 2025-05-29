@@ -191,5 +191,4 @@ __all__ = [
     "minimal_vmap",
     "minimal_pmap",
     "minimal_jit",
-    "minimal_autograph",
-]
+    "minimal_autograph"]

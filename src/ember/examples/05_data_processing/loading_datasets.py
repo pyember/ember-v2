@@ -28,6 +28,7 @@ from ember.api import data, operators
 
 
 def main():
+    """Example demonstrating the simplified XCS architecture."""
     """Learn to work with datasets in Ember."""
     print_section_header("Working with Datasets")
     
@@ -40,8 +41,7 @@ def main():
         {"id": 2, "text": "I love cooking pasta", "category": "food"},
         {"id": 3, "text": "The weather is beautiful today", "category": "general"},
         {"id": 4, "text": "Python is a great language", "category": "tech"},
-        {"id": 5, "text": "Pizza is my favorite food", "category": "food"},
-    ]
+        {"id": 5, "text": "Pizza is my favorite food", "category": "food"}]
     
     print(f"Created simple dataset with {len(simple_data)} entries")
     print_example_output("First entry", simple_data[0])

@@ -24,14 +24,12 @@ from typing_extensions import Protocol, TypedDict
 from ember.core.registry.model.base.schemas.chat_schemas import (
     ChatRequest,
     ChatResponse,
-    ProviderParams,
-)
+    ProviderParams)
 from ember.core.registry.model.base.schemas.model_info import ModelInfo
 from ember.core.registry.model.base.schemas.usage import UsageStats
 from ember.core.registry.model.base.utils.model_registry_exceptions import (
     InvalidPromptError,
-    ProviderAPIError,
-)
+    ProviderAPIError)
 from ember.core.registry.model.providers.base_provider import BaseProviderModel
 from ember.plugin_system import provider
 
@@ -490,16 +488,14 @@ class OpenAIExtendedModel(TextCompletionProviderModel, EmbeddingProviderModel):
                 "provider": self.PROVIDER_NAME,
                 "model_name": self.model_info.name,
                 "prompt_length": len(request.prompt),
-            },
-        )
+            })
 
         # Convert universal parameters to OpenAI format
         openai_parameters = OpenAICompletionParameters(
             prompt=request.prompt,
             max_tokens=request.max_tokens,
             temperature=request.temperature,
-            stop_sequences=request.stop_sequences,
-        )
+            stop_sequences=request.stop_sequences)
         openai_kwargs = openai_parameters.to_openai_kwargs()
 
         # Add provider-specific parameters
@@ -516,8 +512,7 @@ class OpenAIExtendedModel(TextCompletionProviderModel, EmbeddingProviderModel):
             response = self.client.completions.create(
                 model=self.model_info.name,
                 timeout=timeout,
-                **openai_kwargs,
-            )
+                **openai_kwargs)
 
             # Extract completion text
             text = response.choices[0].text.strip()
@@ -531,8 +526,7 @@ class OpenAIExtendedModel(TextCompletionProviderModel, EmbeddingProviderModel):
             return CompletionResponse(
                 text=text,
                 raw_output=response,
-                usage=usage_stats,
-            )
+                usage=usage_stats)
 
         except Exception as exc:
             logger.exception("Unexpected error in OpenAIExtendedModel.complete()")
@@ -566,16 +560,14 @@ class OpenAIExtendedModel(TextCompletionProviderModel, EmbeddingProviderModel):
                 "provider": self.PROVIDER_NAME,
                 "model_name": model_name,
                 "input_type": "batch" if isinstance(input_text, list) else "single",
-            },
-        )
+            })
 
         try:
             # Make the API call
             response = self.client.embeddings.create(
                 model=model_name,
                 input=input_text,
-                timeout=30,
-            )
+                timeout=30)
 
             # Extract embeddings
             if isinstance(input_text, list):
@@ -601,8 +593,7 @@ class OpenAIExtendedModel(TextCompletionProviderModel, EmbeddingProviderModel):
                 model=model_name,
                 dimensions=dimensions,
                 raw_output=response,
-                usage=usage_stats,
-            )
+                usage=usage_stats)
 
         except Exception as exc:
             logger.exception("Unexpected error in OpenAIExtendedModel.embed()")
@@ -736,8 +727,7 @@ def example_text_completion_usage() -> None:
         "The best way to learn programming is to",
         max_tokens=50,
         temperature=0.7,
-        stop_sequences=["\n\n"],
-    )
+        stop_sequences=["\n\n"])
     print(f"Completion: {response.text}")
 
     # Using namespace approach (if API layer is extended for completion)

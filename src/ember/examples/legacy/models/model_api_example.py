@@ -169,6 +169,7 @@ def error_handling_example():
 
 
 def main():
+    """Example demonstrating the simplified XCS architecture."""
     """Run all examples in sequence."""
     print("=" * 60)
     print("Ember Models API Examples")

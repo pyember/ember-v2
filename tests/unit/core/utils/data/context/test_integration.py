@@ -58,8 +58,7 @@ class TestDataContextIntegration:
             name="test_dataset",
             source="test/source",
             task_type=TaskType.MULTIPLE_CHOICE,
-            description="Test dataset for load_dataset",
-        )
+            description="Test dataset for load_dataset")
 
         # Test the load_dataset method
         result = data_context.load_dataset(
@@ -74,8 +73,7 @@ class TestDataContextIntegration:
         # Use our newly implemented get_default_context which should be thread-safe
         from ember.core.utils.data.context.data_context import (
             get_default_context,
-            reset_default_context,
-        )
+            reset_default_context)
 
         # Reset default context before test
         reset_default_context()

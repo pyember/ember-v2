@@ -94,5 +94,4 @@ __all__ = [
     "timed",
     "measure_time",
     "get_metrics_snapshot",
-    "get_prometheus_metrics",
-]
+    "get_prometheus_metrics"]

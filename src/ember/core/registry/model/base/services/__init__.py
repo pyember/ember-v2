@@ -5,5 +5,4 @@ from ember.core.registry.model.base.services.usage_service import UsageService
 
 __all__ = [
     "ModelService",
-    "UsageService",
-]
+    "UsageService"]

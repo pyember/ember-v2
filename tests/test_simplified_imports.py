@@ -21,8 +21,7 @@ try:
         T_in,
         T_out,
         UniformEnsemble,
-        Verifier,
-    )
+        Verifier)
 
     IMPORT_SUCCESS = True
     DETAILED_ERROR = None
@@ -66,8 +65,7 @@ class TestSimplifiedImports(unittest.TestCase):
         # the instance check should work
         self.assertTrue(
             isinstance(ensemble, Operator),
-            f"Expected {ensemble} to be instance of {Operator}",
-        )
+            f"Expected {ensemble} to be instance of {Operator}")
 
     def test_pipeline_creation(self) -> None:
         """Test that a pipeline can be created."""
@@ -87,8 +85,7 @@ class TestSimplifiedImports(unittest.TestCase):
         # the instance check should work
         self.assertTrue(
             isinstance(pipeline, Operator),
-            f"Expected {pipeline} to be instance of {Operator}",
-        )
+            f"Expected {pipeline} to be instance of {Operator}")
 
     def test_type_variables(self) -> None:
         """Test that the type variables are exported correctly."""

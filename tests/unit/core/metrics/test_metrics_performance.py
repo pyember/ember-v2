@@ -12,8 +12,7 @@ performance_marker = pytest.mark.performance
 # to avoid long run times in certain environments.
 skip_performance = pytest.mark.skipif(
     os.getenv("CI") == "true" or os.getenv("SKIP_PERFORMANCE_TESTS") == "true",
-    reason="Performance tests are skipped in CI or when SKIP_PERFORMANCE_TESTS is set",
-)
+    reason="Performance tests are skipped in CI or when SKIP_PERFORMANCE_TESTS is set")
 
 
 @performance_marker

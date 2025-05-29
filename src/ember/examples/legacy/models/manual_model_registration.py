@@ -153,6 +153,7 @@ def demonstrate_usage():
 
 
 def main():
+    """Example demonstrating the simplified XCS architecture."""
     """Run the manual registration example."""
     logger.info("=== Manual Model Registration Example ===\n")
     

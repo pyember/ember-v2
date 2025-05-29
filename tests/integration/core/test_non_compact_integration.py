@@ -20,8 +20,7 @@ from ember.core.non import (
     MostCommon,
     Sequential,
     UniformEnsemble,
-    Verifier,
-)
+    Verifier)
 from ember.core.non_compact import OpRegistry, build_graph
 
 
@@ -99,8 +98,7 @@ class TestCompactNotationStructure:
                 # Second branch - Claude ensemble + verification
                 ["3:E:claude-3-5-haiku:0.7", "1:V:claude-3-5-haiku:0.0"],
                 # Final synthesis judge
-                "1:J:claude-3-5-sonnet:0.0",
-            ]
+                "1:J:claude-3-5-sonnet:0.0"]
         )
 
         # Verify the pipeline structure
@@ -140,8 +138,7 @@ class TestCompactNotationStructure:
                 "$verification",  # Referenced component
                 "1:J:claude-3-5-sonnet:0.0",  # Final synthesis
             ],
-            components=component_map,
-        )
+            components=component_map)
 
         # Verify the pipeline structure
         assert isinstance(pipeline, Sequential)
@@ -184,8 +181,7 @@ class TestCompactNotationStructure:
                     ),
                     MostCommon(),  # Automatically add MostCommon to every ensemble
                 ]
-            ),
-        )
+            ))
 
         # Use the custom operator type in a specification
         pipeline = build_graph(
@@ -193,8 +189,7 @@ class TestCompactNotationStructure:
                 "5:CE:gpt-4o:0.7",  # Custom ensemble with built-in MostCommon
                 "1:J:claude-3-5-sonnet:0.0",  # Judge to synthesize
             ],
-            type_registry=custom_registry,
-        )
+            type_registry=custom_registry)
 
         # Verify the pipeline structure
         assert isinstance(pipeline, Sequential)
@@ -225,8 +220,7 @@ class TestCompactNotationEquivalence:
         standard_pipeline = Sequential(
             operators=[
                 UniformEnsemble(num_units=3, model_name="gpt-4o", temperature=0.7),
-                JudgeSynthesis(model_name="claude-3-5-sonnet", temperature=0.0),
-            ]
+                JudgeSynthesis(model_name="claude-3-5-sonnet", temperature=0.0)]
         )
 
         # Verify that pipelines have the same structure

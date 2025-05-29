@@ -1,34 +1,24 @@
-"""
-Network of Operators (NON) Pattern Implementation
+"""Network of Operators (NON) pattern implementation.
 
-This module provides composable building blocks for LLM application patterns.
-It wraps core operators with convenient, strongly-typed interfaces for common
-LLM workflows like ensembles, majority voting, and verification.
+Provides composable building blocks for LLM application patterns with
+strongly-typed interfaces for common workflows.
 
-Each wrapper maintains the immutability and functional approach of the underlying
-system while offering simple, intuitive interfaces for application developers.
-
-Example usage:
-    ```python
-    # Create an ensemble with 3 identical models
-    ensemble = UniformEnsemble(
-        num_units=3,
-        model_name="openai:gpt-4o",
-        temperature=1.0
-    )
-
-    # Create a judge to synthesize the outputs
-    judge = JudgeSynthesis(model_name="claude-3-opus")
-
-    # Combine them sequentially
-    pipeline = Sequential(operators=[ensemble, judge])
-
-    # Execute the pipeline
-    result = pipeline(inputs={"query": "What is the future of AI?"})
-
-    # Alternatively, create the same pipeline with compact notation
-    pipeline = build_graph(["3:E:gpt-4o:1.0", "1:J:claude-3-opus:0.0"])
-    ```
+Example:
+    >>> # Create an ensemble with 3 identical models
+    >>> ensemble = UniformEnsemble(
+    ...     num_units=3,
+    ...     model_name="openai:gpt-4o",
+    ...     temperature=1.0
+    ... )
+    >>> 
+    >>> # Create a judge to synthesize outputs
+    >>> judge = JudgeSynthesis(model_name="claude-3-opus")
+    >>> 
+    >>> # Combine them sequentially
+    >>> pipeline = Sequential(operators=[ensemble, judge])
+    >>> 
+    >>> # Execute the pipeline
+    >>> result = pipeline(inputs={"query": "What is the future of AI?"})
 """
 
 from __future__ import annotations
@@ -46,25 +36,21 @@ from ember.core.registry.operator.base.operator_base import Operator
 from ember.core.registry.operator.core.ensemble import (
     EnsembleOperator,
     EnsembleOperatorInputs,
-    EnsembleOperatorOutputs,
-)
+    EnsembleOperatorOutputs)
 from ember.core.registry.operator.core.most_common import (
     MostCommonAnswerSelectorOperator,
     MostCommonAnswerSelectorOperatorInputs,
-    MostCommonAnswerSelectorOutputs,
-)
+    MostCommonAnswerSelectorOutputs)
 from ember.core.registry.operator.core.synthesis_judge import (
     JudgeSynthesisInputs,
     JudgeSynthesisOperator,
     JudgeSynthesisOutputs,
-    JudgeSynthesisSpecification,
-)
+    JudgeSynthesisSpecification)
 from ember.core.registry.operator.core.verifier import (
     VerifierOperator,
     VerifierOperatorInputs,
     VerifierOperatorOutputs,
-    VerifierSpecification,
-)
+    VerifierSpecification)
 from ember.core.registry.specification.specification import Specification
 from ember.core.types.ember_model import EmberModel
 
@@ -121,8 +107,7 @@ class UniformEnsemble(Operator[EnsembleInputs, EnsembleOperatorOutputs]):
         num_units: int,
         model_name: str,
         temperature: float,
-        max_tokens: Optional[int] = None,
-    ) -> None:
+        max_tokens: Optional[int] = None) -> None:
         # Normal, conventional __init__ assignments:
         self.num_units = num_units
         self.model_name = model_name
@@ -267,8 +252,7 @@ class JudgeSynthesis(Operator[JudgeSynthesisInputs, JudgeSynthesisOutputs]):
         *,
         model_name: str = "gpt-4o",
         temperature: float = 1.0,
-        max_tokens: Optional[int] = None,
-    ) -> None:
+        max_tokens: Optional[int] = None) -> None:
         self.model_name = model_name
         self.temperature = temperature
         self.max_tokens = max_tokens
@@ -350,8 +334,7 @@ class Verifier(Operator[VerifierInputs, VerifierOutputs]):
         *,
         model_name: str,
         temperature: float,
-        max_tokens: Optional[int] = None,
-    ) -> None:
+        max_tokens: Optional[int] = None) -> None:
         self.model_name = model_name
         self.temperature = temperature
         self.max_tokens = max_tokens
@@ -526,5 +509,4 @@ __all__ = [
     "VariedEnsembleInputs",
     "VariedEnsembleOutputs",
     # Compact notation
-    "build_graph",
-]
+    "build_graph"]

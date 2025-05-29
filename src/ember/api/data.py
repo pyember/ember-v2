@@ -1,57 +1,25 @@
-"""Data API for Ember.
+"""Data API for dataset operations.
 
-This module provides a facade for Ember's data processing system with a streamlined
-interface for loading, transforming, and working with datasets.
+Provides a streamlined interface for loading, transforming, and working with datasets.
 
-Examples:
-    # Discovering available datasets
-    from ember.api import data
-    available_datasets = data.list()  # Returns ["mmlu", "codeforces", "gpqa", ...]
-    
-    # Getting detailed dataset information
-    mmlu_info = data.info("mmlu")
-    print(f"Description: {mmlu_info.description}")
-    print(f"Task Type: {mmlu_info.task_type}")
-    print(f"Splits: {mmlu_info.splits}")  # ["train", "test", "validation"]
-    print(f"Subjects: {mmlu_info.subjects}")  # ["physics", "mathematics", ...]
-    
-    # Exploring dataset structure (first few items to understand schema)
-    sample = list(data("mmlu", streaming=True, limit=3))
-    first_item = sample[0]
-    print(f"Available fields: {dir(first_item)}")  # See all accessible attributes
-    
-    # Loading a dataset directly
-    from ember.api import data
-    mmlu_data = data("mmlu")
+The primary pattern is direct loading:
+    >>> from ember.api import data
+    >>> mmlu_data = data("mmlu")
 
-    # Using the builder pattern with transformations
-    from ember.api import data
-    dataset = (
-        data.builder()
-        .from_registry("mmlu")
-        .subset("physics")
-        .split("test")
-        .sample(100)
-        .transform(lambda x: {"query": f"Question: {x['question']}"})
-        .build()
-    )
+For advanced usage with transformations:
+    >>> dataset = (
+    ...     data.builder()
+    ...     .from_registry("mmlu")
+    ...     .subset("physics")
+    ...     .split("test")
+    ...     .sample(100)
+    ...     .transform(lambda x: {"query": f"Question: {x['question']}"})
+    ...     .build()
+    ... )
 
-    # Memory-efficient streaming
-    for item in data("mmlu", streaming=True):
-        process(item)
-
-    # Accessing dataset entries
-    for entry in dataset:
-        print(f"Question: {entry.question}")
-
-    # Registering a custom dataset
-    from ember.api import data, TaskType
-
-    data.register(
-        name="custom_qa",
-        source="custom/qa",
-        task_type=TaskType.QUESTION_ANSWERING
-    )
+Memory-efficient streaming:
+    >>> for item in data("mmlu", streaming=True):
+    ...     process(item)
 """
 
 import threading
@@ -64,8 +32,7 @@ from typing import (
     List,
     Optional,
     TypeVar,
-    Union,
-)
+    Union)
 
 from ember.core.context.ember_context import EmberContext
 from ember.core.utils.data.base.config import BaseDatasetConfig as DatasetConfig
@@ -84,32 +51,31 @@ U = TypeVar("U")
 class DataItem:
     """Normalized representation of a dataset item.
 
-    This class provides consistent attribute access across different dataset formats,
-    making it simple to work with items regardless of their underlying representation.
+    Provides consistent attribute access across different dataset formats.
 
     Attributes:
-        question: The question text with consistent naming
-        options: Answer options with consistent naming
-        answer: The correct answer with consistent naming
+        question: The question text.
+        options: Answer options as a dictionary.
+        answer: The correct answer.
     """
 
     def __init__(self, entry: Any) -> None:
-        """Initialize with a dataset entry.
+        """Initialize DataItem.
 
         Args:
-            entry: The dataset entry to wrap (DatasetEntry, dict, or compatible object)
+            entry: Dataset entry (DatasetEntry, dict, or compatible object).
         """
         self._entry = entry
         self._normalized = self._normalize(entry)
 
     def _normalize(self, entry: Any) -> Dict[str, Any]:
-        """Convert entry to a normalized dictionary.
+        """Convert entry to normalized dictionary.
 
         Args:
-            entry: The dataset entry to normalize
+            entry: Dataset entry to normalize.
 
         Returns:
-            Normalized dictionary representation
+            Normalized dictionary representation.
         """
         if isinstance(entry, dict):
             return entry
@@ -145,8 +111,7 @@ class DataItem:
             ("choices", "options"),
             ("options", "options"),
             ("answer", "answer"),
-            ("correct_answer", "answer"),
-        ]:
+            ("correct_answer", "answer")]:
             if hasattr(entry, src):
                 normalized[dst] = getattr(entry, src)
 
@@ -154,43 +119,31 @@ class DataItem:
 
     @property
     def question(self) -> Optional[str]:
-        """Get question text with consistent naming.
-
-        Returns:
-            The question text or None if not found
-        """
+        """Return the question text."""
         return self._normalized.get("question")
 
     @property
     def options(self) -> Dict[str, str]:
-        """Get answer options with consistent naming.
-
-        Returns:
-            Dictionary of answer options or empty dict if not found
-        """
+        """Return answer options as a dictionary."""
         options = self._normalized.get("options", {})
         return options if isinstance(options, dict) else {}
 
     @property
     def answer(self) -> Optional[str]:
-        """Get correct answer with consistent naming.
-
-        Returns:
-            The correct answer or None if not found
-        """
+        """Return the correct answer."""
         return self._normalized.get("answer")
 
     def __getattr__(self, name: str) -> Any:
         """Access attributes not covered by properties.
 
         Args:
-            name: Attribute name
+            name: Attribute name.
 
         Returns:
-            Attribute value
+            Attribute value.
 
         Raises:
-            AttributeError: If attribute not found
+            AttributeError: If attribute not found.
         """
         # Check normalized dictionary
         if name in self._normalized:
@@ -374,8 +327,7 @@ class DatasetBuilder:
         self,
         transform_fn: Union[
             Callable[[Dict[str, Any]], Dict[str, Any]], IDatasetTransformer
-        ],
-    ) -> "DatasetBuilder":
+        ]) -> "DatasetBuilder":
         """Add transformation function to dataset processing pipeline.
 
         Transformations are applied in the order they're added.
@@ -389,8 +341,7 @@ class DatasetBuilder:
         # Import here to avoid circular imports
         from ember.core.utils.data.base.transformers import (
             DatasetType,
-            IDatasetTransformer,
-        )
+            IDatasetTransformer)
 
         # Use transformer directly if it implements the interface
         if isinstance(transform_fn, IDatasetTransformer):
@@ -550,8 +501,7 @@ class DatasetBuilder:
                 sample_size=self._sample_size,
                 random_seed=self._seed,
                 config_name=config_name,  # Pass as config_name to HF Dataset
-                **self._config,
-            )
+                **self._config)
 
             # Import service components
             from ember.core.utils.data.base.loaders import HuggingFaceDatasetLoader
@@ -564,16 +514,14 @@ class DatasetBuilder:
                 loader=HuggingFaceDatasetLoader(),
                 validator=DatasetValidator(),
                 sampler=DatasetSampler(),
-                transformers=self._transformers,
-            )
+                transformers=self._transformers)
 
             # Load and prepare dataset
             entries = service.load_and_prepare(
                 dataset_info=dataset_entry.info,
                 prepper=dataset_entry.prepper,
                 config=config,
-                num_samples=self._sample_size,
-            )
+                num_samples=self._sample_size)
 
             return Dataset(entries=entries, info=dataset_entry.info)
 
@@ -619,8 +567,7 @@ class DataAPI:
         *,
         streaming: bool = True,
         limit: Optional[int] = None,
-        **kwargs: Any,
-    ) -> Union[Iterator[DataItem], List[DatasetEntry]]:
+        **kwargs: Any) -> Union[Iterator[DataItem], List[DatasetEntry]]:
         """Load dataset with specified parameters.
 
         Args:
@@ -698,8 +645,7 @@ class DataAPI:
         source: str,
         task_type: Union[TaskType, str],
         prepper_class: Optional[Any] = None,
-        description: str = "",
-    ) -> None:
+        description: str = "") -> None:
         """Register a new dataset.
 
         Args:
@@ -722,8 +668,7 @@ class DataAPI:
             source=source,
             task_type=task_type,
             prepper_class=prepper_class,
-            description=description,
-        )
+            description=description)
 
 
 __all__ = [
@@ -738,5 +683,4 @@ __all__ = [
     "DatasetEntry",
     "TaskType",
     # Context integration
-    "DataContext",
-]
+    "DataContext"]

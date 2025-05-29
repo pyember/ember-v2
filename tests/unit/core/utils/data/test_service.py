@@ -31,8 +31,7 @@ class TestDatasetService(unittest.TestCase):
             name="test_dataset",
             description="Test dataset",
             source="test_source",
-            task_type=TaskType.MULTIPLE_CHOICE,
-        )
+            task_type=TaskType.MULTIPLE_CHOICE)
 
         # Mock prepper
         self.mock_prepper = mock.MagicMock(spec=IDatasetPrepper)
@@ -45,8 +44,7 @@ class TestDatasetService(unittest.TestCase):
         self.mock_dataset_items = [
             {"id": 1, "question": "Q1", "answer": "A1"},
             {"id": 2, "question": "Q2", "answer": "A2"},
-            {"id": 3, "question": "Q3", "answer": "A3"},
-        ]
+            {"id": 3, "question": "Q3", "answer": "A3"}]
 
         self.mock_dataset_entries = [
             DatasetEntry(query=f"Q{i}", metadata={"id": i, "answer": f"A{i}"})
@@ -80,8 +78,7 @@ class TestDatasetService(unittest.TestCase):
             loader=self.mock_loader,
             validator=self.mock_validator,
             sampler=self.mock_sampler,
-            transformers=[self.mock_transformer1, self.mock_transformer2],
-        )
+            transformers=[self.mock_transformer1, self.mock_transformer2])
 
     def test_init(self) -> None:
         """DatasetService initialization should store provided components."""
@@ -90,8 +87,7 @@ class TestDatasetService(unittest.TestCase):
             loader=self.mock_loader,
             validator=self.mock_validator,
             sampler=self.mock_sampler,
-            transformers=[self.mock_transformer1, self.mock_transformer2],
-        )
+            transformers=[self.mock_transformer1, self.mock_transformer2])
 
         # Assert
         self.assertEqual(self.mock_loader, service._loader)
@@ -107,8 +103,7 @@ class TestDatasetService(unittest.TestCase):
         service = DatasetService(
             loader=self.mock_loader,
             validator=self.mock_validator,
-            sampler=self.mock_sampler,
-        )
+            sampler=self.mock_sampler)
 
         # Assert
         self.assertEqual([], service._transformers)
@@ -254,8 +249,7 @@ class TestDatasetService(unittest.TestCase):
         result = self.service._prep_data(
             dataset_info=self.dataset_info,
             sampled_data=self.raw_dataset,
-            prepper=self.mock_prepper,
-        )
+            prepper=self.mock_prepper)
 
         # Assert
         self.assertEqual(len(self.mock_dataset_items), len(result))
@@ -264,8 +258,7 @@ class TestDatasetService(unittest.TestCase):
         # Verify prepper called for each item
         self.assertEqual(
             len(self.mock_dataset_items),
-            self.mock_prepper.create_dataset_entries.call_count,
-        )
+            self.mock_prepper.create_dataset_entries.call_count)
 
         # Verify validation called for each item
         self.assertEqual(
@@ -294,8 +287,7 @@ class TestDatasetService(unittest.TestCase):
         result = self.service._prep_data(
             dataset_info=self.dataset_info,
             sampled_data=self.raw_dataset,
-            prepper=self.mock_prepper,
-        )
+            prepper=self.mock_prepper)
 
         # Assert - should only have entries for items 2 and 3
         self.assertEqual(2, len(result))
@@ -350,8 +342,7 @@ class TestDatasetService(unittest.TestCase):
                 dataset_info=self.dataset_info,
                 prepper=self.mock_prepper,
                 config=self.config,
-                num_samples=num_samples,
-            )
+                num_samples=num_samples)
 
             # Assert
             self.assertEqual(mock_entries, result)
@@ -370,8 +361,7 @@ class TestDatasetService(unittest.TestCase):
             self.service._prep_data.assert_called_once_with(
                 dataset_info=self.dataset_info,
                 sampled_data="sampled_dataset",
-                prepper=self.mock_prepper,
-            )
+                prepper=self.mock_prepper)
 
         finally:
             # Restore original methods

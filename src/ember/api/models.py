@@ -1,40 +1,33 @@
-"""Simplified Models API for Ember.
+"""Models API for language model interactions.
 
-This module provides a clean, opinionated interface for interacting with language models.
-It emphasizes simplicity and eliminates confusion by providing one clear way to accomplish
-each task.
+This module provides a streamlined interface for interacting with language models.
+It follows a single, clear pattern for each use case to eliminate choice paralysis.
 
-Examples:
-    # Primary pattern: Direct invocation
-    from ember.api import models
-    
-    response = models("gpt-4", "What is the capital of France?")
-    print(response.text)  # "The capital of France is Paris."
-    
-    # With parameters when needed
-    response = models("claude-3", "Write a haiku", temperature=0.7, max_tokens=50)
-    
-    # Explicit binding for reuse (performance optimization)
-    gpt4 = models.instance("gpt-4", temperature=0.5)
-    response1 = gpt4("Explain quantum computing")
-    response2 = gpt4("What is machine learning?")
+The primary pattern is direct invocation:
+    >>> from ember.api import models
+    >>> response = models("gpt-4", "What is the capital of France?")
+    >>> print(response.text)
+    "The capital of France is Paris."
+
+For performance optimization with repeated calls:
+    >>> gpt4 = models.instance("gpt-4", temperature=0.5)
+    >>> response1 = gpt4("Explain quantum computing")
+    >>> response2 = gpt4("What is machine learning?")
 """
 
 from __future__ import annotations
 
 import logging
-from typing import Union, Optional, Any, Dict, TYPE_CHECKING
+from typing import Union, Optional, Any, Dict, List, TYPE_CHECKING
 
 from ember.core.registry.model.base.context import (
     ModelContext,
-    get_default_context,
-)
+    get_default_context)
 # Import model-specific errors from core
 from ember.core.exceptions import (
     ModelError,
     ModelNotFoundError,
-    ProviderAPIError,
-)
+    ProviderAPIError)
 
 if TYPE_CHECKING:
     from ember.core.registry.model.base.schemas.chat_schemas import ChatResponse
@@ -44,28 +37,32 @@ logger = logging.getLogger(__name__)
 
 
 class Response:
-    """Simplified response object with clear accessors.
+    """Response object for model outputs.
     
-    This class wraps the raw model response and provides a clean interface
-    for accessing the generated text and metadata.
+    Provides access to generated text and metadata from language model responses.
+    
+    Attributes:
+        text: The generated text content.
+        usage: Token usage statistics and cost information.
+        model_id: Identifier of the model that generated the response.
     """
     
     def __init__(self, raw_response: ChatResponse):
-        """Initialize with a raw ChatResponse.
+        """Initialize Response.
         
         Args:
-            raw_response: The raw response from the model service
+            raw_response: Raw response from the model service.
         """
         self._raw = raw_response
     
     @property
     def text(self) -> str:
-        """The generated text content."""
+        """Return the generated text content."""
         return self._raw.data if self._raw.data else ""
     
     @property
     def usage(self) -> Dict[str, Any]:
-        """Token usage and cost information."""
+        """Return token usage and cost information."""
         if not self._raw.usage:
             return {
                 "prompt_tokens": 0,
@@ -83,8 +80,7 @@ class Response:
     
     @property
     def model_id(self) -> Optional[str]:
-        """The ID of the model that generated this response."""
-        # Try to get from raw response metadata
+        """Return the ID of the model that generated this response."""
         if hasattr(self._raw, "model_id"):
             return self._raw.model_id
         if hasattr(self._raw, "raw_output") and hasattr(self._raw.raw_output, "model"):
@@ -92,28 +88,33 @@ class Response:
         return None
     
     def __str__(self) -> str:
-        """String representation returns the generated text."""
+        """Return the generated text."""
         return self.text
     
     def __repr__(self) -> str:
-        """Detailed representation for debugging."""
+        """Return detailed representation for debugging."""
         return f"Response(text='{self.text[:50]}...', tokens={self.usage['total_tokens']})"
 
 
 class ModelBinding:
-    """A bound model with preset parameters.
+    """Reusable model configuration with preset parameters.
     
-    This class represents a reusable model configuration that can be called
-    multiple times with different prompts while maintaining the same parameters.
+    Allows multiple invocations with the same model parameters, improving
+    performance by avoiding repeated parameter validation.
+    
+    Example:
+        >>> gpt4 = models.instance("gpt-4", temperature=0.7)
+        >>> response1 = gpt4("First prompt")
+        >>> response2 = gpt4("Second prompt", temperature=0.9)  # Override
     """
     
     def __init__(self, model_id: str, service: ModelService, **params):
-        """Initialize a model binding.
+        """Initialize ModelBinding.
         
         Args:
-            model_id: The model identifier
-            service: The model service to use for invocations
-            **params: Parameters to bind to the model
+            model_id: Model identifier (e.g., "gpt-4", "claude-3").
+            service: Model service for invocations.
+            **params: Parameters to bind (temperature, max_tokens, etc.).
         """
         self.model_id = model_id
         self.service = service
@@ -121,8 +122,11 @@ class ModelBinding:
         self._validate_model_id()
     
     def _validate_model_id(self) -> None:
-        """Validate that the model exists."""
-        # This will raise ModelNotFoundError if invalid
+        """Validate that the model exists.
+        
+        Raises:
+            ModelNotFoundError: If model ID is not found.
+        """
         try:
             self.service.get_model(model_id=self.model_id)
         except Exception as e:
@@ -141,7 +145,15 @@ class ModelBinding:
             raise
     
     def _find_similar_models(self, model_id: str, available: list[str]) -> list[str]:
-        """Find models with similar names for suggestions."""
+        """Find models with similar names for suggestions.
+        
+        Args:
+            model_id: The requested model ID.
+            available: List of available model IDs.
+            
+        Returns:
+            List of up to 3 similar model suggestions.
+        """
         model_lower = model_id.lower()
         
         # Exact substring matches first
@@ -157,101 +169,97 @@ class ModelBinding:
         return (exact_matches + partial_matches)[:3]
     
     def __call__(self, prompt: str, **override_params) -> Response:
-        """Invoke the bound model with merged parameters.
+        """Invoke the bound model.
         
         Args:
-            prompt: The prompt to send to the model
-            **override_params: Parameters that override the bound parameters
+            prompt: The prompt to send to the model.
+            **override_params: Parameters that override the bound parameters.
             
         Returns:
-            Response object with generated text and metadata
+            Response object with generated text and metadata.
         """
         merged_params = {**self.params, **override_params}
         return _invoke_model(self.model_id, prompt, self.service, **merged_params)
     
     def __repr__(self) -> str:
-        """String representation for debugging."""
+        """Return string representation for debugging."""
         return f"ModelBinding(model_id='{self.model_id}', params={self.params})"
 
 
 class ModelsAPI:
-    """The simplified models API.
+    """Main interface for language model interactions.
     
-    This class provides the main interface for the simplified models API.
-    It supports direct invocation and explicit binding patterns.
+    Provides both direct invocation and instance binding patterns for
+    flexible model usage.
+    
+    Example:
+        >>> from ember.api import models
+        >>> response = models("gpt-4", "Hello world")
+        >>> print(response.text)
     """
     
     def __init__(self, context: Optional[ModelContext] = None):
-        """Initialize the models API.
+        """Initialize ModelsAPI.
         
         Args:
-            context: Optional model context for dependency injection
+            context: Optional model context for dependency injection.
         """
         self._context = context
         self._service: Optional[ModelService] = None
     
     @property
     def service(self) -> ModelService:
-        """Lazy load the model service."""
+        """Return the model service, creating if necessary."""
         if self._service is None:
             ctx = self._context or get_default_context()
             self._service = ctx.model_service
         return self._service
     
     def __call__(self, model: str, prompt: str, **params) -> Response:
-        """Primary API: Direct model invocation.
+        """Invoke a language model directly.
         
         Args:
-            model: Model identifier (e.g., "gpt-4", "claude-3")
-            prompt: The prompt to send to the model
-            **params: Optional parameters (temperature, max_tokens, etc.)
+            model: Model identifier (e.g., "gpt-4", "claude-3").
+            prompt: The prompt to send to the model.
+            **params: Optional parameters (temperature, max_tokens, etc.).
             
         Returns:
-            Response object with generated text and metadata
+            Response object with generated text and metadata.
             
         Raises:
-            AuthenticationError: Missing or invalid API key
-            RateLimitError: Rate limit exceeded
-            ModelNotFoundError: Model doesn't exist
-            ModelError: Other model-related errors
+            AuthenticationError: Missing or invalid API key.
+            RateLimitError: Rate limit exceeded.
+            ModelNotFoundError: Model doesn't exist.
+            ModelError: Other model-related errors.
             
-        Examples:
+        Example:
             >>> response = models("gpt-4", "Hello world")
             >>> print(response.text)
-            
-            >>> response = models("claude-3", "Write a poem", temperature=0.9)
-            >>> print(f"Used {response.usage['total_tokens']} tokens")
         """
         return _invoke_model(model, prompt, self.service, **params)
     
     def instance(self, model: str, **params) -> ModelBinding:
-        """Create a reusable model instance with preset parameters.
+        """Create a reusable model instance.
         
         Args:
-            model: Model identifier
-            **params: Parameters to configure the model instance
+            model: Model identifier.
+            **params: Parameters to preset for the instance.
             
         Returns:
-            ModelBinding that can be called multiple times
+            ModelBinding that can be called multiple times.
             
         Raises:
-            ModelNotFoundError: If the model doesn't exist
+            ModelNotFoundError: If the model doesn't exist.
             
-        Examples:
+        Example:
             >>> gpt4 = models.instance("gpt-4", temperature=0.7)
             >>> response1 = gpt4("First prompt")
-            >>> response2 = gpt4("Second prompt")
-            
-            >>> # Override instance parameters
-            >>> response3 = gpt4("Third prompt", temperature=0.9)
+            >>> response2 = gpt4("Second prompt", temperature=0.9)
         """
         return ModelBinding(model, self.service, **params)
     
     def bind(self, model: str, **params) -> ModelBinding:
-        """Deprecated: Use instance() instead.
-        
-        This method is kept for backward compatibility.
-        """
+        """Deprecated: Use instance() instead."""
         import warnings
         warnings.warn(
             "models.bind() is deprecated. Use models.instance() instead.",
@@ -263,10 +271,8 @@ class ModelsAPI:
     async def async_call(self, model: str, prompt: str, **params) -> Response:
         """Async version of model invocation.
         
-        Note: This is a placeholder for future async support.
-        
         Raises:
-            NotImplementedError: Async support coming in Phase 2
+            NotImplementedError: Async support not yet implemented.
         """
         raise NotImplementedError(
             "Async support is not yet implemented. "
@@ -277,10 +283,10 @@ class ModelsAPI:
         """List available models.
         
         Args:
-            provider: Optional provider filter (e.g., "openai", "anthropic")
+            provider: Optional provider filter (e.g., "openai", "anthropic").
             
         Returns:
-            List of model identifiers
+            List of model identifiers.
         """
         ctx = self._context or get_default_context()
         all_models = ctx.registry.list_models()
@@ -293,10 +299,13 @@ class ModelsAPI:
         """Get information about a specific model.
         
         Args:
-            model_id: The model identifier
+            model_id: The model identifier.
             
         Returns:
-            Dictionary with model information
+            Dictionary with model information.
+            
+        Raises:
+            ValueError: If model not found.
         """
         ctx = self._context or get_default_context()
         model_info = ctx.registry.get_model_info(model_id)
@@ -315,16 +324,16 @@ class ModelsAPI:
         }
     
     def get_registry(self):
-        """Get the underlying model registry.
+        """Return the underlying model registry.
         
         Returns:
-            The model registry instance
+            The model registry instance.
         """
         ctx = self._context or get_default_context()
         return ctx.registry
     
     def __repr__(self) -> str:
-        """String representation for debugging."""
+        """Return string representation for debugging."""
         return "ModelsAPI(simplified=True)"
 
 
@@ -334,19 +343,19 @@ def _invoke_model(
     service: ModelService, 
     **params
 ) -> Response:
-    """Internal function to invoke a model with error handling.
+    """Invoke a model with error handling.
     
     Args:
-        model_id: The model identifier
-        prompt: The prompt to send
-        service: The model service instance
-        **params: Additional parameters
+        model_id: The model identifier.
+        prompt: The prompt to send.
+        service: The model service instance.
+        **params: Additional parameters.
         
     Returns:
-        Response object with the model output
+        Response object with the model output.
         
     Raises:
-        Various ModelError subclasses based on the error type
+        ModelError: Various subclasses based on error type.
     """
     try:
         # The model service now returns proper errors thanks to our updates
@@ -382,5 +391,4 @@ __all__ = [
     # Re-export error types for convenience
     'ModelError',
     'ModelNotFoundError',
-    'ProviderAPIError',
-]
+    'ProviderAPIError']

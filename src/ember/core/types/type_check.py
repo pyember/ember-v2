@@ -15,8 +15,7 @@ from typing import (
     Union,
     get_args,
     get_origin,
-    get_type_hints,
-)
+    get_type_hints)
 
 T = TypeVar("T")
 

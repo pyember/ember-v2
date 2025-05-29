@@ -20,8 +20,7 @@ from ember.cli.commands import (
     eval_command,
     project_command,
     config_command,
-    version_command,
-)
+    version_command)
 
 
 def create_parser() -> argparse.ArgumentParser:

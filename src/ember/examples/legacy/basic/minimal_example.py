@@ -135,6 +135,7 @@ class MinimalOperator(Operator[MinimalInput, MinimalOutput]):
 
 
 def main() -> None:
+    """Example demonstrating the simplified XCS architecture."""
     """Run a simple demonstration of the MinimalOperator."""
     # Set up argument parser with verbosity controls
     parser = create_argument_parser("Demonstrate the MinimalOperator")

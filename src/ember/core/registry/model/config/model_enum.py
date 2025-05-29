@@ -71,8 +71,7 @@ class DeepmindModelEnum(str, Enum):
 ALL_PROVIDER_ENUMS: List[Type[Enum]] = [
     OpenAIModelEnum,
     AnthropicModelEnum,
-    DeepmindModelEnum,
-]
+    DeepmindModelEnum]
 
 
 def create_model_enum() -> Type[Enum]:

@@ -143,15 +143,13 @@ def batch_processing_pattern() -> None:
             "What is machine learning?",
             "Explain the concept of a neural network.",
             "What is transfer learning?",
-            "Describe reinforcement learning.",
-        ]
+            "Describe reinforcement learning."]
 
         model_ids = [
             "openai:gpt-4o",
             "openai:gpt-4o-mini",
             "anthropic:claude-3-sonnet",
-            "anthropic:claude-3-haiku",
-        ]
+            "anthropic:claude-3-haiku"]
 
         # Process in parallel with proper typing
         def process_prompt(args: tuple[str, str]) -> tuple[str, str, str, float]:
@@ -251,8 +249,7 @@ def custom_model_pattern() -> None:
                 "name": "MyOrg AI",
                 "default_api_key": "${MYORG_API_KEY}",
                 "base_url": "https://api.myorg-ai.example.com/v1",
-            },
-        )
+            })
 
         # Check if model is already registered to avoid errors
         if not registry.is_registered(custom_model.id):
@@ -296,6 +293,7 @@ def custom_model_pattern() -> None:
 
 
 def main() -> None:
+    """Example demonstrating the simplified XCS architecture."""
     """Run all example patterns."""
     print("Running Model Registry examples with the new API...\n")
     print("Make sure you have set up your API keys in environment variables:")

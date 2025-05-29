@@ -43,6 +43,5 @@ class ShortAnswerPrepper(IDatasetPrepper):
         dataset_entry: DatasetEntry = DatasetEntry(
             query=question,
             choices={},  # Short answer entries do not include multiple choices.
-            metadata={"gold_answer": gold_answer},
-        )
+            metadata={"gold_answer": gold_answer})
         return [dataset_entry]

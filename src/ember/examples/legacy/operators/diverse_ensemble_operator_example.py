@@ -28,22 +28,19 @@ def usage_example() -> None:
     example_prefixes: List[str] = [
         "Analyze this from a scientific perspective:",
         "Consider this from a philosophical angle:",
-        "Provide a practical approach to:",
-    ]
+        "Provide a practical approach to:"]
 
     # Create bound models with different configurations for diversity
     lm_modules = [
         models.instance("anthropic:claude-3-opus", temperature=0.5, max_tokens=256),
         models.instance("openai:gpt-4", temperature=0.7, max_tokens=256),
-        models.instance("anthropic:claude-3-haiku", temperature=0.3, max_tokens=256),
-    ]
+        models.instance("anthropic:claude-3-haiku", temperature=0.3, max_tokens=256)]
 
     # Instantiate the operator with named parameters.
     operator: MultiPrefixEnsembleOperator = MultiPrefixEnsembleOperator(
         lm_modules=lm_modules,
         prefixes=example_prefixes,
-        name="MultiPrefixEnsembleExample",
-    )
+        name="MultiPrefixEnsembleExample")
 
     # Create input data with a more substantive query
     inputs: MultiPrefixOperatorInputs = MultiPrefixOperatorInputs(
@@ -114,8 +111,7 @@ class MultiPrefixEnsembleOperator(
         self,
         lm_modules: List[Any],
         prefixes: List[str],
-        name: str = "MultiPrefixEnsemble",
-    ) -> None:
+        name: str = "MultiPrefixEnsemble") -> None:
         """Initializes a MultiPrefixEnsembleOperator instance.
 
         Args:
@@ -162,6 +158,7 @@ class MultiPrefixEnsembleOperator(
 
 
 def main() -> None:
+    """Example demonstrating the simplified XCS architecture."""
     """Main entry point that runs the usage example.
 
     Returns:

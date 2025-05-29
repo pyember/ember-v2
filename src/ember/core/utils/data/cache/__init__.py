@@ -26,5 +26,4 @@ from ember.core.utils.data.cache.cache_manager import DatasetCache, cached
 
 __all__ = [
     "DatasetCache",
-    "cached",
-]
+    "cached"]

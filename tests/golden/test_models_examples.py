@@ -21,8 +21,7 @@ class TestModelsExamples(GoldenTestBase):
         
         # Run with proper mocks
         extra_patches = [
-            patch("ember.api.models", mock_models_api),
-        ]
+            patch("ember.api.models", mock_models_api)]
         
         result = self.run_example_with_mocks(
             file_path,
@@ -61,8 +60,7 @@ class TestModelsExamples(GoldenTestBase):
         }
         
         extra_patches = [
-            patch("ember.api.models", mock_models),
-        ]
+            patch("ember.api.models", mock_models)]
         
         result = self.run_example_with_mocks(
             file_path,
@@ -104,8 +102,7 @@ class TestModelsExamples(GoldenTestBase):
         mock_models.get_registry.return_value = mock_registry
         
         extra_patches = [
-            patch("ember.api.models", mock_models),
-        ]
+            patch("ember.api.models", mock_models)]
         
         result = self.run_example_with_mocks(
             file_path,

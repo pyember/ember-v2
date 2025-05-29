@@ -209,8 +209,7 @@ def create_pipeline(*, model_name: str = "gpt-4o") -> non.Sequential:
             # Pass the ensemble responses to a judge for synthesis
             non.JudgeSynthesis(model_name=model_name, temperature=0.0),
             # Verify the synthesized response
-            non.Verifier(model_name=model_name, temperature=0.0),
-        ]
+            non.Verifier(model_name=model_name, temperature=0.0)]
     )
 
     logger.debug("Pipeline created successfully")

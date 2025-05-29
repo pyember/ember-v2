@@ -4,7 +4,6 @@ XCS API
 This module provides a unified interface to the XCS (Accelerated Compound Systems)
 functionality. It follows the ember pattern of providing a simplified, intuitive
 interface on top of the core implementation.
-"""
 
 from __future__ import annotations
 
@@ -16,8 +15,7 @@ from ember.xcs.api.types import (
     GraphBuilder,
     JITOptions,
     TransformOptions,
-    XCSExecutionOptions,
-)
+    XCSExecutionOptions)
 
 # Create a singleton instance
 xcs = XCSAPI()
@@ -29,5 +27,4 @@ __all__ = [
     "ExecutionResult",
     "GraphBuilder",
     "JITOptions",
-    "TransformOptions",
-]
+    "TransformOptions"]

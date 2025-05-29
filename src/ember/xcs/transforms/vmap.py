@@ -6,6 +6,7 @@ API and utilizing the common BaseTransformation foundation.
 """
 
 import functools
+from concurrent.futures import ThreadPoolExecutor
 import logging
 import os
 from typing import Any, Callable, Dict, List, Optional, TypeVar, Union
@@ -13,8 +14,7 @@ from typing import Any, Callable, Dict, List, Optional, TypeVar, Union
 from ember.xcs.transforms.transform_base import (
     BaseTransformation,
     BatchingOptions,
-    TransformError,
-)
+    TransformError)
 
 logger = logging.getLogger(__name__)
 
@@ -188,8 +188,7 @@ class VMapTransformation(BaseTransformation):
         out_axis: int = 0,
         batch_size: Optional[int] = None,
         parallel: bool = False,
-        max_workers: Optional[int] = None,
-    ) -> None:
+        max_workers: Optional[int] = None) -> None:
         """Initialize the vectorizing transformation.
 
         Args:
@@ -208,8 +207,7 @@ class VMapTransformation(BaseTransformation):
             out_axis=out_axis,
             batch_size=batch_size,
             parallel=parallel,
-            max_workers=max_workers,
-        )
+            max_workers=max_workers)
 
         # Validate options
         self.options.validate()
@@ -357,8 +355,7 @@ class VMapTransformation(BaseTransformation):
         fn: Callable,
         inputs: Dict[str, Any],
         kwargs: Dict[str, Any],
-        batch_size: int,
-    ) -> List[Dict[str, Any]]:
+        batch_size: int) -> List[Dict[str, Any]]:
         """Process batch with appropriate parallelization strategy.
 
         Args:
@@ -388,8 +385,7 @@ class VMapTransformation(BaseTransformation):
         fn: Callable,
         inputs: Dict[str, Any],
         kwargs: Dict[str, Any],
-        batch_size: int,
-    ) -> List[Dict[str, Any]]:
+        batch_size: int) -> List[Dict[str, Any]]:
         """Process batch elements sequentially.
 
         Args:
@@ -466,9 +462,8 @@ class VMapTransformation(BaseTransformation):
         fn: Callable,
         inputs: Dict[str, Any],
         kwargs: Dict[str, Any],
-        batch_size: int,
-    ) -> List[Dict[str, Any]]:
-        """Process batch elements with optimal execution engine.
+        batch_size: int) -> List[Dict[str, Any]]:
+        """Process batch elements with parallel execution.
 
         Args:
             fn: Function to execute
@@ -479,20 +474,6 @@ class VMapTransformation(BaseTransformation):
         Returns:
             Results from batch processing
         """
-        # Import here to avoid circular dependencies
-        from ember.xcs.utils.executor import Dispatcher
-
-        # Extract executor type from environment
-        executor_type = os.environ.get("XCS_EXECUTION_ENGINE", "auto")
-
-        # Create dispatcher for parallel execution
-        dispatcher = Dispatcher(
-            max_workers=self.options.max_workers,
-            timeout=None,
-            fail_fast=True,
-            executor=executor_type,
-        )
-
         try:
             # Prepare input dictionaries for each batch element
             input_dicts = _prepare_batched_inputs(
@@ -505,16 +486,33 @@ class VMapTransformation(BaseTransformation):
                 for k, v in other_kwargs.items():
                     input_dict[k] = v
 
-            # Execute across all inputs with proper kwargs structure
-            return dispatcher.map(
-                lambda input_dict: fn(
-                    inputs=input_dict.get("inputs", {}),
-                    **{k: v for k, v in input_dict.items() if k != "inputs"},
-                ),
-                [{"inputs": d} for d in input_dicts],
+            # Execute in parallel with ThreadPoolExecutor
+            if self.options.max_workers and self.options.max_workers > 1:
+                with ThreadPoolExecutor(max_workers=self.options.max_workers) as executor:
+                    futures = []
+                    for d in input_dicts:
+                        future = executor.submit(
+                            fn, 
+                            inputs=d.get("inputs", {}),
+                            **{k: v for k, v in d.items() if k != "inputs"}
+                        )
+                        futures.append(future)
+                    
+                    return [f.result() for f in futures]
+            else:
+                # Sequential execution
+                results = []
+                for d in input_dicts:
+                    result = fn(
+                        inputs=d.get("inputs", {}),
+                        **{k: v for k, v in d.items() if k != "inputs"}
+                    )
+                    results.append(result)
+                return results
+        except Exception as e:
+            raise TransformError.for_transform(
+                "vmap", f"Error in parallel execution: {e}", cause=e
             )
-        finally:
-            dispatcher.close()
 
 
 def vmap(
@@ -524,11 +522,9 @@ def vmap(
     out_axis: int = 0,
     batch_size: Optional[int] = None,
     parallel: bool = False,
-    max_workers: Optional[int] = None,
-) -> Union[
+    max_workers: Optional[int] = None) -> Union[
     Callable[..., Dict[str, Any]],
-    Callable[[Callable[..., T]], Callable[..., Dict[str, Any]]],
-]:
+    Callable[[Callable[..., T]], Callable[..., Dict[str, Any]]]]:
     """Vectorizing a function across its inputs.
 
     Transforms a function that operates on single elements into one
@@ -566,8 +562,7 @@ def vmap(
         out_axis=out_axis,
         batch_size=batch_size,
         parallel=parallel,
-        max_workers=max_workers,
-    )
+        max_workers=max_workers)
 
     if fn is None:
         return transformation

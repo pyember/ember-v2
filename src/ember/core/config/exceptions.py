@@ -9,13 +9,11 @@ from ember.core.exceptions import (
     ConfigFileError,
     ConfigValidationError,
     ConfigValueError,
-    MissingConfigError,
-)
+    MissingConfigError)
 
 __all__ = [
     "ConfigError",
     "ConfigFileError",
     "ConfigValidationError",
     "ConfigValueError",
-    "MissingConfigError",
-]
+    "MissingConfigError"]

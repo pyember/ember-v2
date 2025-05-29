@@ -35,8 +35,7 @@ class MostCommonAnswerSelectorOperator(
 
     specification: Specification = Specification(
         input_model=MostCommonAnswerSelectorOperatorInputs,
-        structured_output=MostCommonAnswerSelectorOutputs,
-    )
+        structured_output=MostCommonAnswerSelectorOutputs)
 
     def forward(
         self, *, inputs: MostCommonAnswerSelectorOperatorInputs

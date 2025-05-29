@@ -57,7 +57,7 @@ def test_metrics_thread_safety():
 
     threads = []
     for i in range(thread_count):
-        thread = threading.Thread(target=worker, args=(i,))
+        thread = threading.Thread(target=worker, args=(i))
         threads.append(thread)
         thread.start()
 

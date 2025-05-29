@@ -12,8 +12,7 @@ from tests.helpers.operator_minimal_doubles import (
     MinimalTestModel,
     SimpleDeterministicOperator,
     SimpleEnsembleOperator,
-    SimpleSelectorOperator,
-)
+    SimpleSelectorOperator)
 
 # Mark all tests as integration tests
 pytestmark = [pytest.mark.integration]
@@ -83,8 +82,7 @@ def test_complex_operator_composition(basic_operators):
     prompt_ops = [
         SimplePromptOperator(" Complete this sentence about nature."),
         SimplePromptOperator(" Finish this thought about the sky."),
-        SimplePromptOperator(" What comes next in this sentence?"),
-    ]
+        SimplePromptOperator(" What comes next in this sentence?")]
 
     # Create response operators
     response_ops = [SimpleResponseOperator(f"Response {i+1}: ") for i in range(3)]
@@ -130,20 +128,17 @@ def test_selector_operator(basic_operators):
     # Create prompt operators with different suffixes
     prompt_ops = [
         SimplePromptOperator(" Complete with a weather description."),
-        SimplePromptOperator(" Complete with a color description."),
-    ]
+        SimplePromptOperator(" Complete with a color description.")]
 
     # Create response operators
     response_ops = [
         SimpleResponseOperator("Weather: "),
-        SimpleResponseOperator("Color: "),
-    ]
+        SimpleResponseOperator("Color: ")]
 
     # Create a list of operator pairs
     operator_pairs = [
         [prompt_ops[0], response_ops[0]],
-        [prompt_ops[1], response_ops[1]],
-    ]
+        [prompt_ops[1], response_ops[1]]]
 
     # Function to execute a pair
     def execute_pair(op_pair, input_model):

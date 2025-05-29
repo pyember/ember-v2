@@ -4,8 +4,7 @@ Verifies that all fields validate and that JSON serialization works.
 
 from ember.core.registry.model.base.schemas.chat_schemas import (
     ChatRequest,
-    ChatResponse,
-)
+    ChatResponse)
 
 
 def test_chat_request_validation() -> None:
@@ -15,8 +14,7 @@ def test_chat_request_validation() -> None:
         context="Test context",
         max_tokens=100,
         temperature=0.5,
-        provider_params={"extra": "value"},
-    )
+        provider_params={"extra": "value"})
     assert request.prompt == "Test prompt"
     assert request.context == "Test context"
     assert request.max_tokens == 100

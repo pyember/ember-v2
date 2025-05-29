@@ -8,8 +8,7 @@ from pydantic import model_validator
 from ember.core.exceptions import (
     InvalidArgumentError,
     InvalidPromptError,
-    SpecificationValidationError,
-)
+    SpecificationValidationError)
 from ember.core.types import EmberModel
 
 logger = logging.getLogger(__name__)
@@ -78,8 +77,7 @@ class Specification(EmberModel, Generic[InputModelT, OutputModelT]):
                     error_msg,
                     missing_placeholders=missing_fields,
                     required_fields=required_fields,
-                    template=self.prompt_template,
-                )
+                    template=self.prompt_template)
         return self
 
     def render_prompt(self, *, inputs: Union[Dict[str, Any], EmberModel]) -> str:
@@ -105,8 +103,7 @@ class Specification(EmberModel, Generic[InputModelT, OutputModelT]):
             raise InvalidPromptError.with_context(
                 error_msg,
                 validation_enabled=self.check_all_placeholders,
-                input_model=None,
-            )
+                input_model=None)
 
         # Convert inputs to dictionary if it's a model
         input_dict: Dict[str, Any] = inputs
@@ -125,8 +122,7 @@ class Specification(EmberModel, Generic[InputModelT, OutputModelT]):
                     error_msg,
                     missing_placeholder=missing_key,
                     available_keys=list(input_dict.keys()),
-                    template=self.prompt_template,
-                ) from key_err
+                    template=self.prompt_template) from key_err
 
         if self.input_model is not None:
             required_fields: List[str] = self._get_required_fields()
@@ -141,8 +137,7 @@ class Specification(EmberModel, Generic[InputModelT, OutputModelT]):
         raise InvalidPromptError.with_context(
             error_msg,
             prompt_template=self.prompt_template,
-            input_model=self.input_model,
-        )
+            input_model=self.input_model)
 
     def model_json_schema(self, *, by_alias: bool = True) -> Dict[str, Any]:
         """Return the JSON schema for the input model.
@@ -162,8 +157,7 @@ class Specification(EmberModel, Generic[InputModelT, OutputModelT]):
         *,
         data: Union[Dict[str, Any], EmberModel],
         model: Type[EmberModel],
-        model_label: str,
-    ) -> EmberModel:
+        model_label: str) -> EmberModel:
         """Validate the provided data against a specified Pydantic model.
 
         Args:
@@ -189,8 +183,7 @@ class Specification(EmberModel, Generic[InputModelT, OutputModelT]):
                     error_type="model_mismatch",
                     expected_model=model.__name__,
                     actual_model=type(data).__name__,
-                    model_label=model_label,
-                )
+                    model_label=model_label)
             return data
 
         error_msg: str = (
@@ -202,8 +195,7 @@ class Specification(EmberModel, Generic[InputModelT, OutputModelT]):
             error_type="invalid_input_type",
             expected_types=["dict", "EmberModel"],
             actual_type=type(data).__name__,
-            model_label=model_label,
-        )
+            model_label=model_label)
 
     def validate_inputs(
         self, *, inputs: Union[Dict[str, Any], InputModelT]
@@ -236,8 +228,7 @@ class Specification(EmberModel, Generic[InputModelT, OutputModelT]):
             error_type="invalid_input_type",
             expected_types=["dict", "EmberModel"],
             actual_type=type(inputs).__name__,
-            model_available=self.input_model is not None,
-        )
+            model_available=self.input_model is not None)
 
     def validate_output(
         self, *, output: Union[Dict[str, Any], OutputModelT]

@@ -151,7 +151,7 @@ def demo_thread_isolation() -> None:
     # Create threads
     threads = []
     for i in range(5):
-        thread = threading.Thread(target=worker, args=(i,))
+        thread = threading.Thread(target=worker, args=(i))
         threads.append(thread)
 
     # Start threads

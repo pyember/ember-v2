@@ -7,15 +7,13 @@ import pytest
 
 from ember.core.registry.model.base.schemas.chat_schemas import (
     ChatRequest,
-    ChatResponse,
-)
+    ChatResponse)
 from ember.core.registry.model.base.schemas.cost import ModelCost, RateLimit
 from ember.core.registry.model.base.schemas.model_info import ModelInfo
 from ember.core.registry.model.base.schemas.provider_info import ProviderInfo
 from ember.core.registry.model.providers.openai.openai_provider import (
     OpenAIChatParameters,
-    OpenAIModel,
-)
+    OpenAIModel)
 
 
 class DummyMessage:
@@ -34,8 +32,7 @@ class DummyOpenAIResponse:
         self.usage = type(
             "Usage",
             (),
-            {"total_tokens": 100, "prompt_tokens": 40, "completion_tokens": 60},
-        )
+            {"total_tokens": 100, "prompt_tokens": 40, "completion_tokens": 60})
 
 
 def create_dummy_model_info() -> ModelInfo:
@@ -45,8 +42,7 @@ def create_dummy_model_info() -> ModelInfo:
         cost=ModelCost(input_cost_per_thousand=5000, output_cost_per_thousand=15000),
         rate_limit=RateLimit(tokens_per_minute=10000000, requests_per_minute=1500),
         provider=ProviderInfo(name="OpenAI", default_api_key="dummy_openai_key"),
-        api_key="dummy_openai_key",
-    )
+        api_key="dummy_openai_key")
 
 
 class DummyOpenAIClient:

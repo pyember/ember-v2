@@ -17,8 +17,7 @@ def create_model_info_with_key(model_id: str, api_key: str) -> ModelInfo:
         cost=ModelCost(input_cost_per_thousand=1.0, output_cost_per_thousand=2.0),
         rate_limit=RateLimit(tokens_per_minute=1000, requests_per_minute=100),
         provider=ProviderInfo(name="TestProvider", default_api_key="default_key"),
-        api_key=api_key,
-    )
+        api_key=api_key)
 
 
 def create_model_info_without_key(model_id: str) -> ModelInfo:
@@ -28,8 +27,7 @@ def create_model_info_without_key(model_id: str) -> ModelInfo:
         cost=ModelCost(input_cost_per_thousand=1.0, output_cost_per_thousand=2.0),
         rate_limit=RateLimit(tokens_per_minute=1000, requests_per_minute=100),
         provider=ProviderInfo(name="TestProvider", default_api_key="default_key"),
-        api_key=None,
-    )
+        api_key=None)
 
 
 def test_get_api_key_explicit() -> None:
@@ -53,5 +51,4 @@ def test_get_api_key_missing() -> None:
             cost=ModelCost(input_cost_per_thousand=1.0, output_cost_per_thousand=2.0),
             rate_limit=RateLimit(tokens_per_minute=1000, requests_per_minute=100),
             provider=ProviderInfo(name="TestProvider", default_api_key=None),
-            api_key=None,
-        )
+            api_key=None)

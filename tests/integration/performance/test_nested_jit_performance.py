@@ -78,8 +78,7 @@ def measure_performance(
     operator: Operator,
     input_data: Dict[str, Any],
     runs: int = 5,
-    warmup: int = 1,
-) -> PerformanceResult:
+    warmup: int = 1) -> PerformanceResult:
     """Measure operator performance over multiple runs.
 
     Args:
@@ -256,8 +255,7 @@ class ModelOperator(Operator[QueryInput, ResponseOutput]):
     # Class-level specification
     specification: ClassVar[Specification] = Specification(
         input_model=QueryInput,
-        structured_output=ResponseOutput,
-    )
+        structured_output=ResponseOutput)
 
     # Field declarations
     name: str
@@ -301,8 +299,7 @@ class EnsembleOperator(Operator[QueryInput, EnsembleOutput]):
     # Class-level specification
     specification: ClassVar[Specification] = Specification(
         input_model=QueryInput,
-        structured_output=EnsembleOutput,
-    )
+        structured_output=EnsembleOutput)
 
     # Field declarations
     model_operators: List[ModelOperator]
@@ -345,8 +342,7 @@ class JudgeOperator(Operator[JudgeInput, JudgeOutput]):
     # Class-level specification
     specification: ClassVar[Specification] = Specification(
         input_model=JudgeInput,
-        structured_output=JudgeOutput,
-    )
+        structured_output=JudgeOutput)
 
     # Field declarations
     delay: float
@@ -392,8 +388,7 @@ class EnsembleJudgeSystem(Operator[QueryInput, JudgeOutput]):
     # Class-level specification
     specification: ClassVar[Specification] = Specification(
         input_model=QueryInput,
-        structured_output=JudgeOutput,
-    )
+        structured_output=JudgeOutput)
 
     # Field declarations
     ensemble: EnsembleOperator
@@ -404,8 +399,7 @@ class EnsembleJudgeSystem(Operator[QueryInput, JudgeOutput]):
         *,
         ensemble_width: int = 10,
         model_delay: float = 0.01,
-        judge_delay: float = 0.05,
-    ):
+        judge_delay: float = 0.05):
         """Initialize with ensemble and judge operators.
 
         Args:
@@ -477,8 +471,7 @@ class ExplicitParallelEnsembleOperator(Operator[QueryInput, EnsembleOutput]):
     # Class-level specification
     specification: ClassVar[Specification] = Specification(
         input_model=QueryInput,
-        structured_output=EnsembleOutput,
-    )
+        structured_output=EnsembleOutput)
 
     # Field declarations
     model_operators: List[ModelOperator]
@@ -538,8 +531,7 @@ class AutoStructuralJITEnsembleJudge(EnsembleJudgeSystem):
 
 @pytest.mark.skipif(
     "not config.getoption('--run-perf-tests') and not config.getoption('--run-all-tests')",
-    reason="Performance tests are disabled by default. Run with --run-perf-tests or --run-all-tests flag.",
-)
+    reason="Performance tests are disabled by default. Run with --run-perf-tests or --run-all-tests flag.")
 def test_sequential_vs_explicit_parallel(request):
     """Test performance difference between sequential and explicitly parallel execution.
 
@@ -608,8 +600,7 @@ def test_sequential_vs_explicit_parallel(request):
 
 @pytest.mark.skipif(
     "not config.getoption('--run-perf-tests') and not config.getoption('--run-all-tests')",
-    reason="Performance tests are disabled by default. Run with --run-perf-tests or --run-all-tests flag.",
-)
+    reason="Performance tests are disabled by default. Run with --run-perf-tests or --run-all-tests flag.")
 def test_ensemble_judge_jit_performance(request):
     """Test and compare performance of different JIT implementations on ensemble+judge pattern."""
     # Configuration
@@ -639,8 +630,7 @@ def test_ensemble_judge_jit_performance(request):
             *,
             ensemble_width: int = 10,
             model_delay: float = 0.05,
-            judge_delay: float = 0.15,
-        ):
+            judge_delay: float = 0.15):
             """Initialize with an explicitly parallel ensemble and a judge operator."""
             # Use explicit parallel ensemble instead of sequential ensemble
             self.ensemble = ExplicitParallelEnsembleOperator(
@@ -688,8 +678,7 @@ def test_ensemble_judge_jit_performance(request):
         explicit_parallel_op,
         input_data,
         runs=runs,
-        warmup=warmup,
-    )
+        warmup=warmup)
 
     # Measure standard JIT
     jit_result = measure_performance(
@@ -702,8 +691,7 @@ def test_ensemble_judge_jit_performance(request):
         seq_structural_op,
         input_data,
         runs=runs,
-        warmup=warmup,
-    )
+        warmup=warmup)
 
     # Measure structural JIT with parallel execution
     par_result = measure_performance(
@@ -711,8 +699,7 @@ def test_ensemble_judge_jit_performance(request):
         par_structural_op,
         input_data,
         runs=runs,
-        warmup=warmup,
-    )
+        warmup=warmup)
 
     # Measure structural JIT with auto execution strategy
     auto_result = measure_performance(
@@ -720,8 +707,7 @@ def test_ensemble_judge_jit_performance(request):
         auto_structural_op,
         input_data,
         runs=runs,
-        warmup=warmup,
-    )
+        warmup=warmup)
 
     # Compare results
     results = [
@@ -730,8 +716,7 @@ def test_ensemble_judge_jit_performance(request):
         jit_result,
         seq_result,
         par_result,
-        auto_result,
-    ]
+        auto_result]
 
     speedups = compare_results(baseline_result, results)
 
@@ -875,8 +860,7 @@ if __name__ == "__main__":
         "--test",
         choices=["ensemble", "jit", "caching", "all"],
         default="all",
-        help="Which test to run",
-    )
+        help="Which test to run")
     args = parser.parse_args()
 
     print(

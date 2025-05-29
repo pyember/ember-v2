@@ -82,18 +82,15 @@ from ember.core.exceptions import ModelProviderError, ValidationError
 from ember.core.registry.model.base.schemas.chat_schemas import (
     ChatRequest,
     ChatResponse,
-    ProviderParams,
-)
+    ProviderParams)
 from ember.core.registry.model.base.schemas.model_info import ModelInfo
 from ember.core.registry.model.base.utils.model_registry_exceptions import (
     InvalidPromptError,
-    ProviderAPIError,
-)
+    ProviderAPIError)
 from ember.core.registry.model.base.utils.usage_calculator import DefaultUsageCalculator
 from ember.core.registry.model.providers.base_provider import (
     BaseChatParameters,
-    BaseProviderModel,
-)
+    BaseProviderModel)
 from ember.plugin_system import provider
 
 
@@ -218,8 +215,7 @@ class OpenAIChatParameters(BaseChatParameters):
                 field_name="max_tokens",
                 expected_range=">=1",
                 actual_value=value,
-                provider="OpenAI",
-            )
+                provider="OpenAI")
         return value
 
     def to_openai_kwargs(self) -> Dict[str, Any]:
@@ -313,8 +309,7 @@ class OpenAIModel(BaseProviderModel):
         if not api_key:
             raise ModelProviderError.for_provider(
                 provider_name=self.PROVIDER_NAME,
-                message="OpenAI API key is missing or invalid.",
-            )
+                message="OpenAI API key is missing or invalid.")
         openai.api_key = api_key
         return openai
 
@@ -369,8 +364,7 @@ class OpenAIModel(BaseProviderModel):
             raise InvalidPromptError.with_context(
                 "OpenAI prompt cannot be empty.",
                 provider=self.PROVIDER_NAME,
-                model_name=self.model_info.name,
-            )
+                model_name=self.model_info.name)
 
         logger.info(
             "OpenAI forward invoked",
@@ -378,8 +372,7 @@ class OpenAIModel(BaseProviderModel):
                 "provider": self.PROVIDER_NAME,
                 "model_name": self.model_info.name,
                 "prompt_length": len(request.prompt),
-            },
-        )
+            })
 
         # Convert the universal ChatRequest into OpenAI-specific parameters.
         openai_parameters: OpenAIChatParameters = OpenAIChatParameters(
@@ -406,8 +399,7 @@ class OpenAIModel(BaseProviderModel):
         # Use the normalized model name from our provider-specific method
         openai_kwargs = self._prune_unsupported_params(
             model_name=self.get_api_model_name(),
-            kwargs=openai_kwargs,
-        )
+            kwargs=openai_kwargs)
 
         try:
             # Use the timeout parameter from the request or the default from BaseChatParameters
@@ -419,13 +411,11 @@ class OpenAIModel(BaseProviderModel):
             response: Any = self.client.chat.completions.create(
                 model=model_name,
                 timeout=timeout,
-                **openai_kwargs,
-            )
+                **openai_kwargs)
             content: str = response.choices[0].message.content.strip()
             usage_stats = self.usage_calculator.calculate(
                 raw_output=response,
-                model_info=self.model_info,
-            )
+                model_info=self.model_info)
             return ChatResponse(data=content, raw_output=response, usage=usage_stats)
         except HTTPError as http_err:
             if 500 <= http_err.response.status_code < 600:
@@ -436,5 +426,4 @@ class OpenAIModel(BaseProviderModel):
             raise ProviderAPIError.for_provider(
                 provider_name=self.PROVIDER_NAME,
                 message=f"API error: {str(exc)}",
-                cause=exc,
-            )
+                cause=exc)

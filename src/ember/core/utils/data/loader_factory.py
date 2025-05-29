@@ -43,8 +43,7 @@ def discover_preppers(
                         "Failed to load dataset prepper plugin for '%s': %s",
                         entry_point.name,
                         error,
-                        exc_info=True,
-                    )
+                        exc_info=True)
         else:
             # Python 3.9 and earlier behavior
             for entry_point in entry_points_obj.get(entry_point_group, []):
@@ -57,8 +56,7 @@ def discover_preppers(
                         "Failed to load dataset prepper plugin for '%s': %s",
                         entry_point.name,
                         error,
-                        exc_info=True,
-                    )
+                        exc_info=True)
     except Exception as e:
         logger.warning(f"Error discovering plugins: {e}")
 

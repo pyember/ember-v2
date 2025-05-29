@@ -107,6 +107,7 @@ def display_model_info(model_ids: List[str]):
 
 
 def main():
+    """Example demonstrating the simplified XCS architecture."""
     """Run the custom model registration example."""
     logger.info("=== Custom Model Registration Example ===\n")
     

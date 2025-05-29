@@ -201,6 +201,7 @@ def migration_guide():
 
 
 def main():
+    """Example demonstrating the simplified XCS architecture."""
     """Run all examples."""
     print("=" * 60)
     print("Function-Style Model API Examples")

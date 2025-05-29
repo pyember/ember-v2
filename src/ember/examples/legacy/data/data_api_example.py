@@ -142,6 +142,7 @@ def analyze_dataset(entries: List[DatasetEntry]) -> Dict[str, Any]:
 
 
 def main() -> None:
+    """Example demonstrating the simplified XCS architecture."""
     """Run the MMLU data example."""
     # Configure structured logging
     logging.basicConfig(

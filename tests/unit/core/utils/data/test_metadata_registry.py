@@ -14,8 +14,7 @@ from ember.core.utils.data.registry import (
     DATASET_REGISTRY,
     DatasetRegistry,
     initialize_registry,
-    register,
-)
+    register)
 
 
 class MockPrepper(IDatasetPrepper):
@@ -42,8 +41,7 @@ class TestDatasetRegistry(unittest.TestCase):
             name="test_dataset",
             description="Test dataset",
             source="test_source",
-            task_type=TaskType.MULTIPLE_CHOICE,
-        )
+            task_type=TaskType.MULTIPLE_CHOICE)
         self.prepper = MockPrepper()
 
     def tearDown(self) -> None:
@@ -92,8 +90,7 @@ class TestDatasetRegistry(unittest.TestCase):
             description=self.dataset_info.description,
             source=self.dataset_info.source,
             task_type=self.dataset_info.task_type,
-            prepper_class=prepper_class,
-        )
+            prepper_class=prepper_class)
 
         # Verify registration
         dataset = self.registry.get(name=self.dataset_info.name)
@@ -102,8 +99,7 @@ class TestDatasetRegistry(unittest.TestCase):
         self.assertEqual(self.dataset_info.name, dataset.name)
         self.assertEqual(
             self.dataset_info.description,
-            dataset.info.description if dataset.info else None,
-        )
+            dataset.info.description if dataset.info else None)
         self.assertEqual(prepper_instance, dataset.prepper)
 
     def test_get_nonexistent(self) -> None:
@@ -121,19 +117,14 @@ class TestDatasetRegistry(unittest.TestCase):
                     name="dataset1",
                     description="First test dataset",
                     source="source1",
-                    task_type=TaskType.MULTIPLE_CHOICE,
-                ),
-            ),
+                    task_type=TaskType.MULTIPLE_CHOICE)),
             (
                 "dataset2",
                 DatasetInfo(
                     name="dataset2",
                     description="Second test dataset",
                     source="source2",
-                    task_type=TaskType.SHORT_ANSWER,
-                ),
-            ),
-        ]
+                    task_type=TaskType.SHORT_ANSWER))]
 
         for name, info in datasets:
             self.registry.register(name=name, info=info, prepper=self.prepper)
@@ -145,10 +136,8 @@ class TestDatasetRegistry(unittest.TestCase):
                 name="legacy_dataset",
                 description="Legacy dataset",
                 source="legacy",
-                task_type=TaskType.MULTIPLE_CHOICE,
-            ),
-            prepper=self.prepper,
-        )
+                task_type=TaskType.MULTIPLE_CHOICE),
+            prepper=self.prepper)
 
         # List all datasets
         result = self.registry.list_datasets()
@@ -198,10 +187,8 @@ class TestDatasetRegistry(unittest.TestCase):
                 name="legacy_dataset",
                 description="Legacy dataset",
                 source="legacy",
-                task_type=TaskType.MULTIPLE_CHOICE,
-            ),
-            prepper=self.prepper,
-        )
+                task_type=TaskType.MULTIPLE_CHOICE),
+            prepper=self.prepper)
 
         # Clear the registry
         self.registry.clear()
@@ -245,8 +232,7 @@ class TestRegisterDecorator(unittest.TestCase):
             name="test_dataset",
             source="test_source",
             task_type=TaskType.MULTIPLE_CHOICE,
-            description="Test dataset",
-        )
+            description="Test dataset")
 
         # Apply the decorator to our class
         result = decorator(TestDataset)

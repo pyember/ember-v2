@@ -11,8 +11,7 @@ from typing import ClassVar, Dict, List, Type
 from ember.api.operators import Operator
 from ember.core.registry.operator.base.operator_base import Specification
 from ember.core.registry.specification.specification import (
-    Specification as CoreSpecification,
-)
+    Specification as CoreSpecification)
 from ember.core.types.ember_model import EmberModel
 from ember.xcs.engine.execution_options import execution_options
 
@@ -49,8 +48,7 @@ class DelayOperator(Operator[BenchmarkInput, DelayOutput]):
 
     specification: ClassVar[Specification] = CoreSpecification(
         input_model=BenchmarkInput,
-        structured_output=DelayOutput,
-    )
+        structured_output=DelayOutput)
 
     def forward(self, *, inputs: BenchmarkInput) -> DelayOutput:
         """Wait for specified delay and return a timestamp."""

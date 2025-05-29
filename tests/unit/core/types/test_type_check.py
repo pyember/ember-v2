@@ -8,14 +8,12 @@ from ember.core.types.protocols import TypedProtocol, TypeInfo
 from ember.core.types.type_check import (
     type_check,
     validate_instance_attrs,
-    validate_type,
-)
+    validate_type)
 from tests.helpers.type_testing import (
     ModelWithTypes,
     SimpleClass,
     type_check_test_models,
-    validate_test_types,
-)
+    validate_test_types)
 
 
 def test_validate_type_simple():

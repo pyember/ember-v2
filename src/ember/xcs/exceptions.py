@@ -58,8 +58,7 @@ class TraceError(CoreTraceError, XCSError):
     def __init__(
         self,
         message: str = "Error during execution tracing",
-        operation_id: Optional[str] = None,
-    ):
+        operation_id: Optional[str] = None):
         super().__init__(message=message)
         if operation_id:
             self.add_context(operation_id=operation_id)
@@ -71,8 +70,7 @@ class CompilationError(CoreCompilationError, XCSError):
     def __init__(
         self,
         message: str = "Error during graph compilation",
-        graph_id: Optional[str] = None,
-    ):
+        graph_id: Optional[str] = None):
         super().__init__(message=message)
         if graph_id:
             self.add_context(graph_id=graph_id)
@@ -86,8 +84,7 @@ class ExecutionError(CoreExecutionError, XCSError):
         node_id: Optional[str] = None,
         message: str = "Error during graph execution",
         cause: Optional[Exception] = None,
-        **context_data: Any,
-    ):
+        **context_data: Any):
         self.node_id = node_id
         node_msg = f" in node '{node_id}'" if node_id else ""
         full_message = f"{message}{node_msg}"
@@ -111,8 +108,7 @@ class TransformError(CoreTransformError, XCSError):
         message: str = "Error in XCS transform",
         cause: Optional[Exception] = None,
         details: Optional[Dict[str, Any]] = None,
-        **context_data: Any,
-    ):
+        **context_data: Any):
         self.transform_name = transform_name
         transform_msg = f" in transform '{transform_name}'" if transform_name else ""
         full_message = f"{message}{transform_msg}"
@@ -152,8 +148,7 @@ class ParallelExecutionError(CoreParallelExecutionError, ExecutionError):
         message: str = "Error during parallel execution",
         cause: Optional[Exception] = None,
         worker_id: Optional[str] = None,
-        **context_data: Any,
-    ):
+        **context_data: Any):
         # Add worker-specific context for parallel execution errors
         super_context = dict(context_data)
         if worker_id:
@@ -170,8 +165,7 @@ class DataFlowError(CoreDataFlowError, XCSError):
         message: str = "Error in data flow",
         graph_id: Optional[str] = None,
         source_node: Optional[str] = None,
-        target_node: Optional[str] = None,
-    ):
+        target_node: Optional[str] = None):
         super().__init__(message=message)
 
         # Add data flow specific context
@@ -194,8 +188,7 @@ class SchedulerError(CoreSchedulerError, XCSError):
         self,
         message: str = "Error in XCS scheduler",
         graph_id: Optional[str] = None,
-        scheduler_type: Optional[str] = None,
-    ):
+        scheduler_type: Optional[str] = None):
         super().__init__(message=message)
 
         # Add scheduler specific context
@@ -217,5 +210,4 @@ __all__ = [
     "TransformError",
     "ParallelExecutionError",
     "DataFlowError",
-    "SchedulerError",
-]
+    "SchedulerError"]

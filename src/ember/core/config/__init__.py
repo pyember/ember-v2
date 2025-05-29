@@ -58,5 +58,4 @@ __all__ = [
     "ConfigManager",
     "create_config_manager",
     # Exceptions
-    "ConfigError",
-]
+    "ConfigError"]

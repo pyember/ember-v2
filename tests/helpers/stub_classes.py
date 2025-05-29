@@ -18,8 +18,7 @@ from typing import (
     Protocol,
     TypeVar,
     Union,
-    runtime_checkable,
-)
+    runtime_checkable)
 
 # Import the EmberModel to properly type operators
 from tests.helpers.ember_model import EmberModel
@@ -234,8 +233,7 @@ class Verifier(Operator[VerifierInputs, VerifierOutputs]):
         return VerifierOutputs(
             verdict="valid",
             explanation="stub explanation",
-            revised_answer="stub revision",
-        )
+            revised_answer="stub revision")
 
 
 class Sequential(Operator[SequentialInputs, SequentialOutputs]):
@@ -286,7 +284,7 @@ class DeviceMesh:
 
     def __init__(self, devices=None, shape=None):
         self.devices = devices or []
-        self.shape = shape or (len(self.devices),)
+        self.shape = shape or (len(self.devices))
 
 
 class PartitionSpec:
@@ -335,8 +333,7 @@ class LMModuleConfig:
         self,
         model_name: str,
         temperature: float = 1.0,
-        max_tokens: Optional[int] = None,
-    ):
+        max_tokens: Optional[int] = None):
         self.model_name = model_name
         self.temperature = temperature
         self.max_tokens = max_tokens
@@ -400,8 +397,7 @@ class VerifierOperator(Operator[VerifierInputs, VerifierOutputs]):
         return VerifierOutputs(
             verdict="valid",
             explanation="stub explanation",
-            revised_answer="stub revision",
-        )
+            revised_answer="stub revision")
 
 
 # Define stub input types for operators
@@ -461,5 +457,4 @@ __all__ = [
     "PartitionSpec",
     "LMModule",
     "LMModuleConfig",
-    "OperatorProtocol",
-]
+    "OperatorProtocol"]

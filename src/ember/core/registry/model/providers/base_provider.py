@@ -36,8 +36,7 @@ from pydantic import BaseModel, Field
 
 from ember.core.registry.model.base.schemas.chat_schemas import (
     ChatRequest,
-    ChatResponse,
-)
+    ChatResponse)
 from ember.core.registry.model.base.schemas.model_info import ModelInfo
 
 

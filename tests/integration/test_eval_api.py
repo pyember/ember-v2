@@ -41,8 +41,7 @@ try:
             return eval.EvaluationResult(
                 is_correct=is_correct,
                 score=min(1.0, word_count / 20),  # Normalize to 0-1
-                metadata={"word_count": word_count},
-            )
+                metadata={"word_count": word_count})
 
     # Register the custom evaluator class (not an instance)
     eval.register_evaluator("word_count", WordCountEvaluator)
@@ -104,8 +103,7 @@ try:
             {"question": "Japan", "answer": "Tokyo"},
             {"question": "Brazil", "answer": "Brasília"},
             {"question": "Germany", "answer": "Berlin"},
-            {"question": "India", "answer": "New Delhi"},
-        ]
+            {"question": "India", "answer": "New Delhi"}]
     )
 
     # Create evaluation pipeline

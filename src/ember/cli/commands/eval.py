@@ -162,8 +162,7 @@ def execute(args: argparse.Namespace) -> int:
             metrics = [
                 {"Metric": "Total Examples", "Value": str(total)},
                 {"Metric": "Correct", "Value": str(correct)},
-                {"Metric": "Accuracy", "Value": f"{accuracy:.2%}"},
-            ]
+                {"Metric": "Accuracy", "Value": f"{accuracy:.2%}"}]
             print_table(metrics, columns=["Metric", "Value"])
             
             if args.show_errors and errors:

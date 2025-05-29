@@ -25,13 +25,11 @@ try:
     from ember.core.utils.eval.evaluators import (
         ExactMatchEvaluator,
         NumericToleranceEvaluator,
-        PartialRegexEvaluator,
-    )
+        PartialRegexEvaluator)
 except ImportError:
     from ember.core.utils.eval.evaluators import (
         ExactMatchEvaluator,
-        NumericToleranceEvaluator,
-    )
+        NumericToleranceEvaluator)
 
 
 @pytest.fixture
@@ -41,8 +39,7 @@ def evaluation_results() -> List[EvaluationResult]:
         EvaluationResult(is_correct=True, score=1.0),
         EvaluationResult(is_correct=True, score=0.8, metadata={"confidence": 0.9}),
         EvaluationResult(is_correct=False, score=0.3, metadata={"confidence": 0.5}),
-        EvaluationResult(is_correct=False, score=0.0, metadata={"error": "No match"}),
-    ]
+        EvaluationResult(is_correct=False, score=0.0, metadata={"error": "No match"})]
 
 
 @pytest.fixture
@@ -85,8 +82,7 @@ def sample_qa_dataset() -> List[Dict[str, str]]:
             "question": "When was the Declaration of Independence signed?",
             "response": "The Declaration of Independence was primarily signed on August 2, 1776.",
             "answer": "1776",
-        },
-    ]
+        }]
 
 
 class MockExtractor:

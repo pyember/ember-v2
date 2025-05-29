@@ -11,8 +11,7 @@ from .api import (
     get_prometheus_metrics,
     histogram,
     measure_time,
-    timed,
-)
+    timed)
 from .integration import ComponentMetrics
 from .metrics import Metrics
 
@@ -27,5 +26,4 @@ __all__ = [
     "get_prometheus_metrics",
     # Core implementation classes (for advanced use)
     "Metrics",
-    "ComponentMetrics",
-]
+    "ComponentMetrics"]

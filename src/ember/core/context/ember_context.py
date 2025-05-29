@@ -46,8 +46,7 @@ class EmberContext:
         "_metrics_integration",
         "_logger",
         "_model_registry",
-        "_data_context",
-    )
+        "_data_context")
 
     # Thread-local storage with zero sharing between threads
     _thread_local = threading.local()
@@ -138,8 +137,7 @@ class EmberContext:
         *,  # Force keyword arguments
         config_manager: Optional[ConfigManager] = None,
         model_registry: Optional[ModelRegistry] = None,
-        logger: Optional[logging.Logger] = None,
-    ):
+        logger: Optional[logging.Logger] = None):
         """Initializes context with minimal allocations.
 
         Args:
@@ -268,8 +266,7 @@ class EmberContext:
         name: str,
         component: Any,
         *,
-        cache: bool = True,
-    ) -> None:
+        cache: bool = True) -> None:
         """Registers component with minimal locking.
 
         Uses fine-grained locking for concurrent updates.
@@ -354,8 +351,7 @@ def scoped_context(
     config_manager: Optional[ConfigManager] = None,
     model_registry: Optional[ModelRegistry] = None,
     models: Optional[Dict[str, Any]] = None,
-    operators: Optional[Dict[str, Any]] = None,
-) -> Iterator[EmberContext]:
+    operators: Optional[Dict[str, Any]] = None) -> Iterator[EmberContext]:
     """Creates temporary context that auto-restores previous.
 
     Thread-local implementation ensures zero contention.
@@ -377,8 +373,7 @@ def scoped_context(
         ctx = EmberContext(
             config_manager=config_manager or prev_ctx.config_manager,
             model_registry=model_registry or prev_ctx.model_registry,
-            logger=prev_ctx.logger,
-        )
+            logger=prev_ctx.logger)
 
         # Register provided components
         if models:

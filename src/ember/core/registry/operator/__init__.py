@@ -8,5 +8,4 @@ from __future__ import annotations
 from ember.core.registry.operator.base import Operator
 
 __all__ = [
-    "Operator",
-]
+    "Operator"]

@@ -25,8 +25,7 @@ from ember.core.registry.model.base.schemas.model_info import ModelInfo
 from ember.core.registry.model.base.schemas.provider_info import ProviderInfo
 from ember.core.registry.model.providers.base_discovery import (
     BaseDiscoveryProvider,
-    ModelDiscoveryError,
-)
+    ModelDiscoveryError)
 
 
 class MockDiscoveryProvider(BaseDiscoveryProvider):
@@ -40,8 +39,7 @@ class MockDiscoveryProvider(BaseDiscoveryProvider):
         models: Optional[Dict[str, Dict[str, Any]]] = None,
         delay: float = 0,
         should_fail: bool = False,
-        failure_msg: str = "Intentional provider failure",
-    ) -> None:
+        failure_msg: str = "Intentional provider failure") -> None:
         """Initialize the mock provider with optional custom models and behavior.
 
         Args:
@@ -99,8 +97,7 @@ def discovery_service() -> ModelDiscoveryService:
 
 
 def test_discovery_service_fetch_and_cache(
-    discovery_service: ModelDiscoveryService,
-) -> None:
+    discovery_service: ModelDiscoveryService) -> None:
     """Test that the discovery service fetches models and then caches them.
 
     This test verifies:
@@ -172,8 +169,7 @@ def test_discovery_service_initialize_providers() -> None:
         {
             "OPENAI_API_KEY": "test_key",
             "ANTHROPIC_API_KEY": "test_key",
-        },
-    ):
+        }):
         service = ModelDiscoveryService()
         # Should initialize providers for OpenAI and Anthropic
         assert len(service.providers) >= 2
@@ -189,8 +185,7 @@ def test_discovery_service_initialize_providers() -> None:
         with patch.object(
             ModelDiscoveryService,
             "_initialize_providers",
-            return_value=[FallbackDiscoveryProvider()],
-        ):
+            return_value=[FallbackDiscoveryProvider()]):
             service = ModelDiscoveryService()
             # Should include our patched fallback provider
             assert len(service.providers) > 0
@@ -207,8 +202,7 @@ def test_discovery_service_merge_with_config() -> None:
         cost=ModelCost(input_cost_per_thousand=1.0, output_cost_per_thousand=2.0),
         rate_limit=RateLimit(tokens_per_minute=1000, requests_per_minute=100),
         provider=ProviderInfo(name="MockProvider", default_api_key="mock_key"),
-        api_key="mock_key",
-    )
+        api_key="mock_key")
 
     # Use a module-level patch to avoid import path issues
     import sys
@@ -345,8 +339,7 @@ def test_parallel_provider_execution() -> None:
         MockDiscoveryProvider(
             models={"provider3:model": {"model_id": "provider3:model"}},
             delay=0.1,  # Reduced delay for faster test execution
-        ),
-    ]
+        )]
 
     service = ModelDiscoveryService(ttl=3600)
     service.providers = providers
@@ -392,9 +385,7 @@ def test_provider_configure_with_env_vars() -> None:
             (
                 MockDiscoveryProvider,
                 "TEST_API_KEY",
-                lambda: {"api_key": os.environ.get("TEST_API_KEY")},
-            ),
-        ]
+                lambda: {"api_key": os.environ.get("TEST_API_KEY")})]
 
         # Manually initialize providers like the service would
         providers = []
@@ -446,8 +437,7 @@ def test_refresh_method() -> None:
                     name="Model 2",
                     cost=ModelCost(),
                     rate_limit=RateLimit(),
-                    provider=ProviderInfo(name="Test", default_api_key="test-key"),
-                )
+                    provider=ProviderInfo(name="Test", default_api_key="test-key"))
             }
 
             refreshed_models = service.refresh()
@@ -545,8 +535,7 @@ def test_invalidate_cache() -> None:
 
 @pytest.mark.asyncio
 async def test_discovery_service_async_fetch_and_cache(
-    discovery_service: ModelDiscoveryService,
-) -> None:
+    discovery_service: ModelDiscoveryService) -> None:
     """Test async discovery and caching behavior."""
     # Initial async discovery
     models = await discovery_service.discover_models_async()
@@ -641,8 +630,7 @@ def test_merge_with_config_different_provider_prefixes() -> None:
         # Mock environment variables for API keys
         with patch.dict(
             "os.environ",
-            {"OPENAI_API_KEY": "openai-key", "ANTHROPIC_API_KEY": "anthropic-key"},
-        ):
+            {"OPENAI_API_KEY": "openai-key", "ANTHROPIC_API_KEY": "anthropic-key"}):
             # Merge with config
             merged = service.merge_with_config(discovered=discovered)
 

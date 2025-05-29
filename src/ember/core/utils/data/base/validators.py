@@ -100,16 +100,14 @@ class DatasetValidator(IDatasetValidator):
                 raise DataValidationError.for_field(
                     field_name="dataset",
                     message="The provided Dataset is empty.",
-                    expected_type="non-empty Dataset",
-                )
+                    expected_type="non-empty Dataset")
             return dataset
         elif isinstance(dataset, DatasetDict):
             if len(list(dataset.keys())) == 0:
                 raise DataValidationError.for_field(
                     field_name="dataset",
                     message="The provided DatasetDict is empty.",
-                    expected_type="non-empty DatasetDict",
-                )
+                    expected_type="non-empty DatasetDict")
             split_name: str = (
                 "validation"
                 if "validation" in dataset
@@ -119,32 +117,28 @@ class DatasetValidator(IDatasetValidator):
                 raise DataValidationError.for_field(
                     field_name="dataset",
                     message="The provided DatasetDict has no splits available.",
-                    expected_type="DatasetDict with at least one split",
-                )
+                    expected_type="DatasetDict with at least one split")
             split_data = dataset[split_name]
             if len(split_data) == 0:
                 raise DataValidationError.for_field(
                     field_name="dataset",
                     message=f"The split '{split_name}' in DatasetDict is empty.",
                     expected_type="non-empty split",
-                    split_name=split_name,
-                )
+                    split_name=split_name)
             return split_data
         elif isinstance(dataset, list):
             if not dataset:
                 raise DataValidationError.for_field(
                     field_name="dataset",
                     message="The provided list dataset is empty.",
-                    expected_type="non-empty list",
-                )
+                    expected_type="non-empty list")
             return dataset
         else:
             raise InvalidArgumentError.with_context(
                 f"Input dataset must be of type Dataset, DatasetDict, or list of dicts; got {type(dataset)}.",
                 argument_name="dataset",
                 expected_type="Dataset, DatasetDict, or list of dicts",
-                actual_type=str(type(dataset)),
-            )
+                actual_type=str(type(dataset)))
 
     def validate_required_keys(
         self, *, item: Dict[str, Any], required_keys: List[str]
@@ -165,8 +159,7 @@ class DatasetValidator(IDatasetValidator):
                 message=f"Dataset item is missing required keys: {missing_keys}",
                 expected_keys=required_keys,
                 missing_keys=list(missing_keys),
-                available_keys=list(item.keys()),
-            )
+                available_keys=list(item.keys()))
 
     def validate_item(self, *, item: Dict[str, Any], required_keys: List[str]) -> None:
         """Ensures both the presence and non-nullity of required keys in a dataset item.
@@ -184,8 +177,7 @@ class DatasetValidator(IDatasetValidator):
                 f"Expected 'item' to be a dict but received type: {type(item)}.",
                 argument_name="item",
                 expected_type="dict",
-                actual_type=str(type(item)),
-            )
+                actual_type=str(type(item)))
         missing_or_none_keys = [
             key for key in required_keys if key not in item or item[key] is None
         ]
@@ -195,5 +187,4 @@ class DatasetValidator(IDatasetValidator):
                 message=f"Missing or None value for required keys: {', '.join(missing_or_none_keys)}",
                 expected_keys=required_keys,
                 missing_or_none_keys=missing_or_none_keys,
-                available_keys=list(item.keys()),
-            )
+                available_keys=list(item.keys()))

@@ -20,16 +20,14 @@ try:
         PipelineEvaluator,
         evaluate_batch,
         evaluate_batch_with_summary,
-        summarize_batch,
-    )
+        summarize_batch)
 except ImportError:
     from ember.core.utils.eval.pipeline import (
         BatchEvaluationSummary,
         PipelineEvaluator,
         evaluate_batch,
         evaluate_batch_with_summary,
-        summarize_batch,
-    )
+        summarize_batch)
 
 
 class TestPipelineEvaluator(unittest.TestCase):
@@ -50,16 +48,14 @@ class TestPipelineEvaluator(unittest.TestCase):
         # Create pipeline evaluator
         self.pipeline = PipelineEvaluator(
             transforms=[self.transform1, self.transform2],
-            evaluator=self.mock_evaluator,
-        )
+            evaluator=self.mock_evaluator)
 
     def test_transform_chain(self) -> None:
         """Test that transforms are applied in sequence."""
         # Act
         self.pipeline.evaluate(
             system_output="raw_output",
-            correct_answer="expected_answer",
-        )
+            correct_answer="expected_answer")
 
         # Assert
         self.transform1.assert_called_once_with("raw_output")
@@ -74,8 +70,7 @@ class TestPipelineEvaluator(unittest.TestCase):
         self.pipeline.evaluate(
             system_output="raw_output",
             correct_answer="expected_answer",
-            custom_param=True,
-        )
+            custom_param=True)
 
         # Assert
         self.mock_evaluator.evaluate.assert_called_once_with(
@@ -87,14 +82,12 @@ class TestPipelineEvaluator(unittest.TestCase):
         # Arrange
         pipeline = PipelineEvaluator(
             transforms=[],
-            evaluator=self.mock_evaluator,
-        )
+            evaluator=self.mock_evaluator)
 
         # Act
         result = pipeline.evaluate(
             system_output="raw_output",
-            correct_answer="expected_answer",
-        )
+            correct_answer="expected_answer")
 
         # Assert
         self.mock_evaluator.evaluate.assert_called_once_with(
@@ -119,8 +112,7 @@ class TestPipelineEvaluator(unittest.TestCase):
 
         pipeline = PipelineEvaluator(
             transforms=[to_upper, reverse_string],
-            evaluator=exact_match_evaluator,
-        )
+            evaluator=exact_match_evaluator)
 
         # Act
         pipeline.evaluate(
@@ -151,8 +143,7 @@ class TestSummarizeBatch(unittest.TestCase):
         results = [
             EvaluationResult(is_correct=True, score=1.0),
             EvaluationResult(is_correct=True, score=0.8),
-            EvaluationResult(is_correct=True, score=0.9),
-        ]
+            EvaluationResult(is_correct=True, score=0.9)]
 
         # Act
         summary = summarize_batch(results)
@@ -168,8 +159,7 @@ class TestSummarizeBatch(unittest.TestCase):
         results = [
             EvaluationResult(is_correct=True, score=1.0),
             EvaluationResult(is_correct=False, score=0.0),
-            EvaluationResult(is_correct=True, score=0.8),
-        ]
+            EvaluationResult(is_correct=True, score=0.8)]
 
         # Act
         summary = summarize_batch(results)
@@ -185,8 +175,7 @@ class TestSummarizeBatch(unittest.TestCase):
         results = [
             EvaluationResult(is_correct=False, score=0.2),
             EvaluationResult(is_correct=False, score=0.4),
-            EvaluationResult(is_correct=False, score=0.0),
-        ]
+            EvaluationResult(is_correct=False, score=0.0)]
 
         # Act
         summary = summarize_batch(results)
@@ -206,8 +195,7 @@ class TestEvaluateBatch(unittest.TestCase):
         self.mock_evaluator.evaluate.side_effect = [
             EvaluationResult(is_correct=True, score=1.0),
             EvaluationResult(is_correct=False, score=0.0),
-            EvaluationResult(is_correct=True, score=0.8),
-        ]
+            EvaluationResult(is_correct=True, score=0.8)]
 
     def test_empty_batch(self) -> None:
         """Test evaluating an empty batch."""
@@ -215,8 +203,7 @@ class TestEvaluateBatch(unittest.TestCase):
         results = evaluate_batch(
             evaluator=self.mock_evaluator,
             system_outputs=[],
-            correct_answers=[],
-        )
+            correct_answers=[])
 
         # Assert
         self.assertEqual([], results)
@@ -233,8 +220,7 @@ class TestEvaluateBatch(unittest.TestCase):
             evaluator=self.mock_evaluator,
             system_outputs=system_outputs,
             correct_answers=correct_answers,
-            custom_param=True,
-        )
+            custom_param=True)
 
         # Assert
         self.assertEqual(3, len(results))
@@ -248,8 +234,7 @@ class TestEvaluateBatch(unittest.TestCase):
             [
                 mock.call("output1", "answer1", custom_param=True),
                 mock.call("output2", "answer2", custom_param=True),
-                mock.call("output3", "answer3", custom_param=True),
-            ]
+                mock.call("output3", "answer3", custom_param=True)]
         )
 
     def test_mismatched_lengths(self) -> None:
@@ -263,8 +248,7 @@ class TestEvaluateBatch(unittest.TestCase):
             evaluate_batch(
                 evaluator=self.mock_evaluator,
                 system_outputs=system_outputs,
-                correct_answers=correct_answers,
-            )
+                correct_answers=correct_answers)
 
 
 class TestEvaluateBatchWithSummary(unittest.TestCase):
@@ -276,8 +260,7 @@ class TestEvaluateBatchWithSummary(unittest.TestCase):
         self.mock_evaluator.evaluate.side_effect = [
             EvaluationResult(is_correct=True, score=1.0),
             EvaluationResult(is_correct=False, score=0.0),
-            EvaluationResult(is_correct=True, score=0.8),
-        ]
+            EvaluationResult(is_correct=True, score=0.8)]
 
     def test_function_composition(self) -> None:
         """Test that the function composes evaluate_batch and summarize_batch."""
@@ -301,13 +284,11 @@ class TestEvaluateBatchWithSummary(unittest.TestCase):
             # Mock return values
             mock_results = [
                 EvaluationResult(is_correct=True, score=1.0),
-                EvaluationResult(is_correct=False, score=0.0),
-            ]
+                EvaluationResult(is_correct=False, score=0.0)]
             mock_summary = BatchEvaluationSummary(
                 results=mock_results,
                 mean_score=0.5,
-                accuracy=0.5,
-            )
+                accuracy=0.5)
 
             mock_evaluate.return_value = mock_results
             mock_summarize.return_value = mock_summary
@@ -317,16 +298,14 @@ class TestEvaluateBatchWithSummary(unittest.TestCase):
                 evaluator=self.mock_evaluator,
                 system_outputs=system_outputs,
                 correct_answers=correct_answers,
-                custom_param=True,
-            )
+                custom_param=True)
 
             # Assert
             mock_evaluate.assert_called_once_with(
                 evaluator=self.mock_evaluator,
                 system_outputs=system_outputs,
                 correct_answers=correct_answers,
-                custom_param=True,
-            )
+                custom_param=True)
             mock_summarize.assert_called_once_with(mock_results)
             self.assertEqual(mock_summary, result)
         finally:
@@ -344,8 +323,7 @@ class TestEvaluateBatchWithSummary(unittest.TestCase):
         summary = evaluate_batch_with_summary(
             evaluator=self.mock_evaluator,
             system_outputs=system_outputs,
-            correct_answers=correct_answers,
-        )
+            correct_answers=correct_answers)
 
         # Assert
         self.assertEqual(3, len(summary.results))

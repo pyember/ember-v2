@@ -23,8 +23,7 @@ try:
         jit,
         pmap,
         vmap,
-        xcs,
-    )
+        xcs)
 except ImportError as e:
     # Fall back to direct imports if simplified structure isn't available
     IMPORT_SUCCESS = False
@@ -49,8 +48,7 @@ except ImportError as e:
             ExecutionResult,
             JITOptions,
             TransformOptions,
-            XCSExecutionOptions,
-        )
+            XCSExecutionOptions)
 
         # Tracing components
         from ember.xcs.tracer.xcs_tracing import TracerContext, TraceRecord
@@ -66,8 +64,7 @@ except ImportError as e:
             jit,
             pmap,
             vmap,
-            xcs,
-        )
+            xcs)
 
 # All imports succeeded
 IMPORT_SUCCESS = True

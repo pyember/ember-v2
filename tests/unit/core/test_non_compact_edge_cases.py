@@ -35,16 +35,14 @@ class TestOpRegistryEdgeCases:
             "TEST",
             lambda count, model, temp: UniformEnsemble(
                 num_units=count, model_name=model, temperature=temp
-            ),
-        )
+            ))
 
         # Register a second factory with the same code
         registry.register(
             "TEST",
             lambda count, model, temp: JudgeSynthesis(
                 model_name=model, temperature=temp
-            ),
-        )
+            ))
 
         # The second registration should override the first
         op = registry.create("TEST", 1, "model", 0.5)
@@ -60,8 +58,7 @@ class TestOpRegistryEdgeCases:
             "TEST",
             lambda count, model, temp: UniformEnsemble(
                 num_units=count, model_name=model, temperature=temp
-            ),
-        )
+            ))
 
         # Registry should have the uppercase code but not lowercase
         assert registry.has_type("TEST")
@@ -80,8 +77,7 @@ class TestOpRegistryEdgeCases:
             "",
             lambda count, model, temp: UniformEnsemble(
                 num_units=count, model_name=model, temperature=temp
-            ),
-        )
+            ))
 
         # Registry should have the empty code
         assert registry.has_type("")
@@ -160,8 +156,7 @@ class TestParseSpecEdgeCases:
             "TEST",
             lambda count, model, temp: UniformEnsemble(
                 num_units=count, model_name=model, temperature=temp
-            ),
-        )
+            ))
 
         # Valid spec for this registry
         op = parse_spec("1:TEST:model:0.5", registry=registry)
@@ -250,8 +245,7 @@ class TestResolveRefsEdgeCases:
             1.23,
             True,
             {"key": "value"},
-            set([1, 2, 3]),
-        ]
+            set([1, 2, 3])]
 
         for node in invalid_nodes:
             with pytest.raises(TypeError, match=r"Unsupported node type"):
@@ -372,10 +366,8 @@ class TestBuildGraphEdgeCases:
                     UniformEnsemble(
                         num_units=count, model_name=model, temperature=temp
                     ),
-                    MostCommon(),
-                ]
-            ),
-        )
+                    MostCommon()]
+            ))
 
         # Building with custom type should work
         graph = build_graph("3:CUSTOM:gpt-4o:0.7", type_registry=custom_registry)

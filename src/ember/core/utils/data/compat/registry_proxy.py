@@ -39,8 +39,7 @@ class RegistryProxy:
         except (AttributeError, KeyError):
             # If context not available, fall back to original registry
             from ember.core.utils.data.registry import (
-                DATASET_REGISTRY as original_registry,
-            )
+                DATASET_REGISTRY as original_registry)
 
             return getattr(original_registry, name)
 

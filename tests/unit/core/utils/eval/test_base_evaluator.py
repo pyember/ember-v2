@@ -14,14 +14,12 @@ try:
     from ember.core.utils.eval.base_evaluator import (
         EvaluationResult,
         IEvaluator,
-        IStatefulEvaluator,
-    )
+        IStatefulEvaluator)
 except ImportError:
     from ember.core.utils.eval.base_evaluator import (
         EvaluationResult,
         IEvaluator,
-        IStatefulEvaluator,
-    )
+        IStatefulEvaluator)
 
 # Type variables for generic testing
 T_out = TypeVar("T_out")
@@ -125,8 +123,7 @@ class ConcreteStatefulEvaluator(IStatefulEvaluator[str, str]):
         return EvaluationResult(
             is_correct=accuracy == 1.0,
             score=accuracy,
-            metadata={"total_evaluated": self.total_evaluated},
-        )
+            metadata={"total_evaluated": self.total_evaluated})
 
 
 class TestIStatefulEvaluator(unittest.TestCase):

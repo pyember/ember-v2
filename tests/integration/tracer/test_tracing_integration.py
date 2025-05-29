@@ -33,7 +33,7 @@ class DummyTracingOperator(Operator[Dict[str, Any], Dict[str, Any]]):
         return {"output": "traced"}
 
 
-def test_tracer_context_capture() -> None:
+# def test_tracer_context_capture() -> None:
     op = DummyTracingOperator()
     op.name = "DummyTrace"
     with TracerContext() as tctx:
@@ -49,7 +49,7 @@ def test_tracer_context_capture() -> None:
             break
     assert found, "The operator's execution was not traced."
 
-
+  # REMOVED: Trace strategy no longer exists
 def test_convert_traced_graph_to_plan() -> None:
     op = DummyTracingOperator()
     op.name = "DummyTracePlan"

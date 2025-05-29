@@ -53,8 +53,7 @@ class TestDataAPIFacade(unittest.TestCase):
             "question": [
                 "What is the capital of France?",
                 "What is 2+2?",
-                "Who wrote Hamlet?",
-            ][idx],
+                "Who wrote Hamlet?"][idx],
             "choices": [
                 {"A": "London", "B": "Berlin", "C": "Paris", "D": "Madrid"},
                 {"A": "3", "B": "4", "C": "5", "D": "6"},
@@ -63,8 +62,7 @@ class TestDataAPIFacade(unittest.TestCase):
                     "B": "Jane Austen",
                     "C": "William Shakespeare",
                     "D": "Mark Twain",
-                },
-            ][idx],
+                }][idx],
             "answer": ["C", "B", "C"][idx],
             "category": ["Geography", "Math", "Literature"][idx],
         }
@@ -76,8 +74,7 @@ class TestDataAPIFacade(unittest.TestCase):
                 query=[
                     "What is the capital of France?",
                     "What is 2+2?",
-                    "Who wrote Hamlet?",
-                ][i],
+                    "Who wrote Hamlet?"][i],
                 choices=[
                     {"A": "London", "B": "Berlin", "C": "Paris", "D": "Madrid"},
                     {"A": "3", "B": "4", "C": "5", "D": "6"},
@@ -86,13 +83,11 @@ class TestDataAPIFacade(unittest.TestCase):
                         "B": "Jane Austen",
                         "C": "William Shakespeare",
                         "D": "Mark Twain",
-                    },
-                ][i],
+                    }][i],
                 metadata={
                     "correct_answer": ["C", "B", "C"][i],
                     "category": ["Geography", "Math", "Literature"][i],
-                },
-            )
+                })
             for i in range(3)
         ]
 
@@ -139,8 +134,7 @@ class TestDataAPIFacade(unittest.TestCase):
                         metadata={
                             "correct_answer": item.get("answer", ""),
                             "category": item.get("category", "Unknown"),
-                        },
-                    )
+                        })
                 ]
 
         # Setup direct test dataset for validation
@@ -210,8 +204,7 @@ class TestDataAPIFacade(unittest.TestCase):
                 query=[
                     "WHAT IS THE CAPITAL OF FRANCE?",
                     "WHAT IS 2+2?",
-                    "WHO WROTE HAMLET?",
-                ][i],
+                    "WHO WROTE HAMLET?"][i],
                 choices=[
                     {"A": "London", "B": "Berlin", "C": "Paris", "D": "Madrid"},
                     {"A": "3", "B": "4", "C": "5", "D": "6"},
@@ -220,18 +213,15 @@ class TestDataAPIFacade(unittest.TestCase):
                         "B": "Jane Austen",
                         "C": "William Shakespeare",
                         "D": "Mark Twain",
-                    },
-                ][i],
+                    }][i],
                 formatted_prompt=[
                     "Question: WHAT IS THE CAPITAL OF FRANCE?\n\nOptions:\nA. London\nB. Berlin\nC. Paris\nD. Madrid\n\nSelect the best answer.",
                     "Question: WHAT IS 2+2?\n\nOptions:\nA. 3\nB. 4\nC. 5\nD. 6\n\nSelect the best answer.",
-                    "Question: WHO WROTE HAMLET?\n\nOptions:\nA. Charles Dickens\nB. Jane Austen\nC. William Shakespeare\nD. Mark Twain\n\nSelect the best answer.",
-                ][i],
+                    "Question: WHO WROTE HAMLET?\n\nOptions:\nA. Charles Dickens\nB. Jane Austen\nC. William Shakespeare\nD. Mark Twain\n\nSelect the best answer."][i],
                 metadata={
                     "correct_answer": ["C", "B", "C"][i],
                     "category": ["Geography", "Math", "Literature"][i],
-                },
-            )
+                })
             for i in range(3)
         ]
 
@@ -248,8 +238,7 @@ class TestDataAPIFacade(unittest.TestCase):
         self.assertTrue(callable(datasets), "datasets should be callable")
         self.assertTrue(
             callable(list_available_datasets),
-            "list_available_datasets should be callable",
-        )
+            "list_available_datasets should be callable")
         self.assertTrue(callable(register), "register should be callable")
 
         # Let's simplify this test and focus on the core functionality
@@ -283,8 +272,7 @@ class TestDataAPIFacade(unittest.TestCase):
             @register(
                 "test_decorator",
                 source="test/source",
-                task_type=TaskType.MULTIPLE_CHOICE,
-            )
+                task_type=TaskType.MULTIPLE_CHOICE)
             class TestClass:
                 pass
 
@@ -293,8 +281,7 @@ class TestDataAPIFacade(unittest.TestCase):
                 name="test_decorator",
                 prepper_class=TestClass,
                 source="test/source",
-                task_type=TaskType.MULTIPLE_CHOICE,
-            )
+                task_type=TaskType.MULTIPLE_CHOICE)
 
         # 3. Test the builder pattern with transformations
         # Note: We use a manual test dataset instead of relying on the whole registry

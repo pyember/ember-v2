@@ -5,8 +5,7 @@ from typing import Dict, Optional, Union
 from ember.core.registry.model.base.schemas.usage import (
     UsageRecord,
     UsageStats,
-    UsageSummary,
-)
+    UsageSummary)
 
 
 class UsageService:

@@ -22,8 +22,7 @@ from ember.api.operators import (  # Base classes; Type variables; Built-in oper
     Specification,
     TypeVar,
     Union,
-    VerifierOperator,
-)
+    VerifierOperator)
 
 # Make everything available for import
 __all__ = [
@@ -47,5 +46,4 @@ __all__ = [
     "Any",
     "Optional",
     "Union",
-    "TypeVar",
-]
+    "TypeVar"]

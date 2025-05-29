@@ -215,8 +215,7 @@ def main() -> None:
     parser.add_argument(
         "--skip-model-calls",
         action="store_true",
-        help="Skip any calls to language models",
-    )
+        help="Skip any calls to language models")
     args = parser.parse_args()
 
     results = {}

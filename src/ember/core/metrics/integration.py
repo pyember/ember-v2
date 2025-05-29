@@ -57,8 +57,7 @@ class ComponentMetrics:
         self,
         metrics_facade: Metrics,
         component_name: str,
-        base_tags: Optional[Dict[str, str]] = None,
-    ):
+        base_tags: Optional[Dict[str, str]] = None):
         """Initialize ComponentMetrics.
 
         Args:
@@ -142,8 +141,7 @@ class ComponentTimerContext:
         self,
         component_metrics: ComponentMetrics,
         operation: str,
-        tags: Optional[Dict[str, str]],
-    ):
+        tags: Optional[Dict[str, str]]):
         self._component_metrics = component_metrics
         self._operation = operation
         self._tags = tags

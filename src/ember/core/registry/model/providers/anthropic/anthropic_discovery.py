@@ -51,8 +51,7 @@ class AnthropicDiscovery(BaseDiscoveryProvider):
         if not self._api_key:
             raise ModelDiscoveryError.for_provider(
                 provider="anthropic",
-                reason="API key is not set in config or environment",
-            )
+                reason="API key is not set in config or environment")
         self._base_url: Optional[str] = base_url or "https://api.anthropic.com"
         client_kwargs: Dict[str, Any] = {"api_key": self._api_key}
         if self._base_url is not None:
@@ -97,8 +96,7 @@ class AnthropicDiscovery(BaseDiscoveryProvider):
                 headers=headers,
                 timeout=(
                     2,
-                    5,
-                ),  # (connect_timeout, read_timeout) in seconds - fairly aggressive
+                    5),  # (connect_timeout, read_timeout) in seconds - fairly aggressive
             )
 
             # Raising error for non-success responses
@@ -164,8 +162,7 @@ class AnthropicDiscovery(BaseDiscoveryProvider):
                         "object": model_object,
                         "display_name": display_name,
                         "created_at": created_at,
-                    },
-                )
+                    })
 
             # Return discovered models, even if empty
             if not standardized_models:

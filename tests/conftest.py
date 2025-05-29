@@ -33,12 +33,10 @@ if "ember" not in sys.modules:
             force_discovery=False,
             api_keys=None,
             env_prefix="EMBER_",
-            initialize_context=True,
-        ):
+            initialize_context=True):
             """Fallback implementation of initialize_ember for testing."""
             from src.ember.core.registry.model.base.registry.model_registry import (
-                ModelRegistry,
-            )
+                ModelRegistry)
 
             logger.info("Using fallback initialize_ember implementation")
             return ModelRegistry()
@@ -61,8 +59,7 @@ from typing import Any
 
 from ember.core.registry.model.base.schemas.chat_schemas import (
     ChatRequest,
-    ChatResponse,
-)
+    ChatResponse)
 
 # Register test providers for unit and integration tests
 from ember.core.registry.model.providers.base_provider import BaseProviderModel

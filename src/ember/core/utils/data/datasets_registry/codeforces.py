@@ -59,8 +59,7 @@ class CodeForcesPrepper(IDatasetPrepper):
             "description",
             "input_format",
             "output_format",
-            "examples",
-        ]
+            "examples"]
 
     def create_dataset_entries(self, *, item: Dict[str, Any]) -> List[DatasetEntry]:
         """Create a DatasetEntry from a Codeforces problem.
@@ -140,8 +139,7 @@ class CodeForcesPrepper(IDatasetPrepper):
                     "dataset": "codeforces",
                     "input_specification": input_spec,
                     "output_specification": output_spec,
-                },
-            )
+                })
         ]
 
 

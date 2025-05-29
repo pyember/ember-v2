@@ -7,8 +7,7 @@ import pytest
 from ember.core.exceptions import (
     InvalidArgumentError,
     InvalidPromptError,
-    SpecificationValidationError,
-)
+    SpecificationValidationError)
 from ember.core.registry.specification.specification import Specification
 from ember.core.types import EmberModel
 

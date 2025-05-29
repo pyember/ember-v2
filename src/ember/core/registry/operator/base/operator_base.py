@@ -191,8 +191,7 @@ class Operator(EmberModule, abc.ABC, Generic[InputT, OutputT]):
             raise OperatorSpecificationError.with_context(
                 "Operator specification must be defined.",
                 operator_name=self.__class__.__name__,
-                operator_type=type(self).__module__,
-            ) from e
+                operator_type=type(self).__module__) from e
 
         try:
             # Determine input format (model, dict, or kwargs)
@@ -262,8 +261,7 @@ class Operator(EmberModule, abc.ABC, Generic[InputT, OutputT]):
                     operator_name=self.__class__.__name__,
                     message=f"Error executing operator: {str(e)}",
                     cause=e,
-                    operator_type=type(self).__module__,
-                ) from e
+                    operator_type=type(self).__module__) from e
             raise
 
     @property
@@ -310,6 +308,5 @@ class Operator(EmberModule, abc.ABC, Generic[InputT, OutputT]):
                 "Operator specification must be explicitly defined in the concrete class.",
                 operator_name=self.__class__.__name__,
                 operator_type=type(self).__module__,
-                operator_class=type(self).__name__,
-            )
+                operator_class=type(self).__name__)
         return cast(Specification[InputT, OutputT], subclass_spec)

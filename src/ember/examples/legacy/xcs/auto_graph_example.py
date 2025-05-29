@@ -78,8 +78,7 @@ class SimplePipeline(Operator[QueryInput, AggregationOutput]):
         *,
         model_name: str = "openai:gpt-4o-mini",
         num_units: int = 3,
-        temperature: float = 0.7,
-    ) -> None:
+        temperature: float = 0.7) -> None:
         """Initialize the pipeline with configurable parameters.
 
         Args:
@@ -145,8 +144,7 @@ class JITPipeline(Operator[QueryInput, AggregationOutput]):
         *,
         model_name: str = "openai:gpt-4o-mini",
         num_units: int = 3,
-        temperature: float = 0.7,
-    ) -> None:
+        temperature: float = 0.7) -> None:
         """Initialize the pipeline with configurable parameters.
 
         Args:
@@ -194,6 +192,7 @@ class JITPipeline(Operator[QueryInput, AggregationOutput]):
 
 
 def main() -> None:
+    """Example demonstrating the simplified XCS architecture."""
     """Run demonstration of automatic graph building."""
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
@@ -203,8 +202,7 @@ def main() -> None:
     queries = [
         "What is the capital of France?",
         "What is the tallest mountain in the world?",
-        "Who wrote Romeo and Juliet?",
-    ]
+        "Who wrote Romeo and Juliet?"]
 
     # First, regular pipeline without JIT
     print("Running baseline (no JIT):")

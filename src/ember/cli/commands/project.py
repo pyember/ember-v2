@@ -116,8 +116,7 @@ def create_basic_structure(project_path: Path) -> None:
         "src",
         "data",
         "outputs",
-        "notebooks",
-    ]
+        "notebooks"]
     
     for dir_name in dirs:
         dir_path = project_path / dir_name
@@ -214,8 +213,7 @@ def create_research_structure(project_path: Path) -> None:
         "experiments",
         "results",
         "configs",
-        "papers",
-    ]
+        "papers"]
     
     for dir_name in dirs:
         dir_path = project_path / dir_name
@@ -306,8 +304,7 @@ def create_production_structure(project_path: Path) -> None:
         "src/services",
         "tests",
         "docker",
-        "deploy",
-    ]
+        "deploy"]
     
     for dir_name in dirs:
         dir_path = project_path / dir_name

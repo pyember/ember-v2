@@ -44,14 +44,12 @@ def mock_dependencies(monkeypatch, mock_model_service):
     # Mock the get_model_service function
     monkeypatch.setattr(
         "ember.core.registry.model.examples.usage_example.get_model_service",
-        lambda *args, **kwargs: mock_model_service,
-    )
+        lambda *args, **kwargs: mock_model_service)
 
     # Suppress logging
     monkeypatch.setattr(
         "ember.core.registry.model.examples.usage_example.logging.basicConfig",
-        lambda **kwargs: None,
-    )
+        lambda **kwargs: None)
 
 
 def test_usage_example_output(capsys):

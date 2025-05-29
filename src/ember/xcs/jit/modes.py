@@ -11,6 +11,5 @@ class JITMode(str, Enum):
     """JIT compilation modes available in the system."""
 
     AUTO = "auto"  # Automatically select the best strategy
-    TRACE = "trace"  # Traditional execution tracing
-    STRUCTURAL = "structural"  # Structure-based analysis
+    STRUCTURAL = "structural"  # Structure-based analysis for Operators
     ENHANCED = "enhanced"  # Enhanced JIT with improved parallelism detection

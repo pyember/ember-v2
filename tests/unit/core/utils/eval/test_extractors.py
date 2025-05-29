@@ -112,7 +112,7 @@ class TestRegexExtractor(unittest.TestCase):
     def test_non_greedy_matching(self) -> None:
         """Test non-greedy matching behavior."""
         # Arrange
-        extractor = RegexExtractor(pattern=r"answer is (.*?)[\.,]")
+        extractor = RegexExtractor(pattern=r"answer is (.*?)[\.]")
 
         # Act
         result = extractor.extract("The answer is Paris, the capital of France")

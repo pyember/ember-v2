@@ -1,23 +1,15 @@
-"""
-Logging Configuration Module for Ember
+"""Logging configuration for Ember.
 
-This module centralizes logging configuration for the Ember framework,
-providing consistent logging behavior across all components while allowing
-for appropriate verbosity control.
+Centralizes logging configuration across all components with appropriate
+verbosity control.
 
-The design follows standard Python logging best practices:
-- Libraries (like Ember) should configure loggers but not handlers
-- Applications control how logs are displayed/stored
-- Sensible defaults are provided but easily overridable
-
-Usage:
-    # To apply standard configuration with reduced verbosity:
-    from ember.core.utils.logging import configure_logging
-    configure_logging(verbose=False)
-
-    # To adjust specific component verbosity:
-    from ember.core.utils.logging import set_component_level
-    set_component_level("model_discovery", logging.DEBUG)
+Example:
+    >>> from ember.core.utils.logging import configure_logging
+    >>> configure_logging(verbose=False)
+    
+    >>> # Adjust specific component verbosity
+    >>> from ember.core.utils.logging import set_component_level
+    >>> set_component_level("model_discovery", logging.DEBUG)
 """
 
 import logging
@@ -29,17 +21,14 @@ COMPONENT_GROUPS = {
         "ember.core.registry.model",
         "ember.core.registry.model.initialization",
         "ember.core.registry.model.base.registry.discovery",
-        "ember.core.registry.model.base.registry.model_registry",
-    ],
+        "ember.core.registry.model.base.registry.model_registry"],
     "model_warnings": [
         # These loggers produce too many warnings during discovery
-        "ember.core.registry.model.base.registry.discovery",
-    ],
+        "ember.core.registry.model.base.registry.discovery"],
     "model_discovery": [
         "ember.core.registry.model.providers.anthropic.anthropic_discovery",
         "ember.core.registry.model.providers.openai.openai_discovery",
-        "ember.core.registry.model.providers.deepmind.deepmind_discovery",
-    ],
+        "ember.core.registry.model.providers.deepmind.deepmind_discovery"],
     "http": [
         "httpcore",
         "httpcore.connection",
@@ -52,8 +41,7 @@ COMPONENT_GROUPS = {
         "openai._base_client",
         "openai._http_client",
         "anthropic",
-        "anthropic._base_client",
-    ],
+        "anthropic._base_client"],
 }
 
 # Reverse mapping to find group by logger name
@@ -66,18 +54,12 @@ for group_name, loggers in COMPONENT_GROUPS.items():
 def configure_logging(
     level: int = logging.INFO,
     format_str: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    verbose: bool = False,
-) -> None:
-    """
-    Configure logging for the Ember framework.
-
-    This function sets appropriate logging levels for all Ember components
-    and external dependencies. It does not configure handlers (following Python
-    best practices for libraries).
+    verbose: bool = False) -> None:
+    """Configure logging for the Ember framework.
 
     Args:
-        level: Base logging level for all components (default: INFO).
-        format_str: Log format string (only used for root logger).
+        level: Base logging level (default: INFO).
+        format_str: Log format string.
         verbose: If False, reduces verbosity for non-essential components.
     """
     # Set base logging level for Ember
@@ -180,8 +162,7 @@ def _configure_http_library_handlers() -> None:
         "anthropic",
         "anthropic._base_client",
         "requests",
-        "requests.packages.urllib3",
-    ]
+        "requests.packages.urllib3"]
 
     # Use configured level for all HTTP libraries
     for name in http_libraries:
@@ -257,7 +238,7 @@ def log_level(level: Union[int, str], logger_name: Optional[str] = None):
     Example:
         with log_level("DEBUG", "ember.xcs"):
             # XCS logs at DEBUG level here
-            result = execute_graph(graph, inputs)
+            result = graph.run(inputs)
     """
     # Convert string level to int if needed
     if isinstance(level, str):

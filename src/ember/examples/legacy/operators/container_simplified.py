@@ -79,8 +79,7 @@ class TextNormalizer(Operator[ProcessingInput, ProcessingOutput]):
         return ProcessingOutput(
             processed_text=text,
             word_count=len(text.split()),
-            processing_time=time.time() - start_time,
-        )
+            processing_time=time.time() - start_time)
 
 
 class TextEnhancer(Operator[ProcessingOutput, ProcessingOutput]):
@@ -104,8 +103,7 @@ class TextEnhancer(Operator[ProcessingOutput, ProcessingOutput]):
         return ProcessingOutput(
             processed_text=text + "!",
             word_count=inputs.word_count,
-            processing_time=inputs.processing_time + (time.time() - start_time),
-        )
+            processing_time=inputs.processing_time + (time.time() - start_time))
 
 
 ###############################################################################
@@ -147,6 +145,7 @@ class TextProcessor(Operator[ProcessingInput, ProcessingOutput]):
 
 
 def main() -> None:
+    """Example demonstrating the simplified XCS architecture."""
     """Run a demonstration of the container operator."""
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 

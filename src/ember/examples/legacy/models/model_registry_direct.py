@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 def main():
+    """Example demonstrating the simplified XCS architecture."""
     """Run direct model usage examples."""
     logger.info("=== Direct Model Usage Example ===\n")
     

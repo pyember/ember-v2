@@ -50,8 +50,7 @@ class TestBasicExamples(GoldenTestBase):
             r"=== Minimal Operator Example ===",
             r"Basic invocation",
             r"Advanced invocation with options",
-            r"Result Summary:",
-        ]
+            r"Result Summary:"]
         
         results = self.run_category_tests(
             "basic",
@@ -73,8 +72,7 @@ class TestBasicExamples(GoldenTestBase):
             r"==== Example 4: Recursive Component References ====",
             r"==== Example 5: Custom Operator Types ====",
             r"==== Example 6: NestedNetwork Equivalent ====",
-            r"==== Using the Pipeline ====",
-        ]
+            r"==== Using the Pipeline ===="]
         
         results = self.run_category_tests(
             "basic",
@@ -100,8 +98,7 @@ class TestBasicExamples(GoldenTestBase):
             r"=== Context Example ===",
             r"Current context state:",
             r"Model Registry:",
-            r"available_models:",
-        ]
+            r"available_models:"]
         
         # Create a more complete mock for context
         mock_context = MagicMock()
@@ -113,8 +110,7 @@ class TestBasicExamples(GoldenTestBase):
         }
         
         extra_patches = [
-            patch("ember.core.context.ember_context.EmberContext", return_value=mock_context),
-        ]
+            patch("ember.core.context.ember_context.EmberContext", return_value=mock_context)]
         
         results = self.run_category_tests(
             "basic",

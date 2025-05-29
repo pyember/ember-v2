@@ -8,15 +8,13 @@ import pytest
 
 from ember.core.registry.model.base.schemas.chat_schemas import (
     ChatRequest,
-    ChatResponse,
-)
+    ChatResponse)
 from ember.core.registry.model.base.schemas.cost import ModelCost, RateLimit
 from ember.core.registry.model.base.schemas.model_info import ModelInfo
 from ember.core.registry.model.base.schemas.provider_info import ProviderInfo
 from ember.core.registry.model.providers.anthropic.anthropic_provider import (
     AnthropicChatParameters,
-    AnthropicModel,
-)
+    AnthropicModel)
 
 
 class DummyAnthropicResponse:
@@ -31,8 +29,7 @@ def create_dummy_anthropic_model_info() -> ModelInfo:
         cost=ModelCost(input_cost_per_thousand=3, output_cost_per_thousand=15),
         rate_limit=RateLimit(tokens_per_minute=300000, requests_per_minute=2000),
         provider=ProviderInfo(name="Anthropic", default_api_key="dummy_anthropic_key"),
-        api_key="dummy_anthropic_key",
-    )
+        api_key="dummy_anthropic_key")
 
 
 @pytest.fixture(autouse=True)
@@ -53,8 +50,7 @@ def patch_anthropic_client(monkeypatch: pytest.MonkeyPatch) -> None:
     # The AnthropicModel.forward method is what actually makes the call,
     # let's also patch it directly for a cleaner approach
     from ember.core.registry.model.providers.anthropic.anthropic_provider import (
-        AnthropicModel,
-    )
+        AnthropicModel)
 
     original_forward = AnthropicModel.forward
 
@@ -63,8 +59,7 @@ def patch_anthropic_client(monkeypatch: pytest.MonkeyPatch) -> None:
         return ChatResponse(
             data="Dummy anthropic response.",
             raw_output=DummyAnthropicResponse(),
-            usage=None,
-        )
+            usage=None)
 
     # Only patch it during this test run
     monkeypatch.setattr(AnthropicModel, "forward", mock_forward)

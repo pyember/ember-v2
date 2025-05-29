@@ -103,5 +103,4 @@ __all__ = [
     "SimpleLLMOperator",
     "SimpleDeterministicOperator",
     "SimpleEnsembleOperator",
-    "SimpleSelectorOperator",
-]
+    "SimpleSelectorOperator"]

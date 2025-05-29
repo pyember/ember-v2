@@ -17,8 +17,7 @@ from typing import (
     Protocol,
     Type,
     TypeVar,
-    runtime_checkable,
-)
+    runtime_checkable)
 
 
 class TypeInfo:
@@ -34,8 +33,7 @@ class TypeInfo:
         origin_type: Type,
         type_args: Optional[tuple] = None,
         is_optional: bool = False,
-        is_container: bool = False,
-    ) -> None:
+        is_container: bool = False) -> None:
         """
         Initialize TypeInfo with basic type metadata.
 

@@ -7,20 +7,17 @@ from .ensemble import EnsembleOperator, EnsembleOperatorInputs, EnsembleOperator
 from .most_common import (
     MostCommonAnswerSelectorOperator,
     MostCommonAnswerSelectorOperatorInputs,
-    MostCommonAnswerSelectorOutputs,
-)
+    MostCommonAnswerSelectorOutputs)
 from .synthesis_judge import (
     JudgeSynthesisInputs,
     JudgeSynthesisOperator,
     JudgeSynthesisOutputs,
-    JudgeSynthesisSpecification,
-)
+    JudgeSynthesisSpecification)
 from .verifier import (
     VerifierOperator,
     VerifierOperatorInputs,
     VerifierOperatorOutputs,
-    VerifierSpecification,
-)
+    VerifierSpecification)
 
 __all__ = [
     "EnsembleOperator",
@@ -36,5 +33,4 @@ __all__ = [
     "VerifierOperator",
     "VerifierOperatorInputs",
     "VerifierOperatorOutputs",
-    "VerifierSpecification",
-]
+    "VerifierSpecification"]

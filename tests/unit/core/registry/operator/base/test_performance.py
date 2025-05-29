@@ -124,8 +124,7 @@ def measure_sequential_performance(
             round_index + 1,
             iterations,
             total_time,
-            avg_latency,
-        )
+            avg_latency)
 
     stats: Dict[str, float] = {
         "overall_avg": statistics.mean(latencies),
@@ -172,8 +171,7 @@ def measure_concurrent_performance(iterations: int, max_workers: int = 8) -> flo
         iterations,
         max_workers,
         total_time,
-        avg_latency,
-    )
+        avg_latency)
     return avg_latency
 
 

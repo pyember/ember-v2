@@ -1,17 +1,12 @@
-"""
-Example: Hello World - Verify Your Ember Installation
+"""Hello World - Verify Ember installation.
+
 Difficulty: Basic
 Time: ~1 minute
-Prerequisites: None
 
 Learning Objectives:
 - Verify Ember is installed correctly
 - Import basic Ember components
 - Run your first Ember code
-
-Key Concepts:
-- Ember imports
-- Basic operator creation (simplest form)
 """
 
 import sys

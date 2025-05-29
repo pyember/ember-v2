@@ -31,8 +31,7 @@ class ModelService:
         usage_service: Optional[UsageService] = None,
         default_model_id: Optional[Union[str, Enum]] = None,
         logger: Optional[logging.Logger] = None,
-        metrics: Optional[dict[str, object]] = None,
-    ) -> None:
+        metrics: Optional[dict[str, object]] = None) -> None:
         """
         Initializes the ModelService.
 
@@ -197,8 +196,7 @@ def create_model_service(
     usage_service: Optional[UsageService] = None,
     default_model_id: Optional[Union[str, Enum]] = None,
     logger: Optional[logging.Logger] = None,
-    metrics: Optional[dict[str, object]] = None,
-) -> ModelService:
+    metrics: Optional[dict[str, object]] = None) -> ModelService:
     """
     Creates and returns a ModelService instance with the specified configuration.
 
@@ -220,5 +218,4 @@ def create_model_service(
         usage_service=usage_service,
         default_model_id=default_model_id,
         logger=logger,
-        metrics=metrics,
-    )
+        metrics=metrics)

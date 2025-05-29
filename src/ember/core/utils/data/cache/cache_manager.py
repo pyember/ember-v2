@@ -99,8 +99,7 @@ class DatasetCache(Generic[T]):
                             self.set(
                                 key,
                                 entry.get("value"),
-                                entry.get("ttl", self._default_ttl),
-                            )
+                                entry.get("ttl", self._default_ttl))
                             return cast(T, entry.get("value"))
                         else:
                             # Expired, remove disk file
@@ -155,8 +154,7 @@ class DatasetCache(Generic[T]):
                             "expiry": expiry,
                             "ttl": ttl_seconds,
                         },
-                        f,
-                    )
+                        f)
             except (pickle.PickleError, OSError) as e:
                 logger.warning(f"Failed to write to disk cache: {e}")
 
@@ -281,8 +279,7 @@ def get_default_cache() -> DatasetCache:
 def cached(
     ttl_seconds: int = 3600,
     key_fn: Optional[Callable[..., str]] = None,
-    cache: Optional[DatasetCache] = None,
-):
+    cache: Optional[DatasetCache] = None):
     """Decorator for caching function results.
 
     Args:

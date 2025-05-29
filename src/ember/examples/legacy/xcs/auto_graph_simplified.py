@@ -138,6 +138,7 @@ class MathPipeline(Operator[AdditionInput, AdditionOutput]):
 
 
 def main() -> None:
+    """Example demonstrating the simplified XCS architecture."""
     """Run demonstration of automatic graph building."""
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 

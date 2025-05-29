@@ -101,8 +101,7 @@ def test_ensemble_operator_forward() -> None:
     rendered_prompt = custom_specification.render_prompt(inputs=inputs)
     expected_responses = [
         mock_model1(rendered_prompt).text,
-        mock_model2(rendered_prompt).text,
-    ]
+        mock_model2(rendered_prompt).text]
 
     assert isinstance(
         result, dict

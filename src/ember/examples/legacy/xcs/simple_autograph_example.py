@@ -94,8 +94,7 @@ class CalculationPipeline(Operator):
         add_value: int = 5,
         multiply_value: int = 2,
         num_delay_ops: int = 3,
-        delay: float = 0.1,
-    ) -> None:
+        delay: float = 0.1) -> None:
         """Initialize the pipeline with configurable parameters."""
         self.add_op = AddOperator(value=add_value)
         self.multiply_op = MultiplyOperator(value=multiply_value)
@@ -121,6 +120,7 @@ class CalculationPipeline(Operator):
 # Main Demonstration
 ###############################################################################
 def main() -> None:
+    """Example demonstrating the simplified XCS architecture."""
     """Run demonstration of automatic graph building."""
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
     logging.getLogger("ember.xcs.jit").setLevel(logging.DEBUG)  # Enable JIT debug logs

@@ -10,13 +10,11 @@ from .evaluators import (
     ComposedEvaluator,
     ExactMatchEvaluator,
     NumericToleranceEvaluator,
-    PartialRegexEvaluator,
-)
+    PartialRegexEvaluator)
 from .pipeline import (
     BatchEvaluationSummary,
     PipelineEvaluator,
     evaluate_batch,
-    evaluate_batch_with_summary,
-)
+    evaluate_batch_with_summary)
 from .registry import EvaluatorRegistry
 from .stateful_evaluators import AggregatorEvaluator

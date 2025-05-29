@@ -22,8 +22,7 @@ NEW_STRUCTURE_TESTS = [
     "test_07_advanced_patterns.py",
     "test_08_integrations.py",
     "test_09_practical_patterns.py",
-    "test_10_evaluation_suite.py",
-]
+    "test_10_evaluation_suite.py"]
 
 # Legacy test files
 LEGACY_TESTS = [
@@ -31,8 +30,7 @@ LEGACY_TESTS = [
     "test_data_examples.py",
     "test_models_examples.py",
     "test_operators_examples.py",
-    "test_xcs_examples.py",
-]
+    "test_xcs_examples.py"]
 
 
 def run_test_file(test_file: Path, verbose: bool = False) -> Tuple[bool, str]:

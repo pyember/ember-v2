@@ -28,15 +28,13 @@ from ember.api.xcs import (
     execute_graph,
     execution_options,
     jit,
-    get_execution_options,
-)
+    get_execution_options)
 
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
-    datefmt="%H:%M:%S",
-)
+    datefmt="%H:%M:%S")
 logger = logging.getLogger(__name__)
 
 
@@ -161,8 +159,7 @@ class DelayOperator(Operator[DelayInput, DelayOutput]):
         time.sleep(self.delay_seconds)
         return DelayOutput(
             result=f"Operator {self.op_id} completed task {inputs.task_id}",
-            task_id=inputs.task_id,
-        )
+            task_id=inputs.task_id)
 
 
 @jit
@@ -291,8 +288,7 @@ def run_benchmark(
     name: str,
     operator: Operator,
     num_runs: int = 2,
-    task_prefix: str = "run",
-) -> Tuple[List[float], List[str]]:
+    task_prefix: str = "run") -> Tuple[List[float], List[str]]:
     """Executes a benchmark of the provided operator.
 
     Runs the given operator multiple times and collects performance metrics
@@ -335,8 +331,7 @@ def analyze_performance(
     name: str,
     times: List[float],
     baseline_time: Optional[float] = None,
-    theoretical_time: Optional[float] = None,
-) -> None:
+    theoretical_time: Optional[float] = None) -> None:
     """Analyzes and reports performance metrics.
 
     Calculates and logs various performance metrics comparing the actual
@@ -376,8 +371,7 @@ def analyze_performance(
             logger.info(
                 "  Speedup vs baseline: %.1f%% faster (%.1fx)",
                 improvement * 100,
-                speedup,
-            )
+                speedup)
 
     if theoretical_time is not None and theoretical_time > 0:
         best_time = min(times[1:]) if len(times) > 1 else first_time
@@ -418,8 +412,7 @@ def demo_sequential_vs_jit(*, num_ops: int, delay: float) -> None:
         name="Sequential JIT Ensemble",
         operator=jit_op,
         num_runs=3,
-        task_prefix="sequential",
-    )
+        task_prefix="sequential")
 
     # Calculating theoretical sequential time
     theoretical_time = num_ops * delay
@@ -428,8 +421,7 @@ def demo_sequential_vs_jit(*, num_ops: int, delay: float) -> None:
     analyze_performance(
         name="Sequential JIT",
         times=times,
-        theoretical_time=theoretical_time,
-    )
+        theoretical_time=theoretical_time)
 
 
 def demo_explicit_parallel_execution(*, num_ops: int, delay: float) -> None:
@@ -448,8 +440,7 @@ def demo_explicit_parallel_execution(*, num_ops: int, delay: float) -> None:
     logger.info(
         "DEMO 2: Sequential vs Parallel Execution - %d operators, %.3fs delay each",
         num_ops,
-        delay,
-    )
+        delay)
     logger.info("%s", "=" * 80)
     logger.info(
         "Demonstrating how JIT + parallel scheduling transforms execution graphs."
@@ -467,7 +458,7 @@ def demo_explicit_parallel_execution(*, num_ops: int, delay: float) -> None:
 
     # Building a graph directly from operators
     logger.info("\nBuilding execution graph...")
-    graph = XCSGraph()
+    graph = Graph()
 
     # Adding each operator as a separate node
     for i, op in enumerate(ensemble.operators):
@@ -476,8 +467,7 @@ def demo_explicit_parallel_execution(*, num_ops: int, delay: float) -> None:
             operator=lambda inputs, op=op: op(
                 inputs=DelayInput(task_id=inputs["task_id"])
             ),
-            node_id=node_id,
-        )
+            node_id=node_id)
 
     # No need to explicitly compile the graph with the unified engine
     # execute_graph handles graph compilation internally
@@ -491,8 +481,7 @@ def demo_explicit_parallel_execution(*, num_ops: int, delay: float) -> None:
     _ = execute_graph(
         graph=graph,
         inputs={"task_id": "sequential"},
-        options=ExecutionOptions(scheduler="wave"),
-    )
+        options=ExecutionOptions(scheduler="wave"))
     seq_time = time.time() - start
     logger.info("    Completed in %.4fs", seq_time)
 
@@ -502,8 +491,7 @@ def demo_explicit_parallel_execution(*, num_ops: int, delay: float) -> None:
     _ = execute_graph(
         graph=graph,
         inputs={"task_id": "parallel"},
-        options=ExecutionOptions(scheduler="parallel", max_workers=num_ops),
-    )
+        options=ExecutionOptions(scheduler="parallel", max_workers=num_ops))
     par_time = time.time() - start
     logger.info("    Completed in %.4fs", par_time)
 
@@ -523,8 +511,7 @@ def demo_explicit_parallel_execution(*, num_ops: int, delay: float) -> None:
         logger.info(
             "\n✅ Parallel scheduler achieved %.1f%% improvement (%.1fx)",
             improvement * 100,
-            speedup,
-        )
+            speedup)
 
     # Efficiency analysis
     seq_efficiency = theoretical_sequential / seq_time if seq_time > 0 else 0
@@ -555,8 +542,7 @@ def demo_execution_strategies(*, num_ops: int, delay: float) -> None:
     logger.info(
         "DEMO 3: Execution Strategy Comparison - %d operators, %.3fs delay each",
         num_ops,
-        delay,
-    )
+        delay)
     logger.info("%s", "=" * 80)
     logger.info(
         "Comparing different execution strategies with the same logical operations."
@@ -658,16 +644,14 @@ def demo_execution_strategies(*, num_ops: int, delay: float) -> None:
         name="Sequential Operator",
         operator=sequential_op,
         num_runs=2,
-        task_prefix="seq",
-    )
+        task_prefix="seq")
 
     # Benchmarking parallel operator
     par_times, _ = run_benchmark(
         name="Parallel Operator",
         operator=parallel_op,
         num_runs=2,
-        task_prefix="par",
-    )
+        task_prefix="par")
 
     # Benchmarking adaptive operator with sequential context
     logger.info("\nAdaptive Operator (Sequential Context):")
@@ -716,11 +700,11 @@ def demo_execution_strategies(*, num_ops: int, delay: float) -> None:
         if context_adaptability > 1.05:
             logger.info(
                 "\n✅ Context-aware execution demonstrated %.1fx speedup through adaptability",
-                context_adaptability,
-            )
+                context_adaptability)
 
 
 def main() -> None:
+    """Example demonstrating the simplified XCS architecture."""
     """Executes the JIT optimization demonstration suite.
 
     Runs a series of demonstrations showcasing different aspects

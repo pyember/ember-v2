@@ -16,8 +16,7 @@ def setup_logging():
     """Configure logging for the example."""
     logging.basicConfig(
         level=logging.INFO,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    )
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
 
 def demonstrate_basic_loading() -> List[Dict[str, Any]]:
@@ -145,7 +144,7 @@ def demonstrate_thread_safety():
     # Create and start threads
     threads = []
     for i in range(3):
-        thread = threading.Thread(target=thread_function, args=(i,))
+        thread = threading.Thread(target=thread_function, args=(i))
         threads.append(thread)
         thread.start()
 

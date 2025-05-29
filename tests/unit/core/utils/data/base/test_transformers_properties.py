@@ -17,8 +17,7 @@ from ember.api.data import DatasetBuilder
 from ember.core.utils.data.base.transformers import (
     DatasetType,
     IDatasetTransformer,
-    NoOpTransformer,
-)
+    NoOpTransformer)
 
 
 # Create strategies for generating test data
@@ -33,8 +32,7 @@ def dataset_items(draw, min_fields=1, max_fields=5):
             st.text(min_size=1, max_size=20).filter(lambda x: x.isalnum()),
             min_size=num_fields,
             max_size=num_fields,
-            unique=True,
-        )
+            unique=True)
     )
 
     # Generate values for each field - use a consistent type for each field name
@@ -57,8 +55,7 @@ def dataset_items(draw, min_fields=1, max_fields=5):
                 st.text(
                     alphabet="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
                     min_size=1,
-                    max_size=20,
-                )
+                    max_size=20)
             )
         elif value_type == "integer":
             field_values[field] = draw(st.integers(min_value=0, max_value=100))
@@ -80,8 +77,7 @@ def dataset_lists(draw, min_items=1, max_items=5):
             st.text(min_size=1, max_size=10).filter(lambda x: x.isalnum()),
             min_size=num_fields,
             max_size=num_fields,
-            unique=True,
-        )
+            unique=True)
     )
 
     # Decide on a type for each field - this ensures consistent types
@@ -218,8 +214,7 @@ class TestCustomTransformerProperties:
     @settings(suppress_health_check=[HealthCheck.filter_too_much, HealthCheck.too_slow])
     @given(
         data=dataset_lists(min_items=1, max_items=5),
-        seed=st.integers(min_value=0, max_value=1000),
-    )
+        seed=st.integers(min_value=0, max_value=1000))
     def test_key_rename_property(self, data, seed):
         """Property: renaming and then renaming back should be equivalent to no-op."""
         # Skip if data is empty
@@ -328,8 +323,7 @@ class TestCompositeTransformerProperties:
 
     @given(
         data=dataset_lists(min_items=1, max_items=10),
-        num_transformers=st.integers(min_value=1, max_value=5),
-    )
+        num_transformers=st.integers(min_value=1, max_value=5))
     def test_composite_associativity(self, data, num_transformers):
         """Property: Different groupings of transformers should yield the same result."""
         # Skip if empty data
@@ -412,8 +406,7 @@ class TestDatasetBuilderTransformers:
     @given(
         data=dataset_lists(min_items=1, max_items=5),
         seed1=st.integers(min_value=1, max_value=100),
-        seed2=st.integers(min_value=101, max_value=200),
-    )
+        seed2=st.integers(min_value=101, max_value=200))
     def test_multiple_function_transformers(self, data, seed1, seed2):
         """Test that multiple function transformers can be chained in a DatasetBuilder."""
         # Skip if data is empty
@@ -556,8 +549,7 @@ class TestDataPreservationProperties:
     @settings(suppress_health_check=[HealthCheck.filter_too_much, HealthCheck.too_slow])
     @given(
         data=dataset_lists(min_items=1, max_items=5),
-        field_name=st.text(min_size=1, max_size=10).filter(lambda x: x.isalnum()),
-    )
+        field_name=st.text(min_size=1, max_size=10).filter(lambda x: x.isalnum()))
     def test_conditional_transformation(self, data, field_name):
         """Test that transformers can conditionally modify items."""
         # Skip if data is empty or field_name conflicts

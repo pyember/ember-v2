@@ -142,8 +142,7 @@ class ReasoningVerifier(Operator[Dict[str, Any], Dict[str, Any]]):
         # Use the non API to create verifier
         self.verifier = non.VerifierOperator(
             model_name=model_name,
-            temperature=0.2,
-        )
+            temperature=0.2)
 
     def forward(self, *, inputs: Dict[str, Any]) -> Dict[str, Any]:
         """Verify each reasoning path in the inputs."""
@@ -168,8 +167,7 @@ class ReasoningVerifier(Operator[Dict[str, Any], Dict[str, Any]]):
                     verified_steps=path.steps,  # Simplified - would be filtered in real implementation
                     accuracy_score=result.get("accuracy_score", 0.0),
                     coherence_score=result.get("coherence_score", 0.0),
-                    completeness_score=result.get("completeness_score", 0.0),
-                )
+                    completeness_score=result.get("completeness_score", 0.0))
             )
 
         return {
@@ -196,8 +194,7 @@ class ReasoningSynthesizer(Operator[Dict[str, Any], ReasoningOutput]):
         # Use the non API to create synthesizer
         self.synthesizer = non.JudgeSynthesisOperator(
             model_name=model_name,
-            temperature=0.2,
-        )
+            temperature=0.2)
 
     def forward(self, *, inputs: Dict[str, Any]) -> ReasoningOutput:
         """Synthesize a final answer from multiple verified reasoning paths."""
@@ -241,8 +238,7 @@ class ReasoningSynthesizer(Operator[Dict[str, Any], ReasoningOutput]):
             final_answer=synthesis_result.get("final_answer", "No answer generated"),
             confidence=overall_confidence,
             reasoning_paths=reasoning_paths,
-            verification_results=verification_results,
-        )
+            verification_results=verification_results)
 
 
 ###############################################################################
@@ -293,6 +289,7 @@ class AdvancedReasoningSystem(Operator[ReasoningInput, ReasoningOutput]):
 
 
 def main() -> None:
+    """Example demonstrating the simplified XCS architecture."""
     """Demonstrates the advanced reasoning system."""
     print("\n=== Advanced Reasoning System Example ===\n")
 

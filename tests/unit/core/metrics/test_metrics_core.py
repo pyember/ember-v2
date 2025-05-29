@@ -7,8 +7,7 @@ from ember.core.metrics.metrics import (
     Gauge,
     Histogram,
     Metrics,
-    MetricsRegistry,
-)
+    MetricsRegistry)
 
 
 # Test Counter

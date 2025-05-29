@@ -30,6 +30,7 @@ from ember.api.operators import EmberModel, Field
 
 
 def main():
+    """Example demonstrating the simplified XCS architecture."""
     """Demonstrate structured output patterns."""
     print_section_header("Structured Output Patterns")
     
