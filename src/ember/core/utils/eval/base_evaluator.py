@@ -11,12 +11,12 @@ T_ans = TypeVar("T_ans")
 
 @dataclass
 class EvaluationResult:
-    """Encapsulates the result of evaluating a system output against a reference.
+    """Result of evaluating system output.
 
     Attributes:
-        is_correct (bool): Whether the system output meets the expected criteria.
-        score (float): Numeric score reflecting accuracy or quality.
-        metadata (Optional[Dict[str, Any]]): Additional details about the evaluation.
+        is_correct: Whether output meets criteria.
+        score: Numeric quality score.
+        metadata: Additional evaluation details.
     """
 
     is_correct: bool
@@ -25,57 +25,44 @@ class EvaluationResult:
 
 
 class IEvaluator(ABC, Generic[T_out, T_ans]):
-    """Interface for evaluating a system output against a correct answer.
-
-    Subclasses should override the evaluate method.
-
-    Methods:
-        evaluate: Compares system output with the expected answer and returns an EvaluationResult.
-    """
+    """Interface for output evaluation."""
 
     @abstractmethod
     def evaluate(
         self, system_output: T_out, correct_answer: T_ans, **kwargs: Any
     ) -> EvaluationResult:
-        """Evaluates the system output against the expected correct answer.
+        """Evaluate system output against expected answer.
 
         Args:
-            system_output (T_out): The raw output from the system.
-            correct_answer (T_ans): The expected correct answer.
-            **kwargs: Additional keyword arguments.
+            system_output: Raw system output.
+            correct_answer: Expected correct answer.
+            **kwargs: Additional arguments.
 
         Returns:
-            EvaluationResult: The evaluation result.
+            Evaluation result with score and metadata.
         """
         raise NotImplementedError
 
 
 class IStatefulEvaluator(ABC, Generic[T_out, T_ans]):
-    """Interface for evaluators that accumulate results across multiple samples.
-
-    Implements a two-phase evaluation: first updating internal state and then computing the aggregated result.
-
-    Methods:
-        update: Accumulates state with a new sample.
-        compute: Computes and returns the final aggregated EvaluationResult.
-    """
+    """Evaluator that accumulates results across samples."""
 
     @abstractmethod
     def update(
         self, system_output: T_out, correct_answer: T_ans, **kwargs: Any
     ) -> None:
-        """Accumulates internal state with a new sample evaluation.
+        """Add sample to internal state.
 
         Args:
-            system_output (T_out): The system output for the sample.
-            correct_answer (T_ans): The expected correct answer for the sample.
-            **kwargs: Additional keyword arguments.
+            system_output: System output for sample.
+            correct_answer: Expected answer for sample.
+            **kwargs: Additional arguments.
         """
         raise NotImplementedError
 
     @abstractmethod
     def compute(self) -> EvaluationResult:
-        """Computes the aggregated evaluation result from all accumulated samples.
+        """Compute aggregated result from all samples.
 
         Returns:
             EvaluationResult: The aggregated evaluation result.

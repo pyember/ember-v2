@@ -1,8 +1,6 @@
-"""American Invitational Mathematics Examination (AIME) dataset.
+"""AIME dataset for math competition problems.
 
-This module implements the prepper and configuration for the AIME dataset,
-which contains challenging math competition problems from the American Invitational
-Mathematics Examination.
+Challenging integer-answer problems from American Invitational Mathematics Examination.
 """
 
 from typing import Any, Dict, List, Optional
@@ -13,31 +11,23 @@ from ember.core.utils.data.base.preppers import IDatasetPrepper
 
 
 class AIMEConfig(BaseDatasetConfig):
-    """Configuration for the AIME dataset.
-
-    Controls filtering and loading options for the AIME math competition dataset.
-    """
+    """AIME dataset configuration."""
 
     year: Optional[int] = 2024  # Default to 2024
     contest: Optional[str] = None  # 'I' or 'II' for specific contest
 
 
 class AIMEPrepper(IDatasetPrepper):
-    """Prepper for AIME competition math problems.
+    """Transform AIME problems to DatasetEntry format.
 
-    Transforms HuggingFace AIME dataset entries containing American Invitational
-    Mathematics Examination problems into Ember's standardized DatasetEntry format.
-    AIME problems are challenging math problems with integer answers from 0-999.
+    Integer answers range from 0-999.
     """
 
     def __init__(self, config: Optional[Any] = None) -> None:
-        """Initialize the AIME prepper with configuration.
+        """Initialize AIME prepper.
 
         Args:
-            config: Configuration that can be:
-                - A string with year (e.g., "2024")
-                - An AIMEConfig instance
-                - None (defaults to all 2024 problems)
+            config: Year string, AIMEConfig, or None (2024 default)
         """
         if isinstance(config, str) and config.isdigit():
             config = AIMEConfig(year=int(config))

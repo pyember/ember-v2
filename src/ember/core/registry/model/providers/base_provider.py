@@ -1,32 +1,18 @@
-"""Provider base classes for language model interactions in Ember.
+"""Base classes for language model providers.
 
-This module defines the foundational abstract base classes and interfaces that all
-LLM provider implementations must adhere to. It establishes a consistent contract for
-integrating various language model providers (OpenAI, Anthropic, etc.) with the Ember
-framework, ensuring uniformity in how models are queried and how responses are processed.
+Define the contract all providers must implement for consistent
+model interactions across different APIs.
 
-The module includes:
-- Base parameter models for standardizing request parameters across providers
-- Abstract provider classes that define the interface for model implementations
-- Core functionality for parameter conversion and request handling
-
-Typical usage example:
-  ```python
-  # Implementing a custom provider
-  class MyProviderParameters(BaseChatParameters):
-      additional_param: Optional[str] = None
-
-  class MyProvider(BaseProviderModel):
-      PROVIDER_NAME = "MyProvider"
-
-      def create_client(self) -> Any:
-          # Initialize your API client
-          return client
-
-      def forward(self, request: ChatRequest) -> ChatResponse:
-          # Process request and return standardized response
-          return ChatResponse(...)
-  ```
+Example:
+    >>> class MyProvider(BaseProviderModel):
+    ...     PROVIDER_NAME = "MyProvider"
+    ...     
+    ...     def create_client(self) -> Any:
+    ...         return MyAPIClient(api_key=self.api_key)
+    ...     
+    ...     def forward(self, request: ChatRequest) -> ChatResponse:
+    ...         response = self.client.chat(request.messages)
+    ...         return ChatResponse(content=response.text)
 """
 
 import abc
@@ -41,41 +27,17 @@ from ember.core.registry.model.base.schemas.model_info import ModelInfo
 
 
 class BaseChatParameters(BaseModel):
-    """Base parameter model for LLM provider chat requests.
+    """Standard parameters for language model requests.
 
-    This class defines the common parameters used across different language model providers,
-    establishing a standardized interface for chat request configuration. Provider-specific
-    implementations should extend this class to add or customize parameters according to
-    their API requirements.
-
-    Design principles:
-    - Common parameters are standardized across providers
-    - Sensible defaults reduce configuration burden
-    - Validation built-in through Pydantic
-    - Helper methods for common operations like prompt building
-
-    Parameter semantics:
-    - prompt: The core user input text to send to the model
-    - context: Optional system context that provides additional information or instructions
-    - temperature: Controls randomness/creativity (0.0 = deterministic, 2.0 = maximum randomness)
-    - max_tokens: Optional limit on response length
-    - timeout: API request timeout in seconds, defaults to 30 seconds
-
-    Usage:
-    Provider-specific implementations should inherit from this class:
-    ```python
-    class AnthropicChatParameters(BaseChatParameters):
-        top_k: Optional[int] = None
-        top_p: Optional[float] = None
-        # Additional Anthropic-specific parameters
-    ```
+    Base class for provider-specific parameters. Extend this
+    to add custom parameters for your provider.
 
     Attributes:
-        prompt (str): The user prompt text.
-        context (Optional[str]): Additional context to be prepended to the prompt.
-        temperature (Optional[float]): Sampling temperature with a value between 0.0 and 2.0.
-        max_tokens (Optional[int]): Optional maximum token count for responses.
-        timeout (Optional[int]): API request timeout in seconds to prevent hanging requests.
+        prompt: User input text
+        context: Optional system instructions
+        temperature: Randomness (0.0=deterministic, 2.0=creative)
+        max_tokens: Optional response length limit
+        timeout: Request timeout in seconds
     """
 
     prompt: str
@@ -85,10 +47,10 @@ class BaseChatParameters(BaseModel):
     timeout: Optional[int] = Field(default=30, ge=1)
 
     def build_prompt(self) -> str:
-        """Build the final prompt by combining context and the user prompt.
+        """Combine context and prompt into final text.
 
         Returns:
-            str: The constructed prompt with context included when provided.
+            Complete prompt with context prepended if present
         """
         if self.context:
             return "{context}\n\n{prompt}".format(
@@ -98,77 +60,46 @@ class BaseChatParameters(BaseModel):
 
 
 class BaseProviderModel(abc.ABC):
-    """Abstract base class defining the contract for all LLM provider implementations.
+    """Abstract base for language model provider implementations.
 
-    This class establishes the core interface that all language model providers
-    (OpenAI, Anthropic, etc.) must implement to integrate with the Ember framework.
-    It serves as the foundation of the provider abstraction layer, enabling a unified
-    interface for working with different language models.
-
-    Provider architecture:
-    - Each provider must implement client creation and request handling
-    - Models are instantiated with metadata through ModelInfo
-    - Providers handle translating Ember's universal ChatRequest format into provider-specific formats
-    - Responses are normalized back to Ember's ChatResponse format
-
-    Lifecycle:
-    1. Provider class is discovered and instantiated via ModelFactory
-    2. Provider creates its specific API client in create_client()
-    3. Chat requests are processed through forward() or direct __call__
-
-    Implementation requirements:
-    - Subclasses must provide PROVIDER_NAME as a class attribute
-    - Subclasses must implement create_client() and forward() methods
-    - Client creation should handle authentication and configuration
-    - Forward method must translate between Ember and provider-specific formats
-
-    Usage example:
-    ```python
-    # Direct usage (prefer using ModelRegistry instead)
-    model_info = ModelInfo(id="anthropic:claude-3", provider=ProviderInfo(name="anthropic"))
-    model_instance = AnthropicProvider(model_info=model_info)
-    response = model_instance("Tell me about the Ember framework")
-    print(response.data)  # The model's response text
-    ```
+    All providers must implement this interface to integrate with Ember.
+    Handles client creation, request processing, and response normalization.
     """
 
     def __init__(self, model_info: ModelInfo) -> None:
-        """Initialize the provider model with the given model information.
+        """Initialize with model metadata.
 
         Args:
-            model_info (ModelInfo): Metadata and configuration details for the model.
+            model_info: Model configuration and metadata
         """
         self.model_info: ModelInfo = model_info
         self.client: Any = self.create_client()
 
     @abc.abstractmethod
     def create_client(self) -> Any:
-        """Create and configure the API client.
-
-        Subclasses must override this method to initialize and return their API client.
+        """Create the provider's API client.
 
         Returns:
-            Any: A configured API client instance.
+            Configured API client instance
         """
         raise NotImplementedError("Subclasses must implement create_client")
 
     @abc.abstractmethod
     def forward(self, request: ChatRequest) -> ChatResponse:
-        """Process the chat request and return the corresponding response.
+        """Process chat request through the provider.
 
         Args:
-            request (ChatRequest): The chat request containing the prompt and additional parameters.
+            request: Standardized chat request
 
         Returns:
-            ChatResponse: The response generated by the provider.
+            Normalized chat response
         """
         raise NotImplementedError("Subclasses must implement forward")
 
     def get_api_model_name(self) -> str:
-        """Get the model name formatted for this provider's API requirements.
+        """Get provider-specific model name.
 
-        This method provides a hook for provider implementations to normalize
-        or transform the model name as required by their specific API format.
+        Override to transform model names for your API.
 
         By default, returns the model name unchanged.
 

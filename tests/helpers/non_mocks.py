@@ -1,13 +1,6 @@
-"""
-Production-quality mock implementations of Network of Networks (NON) components.
+"""Mock implementations of NON components for testing.
 
-This module provides robust, well-tested mock implementations of the NON
-patterns in Ember. These implementations follow proper interface contracts,
-explicit type annotations, and error handling - making them suitable for both
-testing and as fallbacks when full implementations are unavailable.
-
-These mocks address the circular import issues in the production code while
-maintaining the same interfaces.
+Production-quality mocks with proper interfaces and error handling.
 """
 
 from __future__ import annotations

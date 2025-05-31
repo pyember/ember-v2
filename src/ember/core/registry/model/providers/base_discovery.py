@@ -1,33 +1,13 @@
-"""Model discovery base classes for automated model registration.
+"""Base classes for automated model discovery.
 
-This module defines the core interface and utilities for automatic model discovery
-across different language model providers. Discovery providers are responsible for
-querying provider APIs to fetch available models and their capabilities, enabling
-Ember to dynamically register and expose these models without manual configuration.
+Discovery providers query APIs to fetch available models dynamically,
+keeping the registry up-to-date as providers add or remove models.
 
-The discovery system plays a crucial role in Ember's auto-discovery capabilities,
-allowing the framework to maintain up-to-date model registries even as providers
-introduce new models or deprecate existing ones.
-
-Typical usage example:
-  ```python
-  # Implementing a provider-specific discovery class
-  class MyProviderDiscovery(BaseDiscoveryProvider):
-      def fetch_models(self) -> Dict[str, Dict[str, Any]]:
-          # Connect to provider API and retrieve model data
-          models = my_api_client.list_models()
-
-          # Transform to Ember's expected format
-          result = {}
-          for model in models:
-              model_id = f"myprovider:{model['id']}"
-              result[model_id] = {
-                  "name": model["name"],
-                  "capabilities": model["features"],
-                  # Additional metadata
-              }
-          return result
-  ```
+Example:
+    >>> class MyDiscovery(BaseDiscoveryProvider):
+    ...     def fetch_models(self) -> Dict[str, Dict[str, Any]]:
+    ...         models = self.client.list_models()
+    ...         return {f"my:{m.id}": m.to_dict() for m in models}
 """
 
 from abc import ABC, abstractmethod

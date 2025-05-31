@@ -7,14 +7,15 @@ principles favored by Jeff Dean and Sanjay Ghemawat: clean, precise,
 orthogonal abstractions with maximal composability.
 """
 
-from ember.api import non
+from ember.core import non_compact
+from ember.core import non
 
 
 # Create custom operator registry for demonstrations
 def create_custom_registry():
     """Create a custom operator registry with extended operator types."""
     # Create a new registry with standard operators
-    registry = non.OpRegistry.create_standard_registry()
+    registry = non_compact.OpRegistry.create_standard_registry()
 
     # Register a custom operator type
     registry.register(
@@ -34,12 +35,23 @@ def create_custom_registry():
 def main() -> None:
     """Example demonstrating the simplified XCS architecture."""
     """Demonstrates various ways to build NON pipelines using compact notation."""
+    
+    # Check if API keys are configured
+    import os
+    if not any(os.environ.get(key) for key in ['OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'GOOGLE_API_KEY']):
+        print("\n⚠️  No API keys found in environment variables.")
+        print("\nTo run this example, you need to configure at least one model provider.")
+        print("Please run the following command to set up your API keys interactively:")
+        print("\n  ember init\n")
+        print("This will guide you through setting up your model providers and API keys.")
+        print("After configuration, you can run this example again.")
+        return
 
     # Example 1: Basic ensemble with judge
     print("\n==== Example 1: Basic Ensemble + Judge ====")
 
     # Using compact notation
-    compact_pipeline = non.build_graph(
+    compact_pipeline = non_compact.build_graph(
         [
             "3:E:gpt-4o:0.7",  # Ensemble with 3 GPT-4o instances at temp=0.7
             "1:J:claude-3-5-sonnet:0.0",  # Judge using Claude with temp=0
@@ -59,7 +71,7 @@ def main() -> None:
     # Example 2: Complex verification pipeline
     print("\n==== Example 2: Complex Verification Pipeline ====")
 
-    verification_pipeline = non.build_graph(
+    verification_pipeline = non_compact.build_graph(
         [
             "3:E:gpt-4o:0.7",  # Generate 3 candidate answers
             "1:J:claude-3-5-sonnet:0.0",  # Synthesize into one answer
@@ -73,7 +85,7 @@ def main() -> None:
     print("\n==== Example 3: Nested Architecture ====")
 
     # Build a nested architecture similar to the SubNetwork/NestedNetwork example
-    nested_pipeline = non.build_graph(
+    nested_pipeline = non_compact.build_graph(
         [
             # First branch - GPT ensemble + verification
             ["3:E:gpt-4o:0.7", "1:V:gpt-4o:0.0"],
@@ -103,7 +115,7 @@ def main() -> None:
     }
 
     # Create a complex graph with multiple levels of references
-    reference_pipeline = non.build_graph(
+    reference_pipeline = non_compact.build_graph(
         [
             "$double_verification",  # Two parallel verification branches
             "1:J:claude-3-5-sonnet:0.0",  # Final synthesis
@@ -119,7 +131,7 @@ def main() -> None:
     custom_registry = create_custom_registry()
 
     # Use the custom operator type in a specification with the custom registry
-    custom_pipeline = non.build_graph(
+    custom_pipeline = non_compact.build_graph(
         [
             "5:CE:gpt-4o:0.7",  # Custom ensemble with built-in MostCommon
             "1:J:claude-3-5-sonnet:0.0",  # Judge to synthesize
@@ -146,7 +158,7 @@ def main() -> None:
     # Build the NestedNetwork equivalent using the exact structure from example_architectures.py:
     # - Two parallel SubNetwork instances (identical configuration)
     # - Judge to synthesize results from both branches
-    nested_network = non.build_graph(
+    nested_network = non_compact.build_graph(
         [
             # Two parallel branches, both using the same SubNetwork structure
             "$sub",  # First branch: SubNetwork instance

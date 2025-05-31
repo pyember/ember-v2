@@ -1,7 +1,6 @@
 """Model management component.
 
-This module provides a component for managing model instances and
-their discovery and creation with thread-safe lazy initialization.
+Thread-safe model instance management with lazy initialization.
 """
 
 import importlib
@@ -13,23 +12,17 @@ from .registry import Registry
 
 
 class ModelComponent(Component):
-    """Model management component.
+    """Model instance management with caching.
 
-    This component is responsible for model discovery, registration,
-    and retrieval with efficient caching and thread safety.
-
-    Features:
-    - Lazy loading: Models are only initialized when first accessed
-    - Multiple registration methods: Direct instances or classes
-    - Thread safety: Safe for concurrent access
-    - Configuration-based: Models can be defined in configuration
+    Discovers, registers, and caches model instances with thread safety
+    and multiple registration methods.
     """
 
     def __init__(self, registry: Optional[Registry] = None):
-        """Initialize with registry.
+        """Initialize model component.
 
         Args:
-            registry: Registry to use (current thread's if None)
+            registry: Thread registry (current if None)
         """
         super().__init__(registry)
         self._models: Dict[str, Any] = {}

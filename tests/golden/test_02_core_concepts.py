@@ -29,13 +29,16 @@ class TestCoreConceptsExamples:
         # Check it ran successfully
         assert result.returncode == 0, f"Script failed with: {result.stderr}"
         
-        # Check expected output
+        # Check expected output with simplified API
         assert "Understanding Operators" in result.stdout
+        assert "The Simplified Approach" in result.stdout
         assert "Text Cleaner Results:" in result.stdout
         assert "Word Counter Results:" in result.stdout
         assert "Pipeline Results:" in result.stdout
         assert "Question Analysis:" in result.stdout
+        assert "Batch Processing" in result.stdout
         assert "✅ Key Takeaways" in result.stdout
+        assert "ANY function is an operator" in result.stdout
     
     def test_type_safety(self):
         """Test that type_safety.py runs successfully."""

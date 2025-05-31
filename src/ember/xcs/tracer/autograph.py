@@ -794,8 +794,7 @@ class AutoGraphBuilder:
             record.graph_node_id = graph_node_id
 
             # Add node to graph with appropriate operator
-            graph.add_node(
-                operator=self._create_operator_callable(trace_record=record),
+            graph.add(self._create_operator_callable(trace_record=record),
                 node_id=graph_node_id,
                 name=record.operator_name)
 

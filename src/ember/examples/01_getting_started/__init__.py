@@ -1,1 +1,1 @@
-"""Getting started examples for Ember."""
+"""Basic examples for getting started with Ember."""

@@ -1,20 +1,13 @@
-"""
-Example: Loading Datasets - Working with Ember's Data API
-Difficulty: Basic
-Time: ~5 minutes
-Prerequisites: 02_core_concepts/operators_basics.py
+"""Loading Datasets - Efficient data processing with Ember.
 
-Learning Objectives:
-- Use Ember's dataset registry
-- Load and process datasets
-- Create custom datasets
-- Stream large datasets efficiently
+Learn to stream, filter, and transform datasets using operators.
+Shows batch processing, aggregation, and pipeline patterns.
 
-Key Concepts:
-- DataContext and registry
-- Dataset builders
-- Streaming vs materialization
-- Data transformations
+Example:
+    >>> from ember.api import data
+    >>> dataset = data("mmlu", streaming=True, limit=100)
+    >>> for batch in dataset.batch(32):
+    ...     process(batch)
 """
 
 import sys

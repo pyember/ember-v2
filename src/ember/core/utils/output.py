@@ -1,15 +1,7 @@
-"""
-Clean Output Formatting for Ember
+"""Output formatting utilities.
 
-Provides utilities for formatting output in a clean, professional manner
-for Ember examples and CLI tools.
-
-This module offers:
-- Formatted headers and sections
-- Clean table output for results
-- Model listings with grouping
-- Performance metrics formatting
-- Color support with NO_COLOR respect
+Clean, professional formatting for CLI output with color support
+and automatic TTY detection.
 """
 
 import os
@@ -20,7 +12,7 @@ from collections import defaultdict
 
 # Check if colors should be used
 def _should_use_colors() -> bool:
-    """Check if terminal supports and wants colors."""
+    """Check if terminal supports colors."""
     # Respect NO_COLOR environment variable
     if os.environ.get("NO_COLOR"):
         return False

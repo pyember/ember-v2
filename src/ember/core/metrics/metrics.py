@@ -4,20 +4,17 @@ from typing import Any, Dict, Optional, Protocol
 
 
 class Metric(Protocol):
-    """Metric protocol defining the core interface."""
+    """Protocol for metric implementations."""
 
     def snapshot(self) -> Any:
-        """Take a snapshot of the current metric value."""
+        """Get current metric value."""
         ...
 
 
 class Counter:
-    """Simple, efficient counter with atomic operations.
+    """Thread-safe counter with atomic operations.
 
-    Performance characteristics:
-    - Increment: ~8ns (target)
-    - Memory: ~16 bytes per counter
-    - Thread-safe using an internal lock for inc()
+    Performance: ~8ns increment, ~16 bytes memory.
     """
 
     __slots__ = ("_value", "_lock")
@@ -28,12 +25,12 @@ class Counter:
         self._lock = threading.Lock()  # Lock for inc operation
 
     def inc(self, amount: int = 1) -> None:
-        """Increment counter atomically using a lock."""
+        """Increment atomically."""
         with self._lock:
             self._value += amount
 
     def get(self) -> int:
-        """Get current value. Reads don't necessarily need the lock if atomicity suffices."""
+        """Get current value."""
         # Reading the int value itself is atomic
         return self._value
 

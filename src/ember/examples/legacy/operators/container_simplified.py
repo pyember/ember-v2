@@ -111,7 +111,7 @@ class TextEnhancer(Operator[ProcessingOutput, ProcessingOutput]):
 ###############################################################################
 
 
-@jit()
+@jit
 class TextProcessor(Operator[ProcessingInput, ProcessingOutput]):
     """Container operator that applies normalization and enhancement."""
 

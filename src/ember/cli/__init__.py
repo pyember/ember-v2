@@ -1,8 +1,3 @@
-"""
-Ember CLI - Command-line interface for Ember AI
-
-This module provides a beautiful, intuitive command-line interface for
-interacting with the Ember AI framework.
-"""
+"""Ember CLI - Command-line interface for framework operations."""
 
 __version__ = "0.1.0"

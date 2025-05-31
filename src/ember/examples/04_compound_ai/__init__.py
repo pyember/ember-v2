@@ -1,1 +1,1 @@
-"""Compound AI examples - Networks of Networks patterns."""
+"""Examples of compound AI systems and network composition patterns."""

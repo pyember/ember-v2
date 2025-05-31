@@ -1,7 +1,6 @@
-"""Configuration Manager Module.
+"""Configuration management for Ember.
 
-This module provides a simple configuration management system for the Ember framework.
-It handles loading, validating, and accessing configuration values.
+Handles loading, validation, and thread-safe access to configuration.
 """
 
 import logging
@@ -14,22 +13,16 @@ from .schema import EmberConfig
 
 
 class ConfigManager:
-    """
-    Configuration manager for Ember.
-
-    This class handles loading, reloading, and accessing configuration values.
-    It provides thread-safe access to configuration and manages API keys.
-    """
+    """Thread-safe configuration manager with API key handling."""
 
     def __init__(
         self, config_path: Optional[str] = None, logger: Optional[logging.Logger] = None
     ):
-        """
-        Initialize the configuration manager.
+        """Initialize ConfigManager.
 
         Args:
-            config_path: Path to configuration file
-            logger: Logger for configuration events
+            config_path: Configuration file path.
+            logger: Logger for config events.
         """
         self._lock = RLock()
         self._logger = logger or logging.getLogger(self.__class__.__name__)

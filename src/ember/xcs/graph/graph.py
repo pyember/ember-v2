@@ -47,6 +47,7 @@ class Graph:
         # Lazy computed properties
         self._waves: Optional[List[List[str]]] = None
         self._is_dag: Optional[bool] = None
+        self.metadata: Dict[str, Any] = {}
     
     def add(self, func: Callable, *, deps: Union[List[str], Tuple[str, ...]] = None) -> str:
         """Add a computation. Returns node id."""

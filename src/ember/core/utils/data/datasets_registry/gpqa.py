@@ -1,8 +1,6 @@
-"""GPQA Diamond dataset for PhD-level science questions.
+"""GPQA Diamond dataset - PhD-level science questions.
 
-This module implements the prepper and configuration for the GPQA Diamond dataset,
-which contains graduate-level, 'Google-proof' multiple-choice science questions in
-physics, chemistry, and biology.
+Graduate-level multiple-choice questions in physics, chemistry, and biology.
 """
 
 from typing import Any, Dict, List, Optional
@@ -13,10 +11,7 @@ from ember.core.utils.data.base.preppers import IDatasetPrepper
 
 
 class GPQAConfig(BaseDatasetConfig):
-    """Configuration for the GPQA dataset.
-
-    Controls loading options for the GPQA PhD-level science questions.
-    """
+    """GPQA dataset configuration."""
 
     subset: str = "gpqa_diamond"  # Default to Diamond subset
     difficulty: Optional[str] = None  # Optional filter by difficulty level
@@ -24,18 +19,13 @@ class GPQAConfig(BaseDatasetConfig):
 
 
 class GPQAPrepper(IDatasetPrepper):
-    """Prepper for GPQA Diamond science questions.
-
-    Transforms HuggingFace GPQA dataset entries into DatasetEntry format,
-    handling the multiple-choice structure with correct and incorrect answers.
-    """
+    """Transform GPQA questions to DatasetEntry format."""
 
     def __init__(self, config: Optional[Any] = None) -> None:
-        """Initialize the GPQA prepper with optional configuration.
+        """Initialize GPQA prepper.
 
         Args:
-            config: Either a string (subset name), GPQAConfig instance, or None.
-                   If None, defaults to Diamond subset.
+            config: Subset name, GPQAConfig, or None (Diamond default)
         """
         if isinstance(config, str):
             config = GPQAConfig(subset=config)

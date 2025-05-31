@@ -1,8 +1,7 @@
-"""Vectorized mapping transformation with unified implementation.
+"""Vectorized mapping transformation.
 
-Provides a unified implementation of the vmap transformation that vectorizes
-functions to operate on batched inputs, following the standardized transformation
-API and utilizing the common BaseTransformation foundation.
+Transforms functions to operate on batched inputs efficiently using
+parallel execution when beneficial.
 """
 
 import functools

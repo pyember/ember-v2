@@ -1,1 +1,1 @@
-"""Data processing examples for Ember."""
+"""Examples of data loading, processing, and dataset management."""

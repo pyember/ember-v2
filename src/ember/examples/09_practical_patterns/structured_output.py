@@ -1,19 +1,12 @@
-"""
-Example: Structured Output - Guaranteed Valid JSON/Data
-Difficulty: Intermediate
-Time: ~7 minutes
-Prerequisites: 02_core_concepts/operators_basics.py
+"""Structured Output - Type-safe LLM outputs.
 
-Learning Objectives:
-- Ensure structured output from LLMs
-- Implement validation and retry logic
-- Handle edge cases gracefully
+Guarantee valid structured data from LLMs using validation,
+retry logic, and type-safe models.
 
-Key Concepts:
-- Output validation
-- Retry operators
-- Type safety with EmberModel
-- Error recovery
+Example:
+    >>> extractor = StructuredExtractor(output_model=ProductInfo)
+    >>> product = extractor(text="iPhone 15 Pro, $999, in stock")
+    >>> print(f"{product.name}: ${product.price}")
 """
 
 import sys

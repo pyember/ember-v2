@@ -164,6 +164,17 @@ def main() -> None:
     Returns:
         None.
     """
+    # Check if API keys are configured
+    import os
+    if not any(os.environ.get(key) for key in ['OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'GOOGLE_API_KEY']):
+        print("\n⚠️  No API keys found in environment variables.")
+        print("\nTo run this example, you need to configure at least one model provider.")
+        print("Please run the following command to set up your API keys interactively:")
+        print("\n  ember init\n")
+        print("This will guide you through setting up your model providers and API keys.")
+        print("After configuration, you can run this example again.")
+        return
+    
     usage_example()
 
 

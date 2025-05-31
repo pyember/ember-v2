@@ -1,19 +1,12 @@
-"""
-Example: RAG Pattern - Retrieval-Augmented Generation in 100 Lines
-Difficulty: Intermediate
-Time: ~10 minutes
-Prerequisites: 04_compound_ai/simple_ensemble.py
+"""RAG Pattern - Retrieval-Augmented Generation system.
 
-Learning Objectives:
-- Implement a complete RAG system
-- Understand retrieval and generation separation
-- See how operators compose for complex workflows
+Complete RAG implementation showing document chunking, similarity search,
+and context-aware generation using composable operators.
 
-Key Concepts:
-- Document chunking and indexing
-- Similarity search
-- Context-aware generation
-- Operator composition
+Example:
+    >>> rag = RAGPipeline(documents)
+    >>> answer = rag(query="What is deep learning?")
+    >>> print(answer["answer"])
 """
 
 import sys

@@ -1,18 +1,12 @@
-"""
-Example: Simple Ensemble - Your First Compound AI System
-Difficulty: Basic
-Time: ~5 minutes
-Prerequisites: 02_core_concepts/operators_basics.py
+"""Simple Ensemble - Coordinate multiple AI agents.
 
-Learning Objectives:
-- Build your first ensemble system
-- Understand voting and consensus
-- See parallel execution patterns
+Build an ensemble system that consults multiple experts in parallel
+and uses voting to reach consensus.
 
-Key Concepts:
-- Multiple operator coordination
-- Consensus strategies
-- Parallel patterns
+Example:
+    >>> ensemble = EnsemblePipeline(experts=[expert1, expert2, expert3])
+    >>> result = ensemble(question="How to learn programming?")
+    >>> print(f"{result['selected_expert']}: {result['consensus']}")
 """
 
 import sys
@@ -28,7 +22,6 @@ from ember.api import operators
 
 
 def main():
-    """Example demonstrating the simplified XCS architecture."""
     """Build your first ensemble system."""
     print_section_header("Simple Ensemble System")
     

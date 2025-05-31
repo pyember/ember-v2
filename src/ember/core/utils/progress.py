@@ -1,14 +1,6 @@
-"""
-Progress Reporter for Ember
+"""Progress reporting for long-running operations.
 
-Provides clean, user-friendly progress reporting for Ember operations,
-replacing verbose logging with clear status updates.
-
-This module offers:
-- Clean progress indicators for common operations
-- Emoji support with automatic fallback
-- Quiet mode for CI/non-interactive environments
-- No external dependencies in base implementation
+Clean status indicators with emoji support and quiet mode for CI.
 """
 
 import sys
@@ -19,24 +11,17 @@ import time
 
 
 class ProgressReporter:
-    """
-    User-friendly progress reporter for Ember operations.
-    
-    Provides clean output for common operations like model discovery,
-    data loading, and execution, with support for quiet mode and
-    emoji indicators.
-    
+    """Progress reporter for operations.
+
     Example:
-        reporter = ProgressReporter(quiet=False)
-        reporter.discovery_start()
-        # ... perform discovery ...
-        reporter.discovery_complete(25)
+        >>> reporter = ProgressReporter(quiet=False)
+        >>> reporter.discovery_start()
+        >>> reporter.discovery_complete(25)
     """
     
     def __init__(self, quiet: bool = False, use_emoji: bool = True):
-        """
-        Initialize the progress reporter.
-        
+        """Initialize progress reporter.
+
         Args:
             quiet: If True, suppress all output
             use_emoji: If True, use emoji indicators (auto-detects support)

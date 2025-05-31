@@ -1,13 +1,7 @@
-"""Core EmberContext implementation.
+"""Thread-local context for dependency injection.
 
-Implements a high-performance, thread-local context system
-that provides near-zero overhead dependency management.
-
-Design optimizations:
-1. Cache efficiency (aligned data, predictable access patterns)
-2. Branch prediction (predictable fast paths)
-3. Thread isolation (thread-local storage, minimal locking)
-4. Minimal memory footprint (immutable views, zero-allocation hot paths)
+Provides zero-overhead access to framework components through
+thread isolation and optimized cache patterns.
 """
 
 import logging
@@ -26,16 +20,10 @@ T = TypeVar("T")
 
 
 class EmberContext:
-    """Zero-overhead thread-local context.
-
-    Optimized for:
-    - Cache utilization: Core fields in single cache line
-    - Thread isolation: Thread-local storage eliminates most locks
-    - Branch prediction: Predictable fast paths
-
-    Implements hybrid singleton/thread-local pattern:
-    - Each thread has own context by default
-    - Test mode enables isolated contexts
+    """Thread-local context with zero-overhead access.
+    
+    Each thread gets its own isolated context. Core fields are
+    cache-aligned for optimal performance.
     """
 
     __slots__ = (
@@ -61,13 +49,7 @@ class EmberContext:
 
     @staticmethod
     def current() -> "EmberContext":
-        """Returns thread's current context with optimized fast path.
-
-        Uses single predictable branch for optimal CPU prediction.
-
-        Returns:
-            Current context for this thread
-        """
+        """Return current thread's context."""
         # Local variable for thread_local (reduces attribute lookup)
         local = EmberContext._thread_local
 

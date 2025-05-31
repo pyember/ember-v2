@@ -31,9 +31,7 @@ class GraphBuilder:
         op_attrs = self._get_operator_attributes(operator)
 
         # Create nodes for main operator and nested operators
-        root_node_id = graph.add_node(
-            operator=operator, name=getattr(operator, "__name__", str(operator))
-        )
+        root_node_id = graph.add(operator)
 
         # Track as root node for execution
         graph.metadata["root_id"] = root_node_id
@@ -108,9 +106,7 @@ class EnhancedTraceGraphBuilder(GraphBuilder):
             if not operator:
                 continue
 
-            node_id = graph.add_node(
-                operator=operator, name=getattr(operator, "__name__", str(operator))
-            )
+            node_id = graph.add(operator)
             node_map[op_id] = node_id
 
         # Create edges for call relationships
@@ -138,9 +134,7 @@ class EnhancedTraceGraphBuilder(GraphBuilder):
         graph = Graph()
 
         # Create node for the root operator
-        root_id = graph.add_node(
-            operator=operator, name=getattr(operator, "__name__", str(operator))
-        )
+        root_id = graph.add(operator)
 
         # Add root ID to graph metadata
         graph.metadata["root_id"] = root_id
@@ -157,9 +151,7 @@ class EnhancedTraceGraphBuilder(GraphBuilder):
             if func is None:
                 continue
 
-            node_id = graph.add_node(
-                operator=func, name=getattr(func, "__name__", str(func))
-            )
+            node_id = graph.add(func)
 
             call_nodes[func_id] = node_id
 
@@ -208,9 +200,7 @@ class StructuralGraphBuilder(GraphBuilder):
         graph = Graph()
 
         # Create node for the root operator
-        root_id = graph.add_node(
-            operator=operator, name=getattr(operator, "__name__", str(operator))
-        )
+        root_id = graph.add(operator)
 
         # Add root ID to graph metadata
         graph.metadata["root_id"] = root_id
@@ -263,7 +253,7 @@ class StructuralGraphBuilder(GraphBuilder):
                             f"{attr_path}.{node_name}" if attr_path else node_name
                         )
 
-                        node_id = graph.add_node(operator=item, name=node_name)
+                        node_id = graph.add(item)
 
                         # Add edge from parent to this node
                         graph.add_edge(parent_id, node_id)
@@ -278,7 +268,7 @@ class StructuralGraphBuilder(GraphBuilder):
                 # Create a node for this attribute
                 full_path = f"{attr_path}.{attr_name}" if attr_path else attr_name
 
-                node_id = graph.add_node(operator=attr_val, name=attr_name)
+                node_id = graph.add(attr_val)
 
                 # Add edge from parent to this node
                 graph.add_edge(parent_id, node_id)

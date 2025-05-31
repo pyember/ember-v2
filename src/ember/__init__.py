@@ -1,59 +1,23 @@
-"""
-Ember: Compositional Framework for Compound AI Systems
-=====================================================
+"""Ember: Framework for Compound AI Systems.
 
-Ember is a powerful, extensible Python framework for building and orchestrating
-Compound AI Systems and "Networks of Networks" (NONs).
-
-Core Features:
-- Eager Execution by Default
-- Parallel Graph Execution
-- Composable Operators
-- Extensible Registry System
-- Enhanced JIT System
-- Built-in Evaluation
-- Powerful Data Handling
-- Intuitive Model Access
-
-For more information, visit https://pyember.org
-
-Examples:
-    # Import primary API modules
-    import ember
-
-    # Initialize model registry and service
-    from ember.api.models import initialize_registry, create_model_service
-
-    registry = initialize_registry(auto_discover=True)
-    model_service = create_model_service(registry=registry)
-
-    # Call a model
-    response = model_service.invoke_model(
-        model_id="openai:gpt-4",
-        prompt="What's the capital of France?",
-        temperature=0.7
-    )
-
-    # Load datasets directly
-    from ember.api.data import data
-    mmlu_data = data("mmlu")
-
-    # Or use the dataset builder pattern
-    from ember.api.data import DatasetBuilder
-    dataset = DatasetBuilder().split("test").sample(100).build("mmlu")
-
-    # Create Networks of Networks (NONs)
-    from ember.api import non
-    ensemble = non.UniformEnsemble(
-        num_units=3,
-        model_name="openai:gpt-4o"
-    )
-
-    # Optimize with XCS
-    from ember.api import xcs
-    @xcs.jit
-    def optimized_fn(x):
-        return complex_computation(x)
+Example:
+    >>> import ember
+    >>> from ember.api import models, data, non, xcs
+    
+    >>> # Direct model invocation
+    >>> response = models("gpt-4", "What is the capital of France?")
+    >>> print(response.text)
+    
+    >>> # Load and process data
+    >>> dataset = data("mmlu", streaming=True, limit=100)
+    
+    >>> # Create operator ensemble
+    >>> ensemble = non.UniformEnsemble(num_units=3, model_name="gpt-4")
+    
+    >>> # Optimize execution
+    >>> @xcs.jit
+    ... def process(x):
+    ...     return ensemble(x)
 """
 
 from __future__ import annotations
@@ -114,22 +78,18 @@ def initialize_ember(
     api_keys: Optional[Dict[str, str]] = None,
     env_prefix: str = "EMBER_",
     verbose_logging: bool = False) -> ModelRegistryType:
-    """Initialize core Ember components.
-
-    This function configures logging, API keys, and the model registry.
-    The global Ember context is initialized lazily on first use via
-    `ember.core.context.current_context()`.
+    """Initialize Ember with configuration.
 
     Args:
-        config_path: Path to the main configuration file.
-        auto_discover: Automatically discover models and plugins.
-        force_discovery: Force re-discovery even if cache exists.
-        api_keys: Dictionary of API keys (e.g., {"openai": "sk-..."}).
-        env_prefix: Prefix for environment variables (e.g., EMBER_OPENAI_API_KEY).
-        verbose_logging: Enable verbose debug logging.
+        config_path: Configuration file path.
+        auto_discover: Auto-discover models.
+        force_discovery: Force re-discovery.
+        api_keys: API keys by provider (e.g., {"openai": "sk-..."}).
+        env_prefix: Environment variable prefix.
+        verbose_logging: Enable debug logging.
 
     Returns:
-        The initialized ModelRegistry.
+        Initialized model registry.
     """
     # Import modules where needed to avoid circular dependencies
     from ember.core.config.manager import create_config_manager
@@ -162,28 +122,18 @@ def initialize_ember(
 def init(
     config: Optional[Union[Dict[str, Any], Dict[str, Any]]] = None,
     usage_tracking: bool = False) -> Callable:
-    """Initialize Ember and return a unified model service.
-
-    This function provides a simple entry point for initializing Ember and accessing
-    models directly through a callable service object, as shown in the README examples.
+    """Initialize Ember with simplified API.
 
     Args:
-        config: Optional configuration to override defaults. Can be a dictionary or
-            a ConfigManager
-        usage_tracking: Whether to enable cost/token tracking
+        config: Configuration overrides.
+        usage_tracking: Enable token/cost tracking.
 
     Returns:
-        A model service that can be called directly with models and prompts
+        Callable model service.
 
-    Examples:
-        # Simple usage
-        service = init()
-        response = service("openai:gpt-4o", "What is the capital of France?")
-
-        # With usage tracking
-        service = init(usage_tracking=True)
-        response = service(models.ModelEnum.gpt_4o, "What is quantum computing?")
-        usage = service.usage_service.get_total_usage()
+    Example:
+        >>> service = init()
+        >>> response = service("gpt-4", "Explain quantum computing")
     """
     from ember.api.models import ModelService, UsageService
     from ember.core.config.manager import create_config_manager

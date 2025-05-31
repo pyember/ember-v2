@@ -1,4 +1,4 @@
-"""Common utilities for Ember examples."""
+"""Shared utilities for Ember examples."""
 
 import time
 from typing import Any, Dict, Optional
@@ -6,7 +6,7 @@ from contextlib import contextmanager
 
 
 def print_section_header(title: str) -> None:
-    """Print a formatted section header."""
+    """Print formatted section header."""
     width = max(50, len(title) + 4)
     print("\n" + "=" * width)
     print(f"  {title}")
@@ -14,14 +14,14 @@ def print_section_header(title: str) -> None:
 
 
 def print_example_output(label: str, value: Any, indent: int = 2) -> None:
-    """Print formatted example output."""
+    """Print labeled output with indentation."""
     prefix = " " * indent
     print(f"{prefix}{label}: {value}")
 
 
 @contextmanager
 def timer(name: str):
-    """Context manager for timing code execution."""
+    """Time code execution."""
     start = time.time()
     print(f"Starting: {name}")
     try:

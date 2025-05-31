@@ -1,16 +1,8 @@
-"""
-Exception architecture for the Ember framework.
+"""Exception hierarchy for Ember.
 
-This module defines a hierarchical, domain-driven exception system that provides
-consistent error reporting, contextual details, and actionable messages across
-all Ember components.
-
-All exceptions follow these design principles:
-1. Rich context: Exceptions include detailed context for debugging
-2. Domain specificity: Exception hierarchy mirrors the domain structure
-3. Actionable messages: Error messages suggest potential fixes
-4. Consistent formatting: Standard approach to error representation
-5. Unified error codes: Centralized management of error codes
+Provides domain-specific exceptions with rich context and actionable recovery hints.
+Error codes are organized by component: Core (1000s), Operators (2000s), 
+Models (3000s), Data (4000s), XCS (5000s), Config (6000s).
 """
 
 import inspect
@@ -40,17 +32,13 @@ class ExceptionContext(TypedDict, total=False):
 
 
 class EmberError(Exception):
-    """Base class for all Ember exceptions with enhanced context and error codes.
-
-    All Ember exceptions inherit from this class, providing a consistent interface
-    for error handling, reporting, and contextual information to aid debugging
-    and provide actionable guidance.
+    """Base exception with context and recovery hints.
 
     Attributes:
-        message: The error message
-        error_code: Unique error code for this exception type
-        context: Additional context information as key-value pairs
-        recovery_hint: Optional hint for how to recover from this error
+        message: Error description.
+        error_code: Unique code for this error type.
+        context: Additional debugging information.
+        recovery_hint: Suggested fix for the error.
     """
 
     # Class-level constants
@@ -70,14 +58,14 @@ class EmberError(Exception):
         context: Optional[Dict[str, Any]] = None,
         cause: Optional[Exception] = None,
         recovery_hint: Optional[str] = None) -> None:
-        """Initialize with message, error code, and optional context.
+        """Initialize EmberError.
 
         Args:
-            message: The error message
-            error_code: Optional error code (defaults to class DEFAULT_ERROR_CODE)
-            context: Optional dictionary of contextual information
-            cause: Optional exception that caused this error
-            recovery_hint: Optional hint for how to recover from this error
+            message: Error description.
+            error_code: Error code (defaults to class default).
+            context: Debugging context.
+            cause: Underlying exception.
+            recovery_hint: How to fix the error.
         """
         self.message = message
         self.error_code = (

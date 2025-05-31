@@ -100,7 +100,7 @@ def thread_isolation() -> None:
     # Create and start threads
     threads = []
     for i in range(3):
-        thread = threading.Thread(target=worker_thread, args=(i))
+        thread = threading.Thread(target=worker_thread, args=(i,))
         threads.append(thread)
         thread.start()
 
@@ -175,6 +175,17 @@ def temp_component_example() -> None:
 
 
 if __name__ == "__main__":
+    print("\n=== Context Example ===\n")
+    
+    # Check if API keys are configured
+    import os
+    if not any(os.environ.get(key) for key in ['OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'GOOGLE_API_KEY']):
+        print("⚠️  No API keys found in environment variables.")
+        print("\nTo run this example with real models, you need to configure at least one provider.")
+        print("Please run the following command to set up your API keys interactively:")
+        print("\n  ember init\n")
+        print("\nContinuing with mock components for demonstration purposes...\n")
+    
     # Clear any existing registries
     Registry.clear()
 

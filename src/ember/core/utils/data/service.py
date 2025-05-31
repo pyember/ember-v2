@@ -15,17 +15,16 @@ logger.setLevel(logging.DEBUG)
 
 
 class DatasetService:
-    """Service for orchestrating operations on datasets such as loading, validating,
-    transforming, sampling, and preparing dataset entries.
+    """Orchestrates dataset operations: load, validate, transform, sample.
 
-    The pipeline executed by this service follows these sequential steps:
-      1. Load the dataset from a given source.
-      2. Validate the overall structure of the dataset.
-      3. Optionally select a specific split.
-      4. Apply sequential transformations.
-      5. Validate the presence of required keys.
-      6. Downsample the dataset if desired.
-      7. Prepare the final dataset entries.
+    Pipeline steps:
+      1. Load dataset
+      2. Validate structure
+      3. Select split
+      4. Apply transforms
+      5. Validate keys
+      6. Sample if needed
+      7. Prepare entries
     """
 
     def __init__(
@@ -34,14 +33,13 @@ class DatasetService:
         validator: IDatasetValidator,
         sampler: IDatasetSampler,
         transformers: Optional[Iterable[IDatasetTransformer]] = None) -> None:
-        """Initialize a DatasetService instance.
+        """Initialize DatasetService.
 
         Args:
-            loader (IDatasetLoader): An instance responsible for loading datasets.
-            validator (IDatasetValidator): An instance responsible for validating dataset structures.
-            sampler (IDatasetSampler): An instance for sampling dataset records.
-            transformers (Optional[Iterable[IDatasetTransformer]]): An optional iterable of transformers
-                applied sequentially to the dataset.
+            loader: Dataset loader.
+            validator: Structure validator.
+            sampler: Dataset sampler.
+            transformers: Sequential transformers.
         """
         self._loader: IDatasetLoader = loader
         self._validator: IDatasetValidator = validator

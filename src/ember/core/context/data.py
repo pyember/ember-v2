@@ -1,7 +1,6 @@
-"""Data management component.
+"""Data management component for datasets.
 
-This module provides a component for managing datasets and their
-creation, transformation, and access with thread-safe lazy initialization.
+Thread-safe dataset access with lazy loading and transformation pipelines.
 """
 
 import importlib
@@ -13,23 +12,17 @@ from .registry import Registry
 
 
 class DataComponent(Component):
-    """Data management component.
+    """Dataset management with lazy loading.
 
-    This component is responsible for dataset discovery, registration,
-    and retrieval with efficient caching and thread safety.
-
-    Features:
-    - Lazy loading: Datasets are only initialized when first accessed
-    - Thread safety: Safe for concurrent access
-    - Configuration-based: Datasets can be defined in configuration
-    - Transformation pipeline: Datasets can be transformed
+    Discovers, registers, and caches datasets with thread safety
+    and transformation pipeline support.
     """
 
     def __init__(self, registry: Optional[Registry] = None):
-        """Initialize with registry.
+        """Initialize data component.
 
         Args:
-            registry: Registry to use (current thread's if None)
+            registry: Thread registry (current if None)
         """
         super().__init__(registry)
         self._datasets: Dict[str, Any] = {}

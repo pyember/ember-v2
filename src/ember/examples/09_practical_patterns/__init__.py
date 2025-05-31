@@ -1,1 +1,1 @@
-"""Practical patterns for common real-world use cases."""
+"""Common patterns for real-world applications like RAG and structured output."""

@@ -1,15 +1,12 @@
-"""Operator Composition Example.
+"""Operator Composition - Build pipelines with functional patterns.
 
-This example demonstrates clean operator composition using functional patterns.
-It shows how to build a pipeline that:
-1. Refines a user's question for clarity
-2. Gets multiple LLM responses via ensemble
-3. Aggregates responses to find consensus
+Demonstrates clean operator composition: question refinement,
+ensemble responses, and consensus aggregation.
 
-The example uses functional composition for clean, testable code.
-
-To run:
-    uv run python src/ember/examples/operators/composition_example.py
+Example:
+    >>> pipeline = compose(refiner, ensemble, aggregator)
+    >>> result = pipeline(question="What is deep learning?")
+    >>> print(result.consensus_answer)
 """
 
 import logging
@@ -21,7 +18,7 @@ from prettytable import PrettyTable
 # ember API imports
 from ember.api import models, non
 from ember.api.operators import Operator, Specification, EmberModel
-from ember.api.xcs import jit, execution_options
+from ember.api.xcs import jit
 
 T = TypeVar("T")
 U = TypeVar("U")
@@ -76,7 +73,7 @@ class QuestionRefinementSpecification(Specification):
     )
 
 
-@jit()
+@jit
 class QuestionRefinement(Operator[QuestionRefinementInputs, QuestionRefinementOutputs]):
     """Operator that refines a user question to make it more precise."""
 
@@ -161,7 +158,7 @@ class PipelineSpecification(Specification):
     structured_output: Type[EmberModel] = PipelineOutput
 
 
-@jit(sample_input={"query": "What is the speed of light?"})
+@jit
 class NestedPipeline(Operator[PipelineInput, PipelineOutput]):
     """Pipeline implemented as a container class with nested operators."""
 
@@ -234,6 +231,17 @@ def main() -> None:
     """Example demonstrating the simplified XCS architecture."""
     """Run demonstration of different composition patterns."""
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+    
+    # Check if API keys are configured
+    import os
+    if not any(os.environ.get(key) for key in ['OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'GOOGLE_API_KEY']):
+        print("\n⚠️  No API keys found in environment variables.")
+        print("\nTo run this example, you need to configure at least one model provider.")
+        print("Please run the following command to set up your API keys interactively:")
+        print("\n  ember init\n")
+        print("This will guide you through setting up your model providers and API keys.")
+        print("After configuration, you can run this example again.")
+        return
 
     # Define configuration parameters
     model_name: str = "openai:gpt-3.5-turbo"
@@ -334,35 +342,33 @@ def main() -> None:
                 (final_answer[:50] + "..." if len(final_answer) > 50 else final_answer)]
         )
 
-    # Demonstrate execution options with the nested pipeline
-    print("\n=== Nested Pipeline with Sequential Execution ===")
-    with execution_options(scheduler="sequential"):
-        for question in questions[:1]:
-            print(f"\nProcessing: {question}")
-            start_time = time.perf_counter()
-            result = nested_pipeline(inputs={"query": question})
-            elapsed = time.perf_counter() - start_time
+    # Demonstrate pipeline execution
+    print("\n=== Nested Pipeline Execution ===")
+    for question in questions[:1]:
+        print(f"\nProcessing: {question}")
+        start_time = time.perf_counter()
+        result = nested_pipeline(inputs={"query": question})
+        elapsed = time.perf_counter() - start_time
 
-            # Show details of pipeline execution
-            final_answer = (
-                result.final_answer if hasattr(result, "final_answer") else str(result)
-            )
-            print(
-                f'Final answer: "{final_answer[:150]}..."'
-                if len(final_answer) > 150
-                else f'Final answer: "{final_answer}"'
-            )
-            print(f"Time: {elapsed:.4f}s")
-            print("Execution mode: Sequential scheduler")
+        # Show details of pipeline execution
+        final_answer = (
+            result.final_answer if hasattr(result, "final_answer") else str(result)
+        )
+        print(
+            f'Final answer: "{final_answer[:150]}..."'
+            if len(final_answer) > 150
+            else f'Final answer: "{final_answer}"'
+        )
+        print(f"Time: {elapsed:.4f}s")
 
-            # Store in table
-            table.add_row(
-                [
-                    "Nested (Sequential)",
-                    f"{elapsed:.4f}",
-                    (
-                        final_answer[:50] + "..."
-                        if len(final_answer) > 50
+        # Store in table
+        table.add_row(
+            [
+                "Nested (Sequential)",
+                f"{elapsed:.4f}",
+                (
+                    final_answer[:50] + "..."
+                    if len(final_answer) > 50
                         else final_answer
                     )]
             )

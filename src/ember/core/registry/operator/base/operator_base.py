@@ -1,37 +1,17 @@
-"""
-Operator System: Core Computational Abstraction
+"""Operator base class for composable computations.
 
-The Operator system represents the fundamental computational unit in Ember's architecture.
-It implements an Ember-specific approach to functional programming with strong typing, native input/output
-validation, immutability guarantees, and composition patterns.
+Operators are immutable, type-safe transformations with validated I/O.
+They follow functional programming principles: stateless, deterministic,
+and composable at any scale.
 
-Architectural Philosophy:
-- Pure Functions: Operators are stateless, deterministic transformations from input to output
-- Strong Type Safety: Generic type parameters and Pydantic validation ensure `specification` correctness
-- Composition First: Designed specifically for transparent composition at any scale
-- Immutability: All operators are immutable after construction for thread safety
-- Explicit Interface: Clear input/output contracts enforced through specifications
-
-These design principles enable several powerful capabilities:
-1. Reliable Composition: Operators can be composed without unexpected interactions
-2. Safe Parallelization: Immutability guarantees make parallel execution safe
-3. Automatic Validation: Input/output validation catches errors at interface boundaries
-4. Transparent Transformation: Auto-registration enables higher-order transformations
-5. Predictable Behavior: Deterministic execution simplifies testing and reasoning about things
-
-The system intentionally separates specification (what inputs/outputs are valid) from
-implementation (how computation occurs). This separation of concerns allows for
-independent evolution of validation rules and computational logic.
-
-Core Design Patterns:
-- Template Method: Abstract forward() with concrete __call__() implementation
-- Strategy: Operators implement different computational strategies with common interface
-- Specification: Runtime validation with detailed error information
-- Generic Programming: Type variables enable extensive compile-time checking
-
-Quick note on relationship to FP/FaaS:
-The Operator system draws inspiration from functional programming and serverless
-architectures, treating computation as pure functions with explicit contracts.
+Example:
+    >>> class AddOne(Operator[int, int]):
+    ...     specification = SimpleSpec()
+    ...     def forward(self, *, inputs: int) -> int:
+    ...         return inputs + 1
+    >>> 
+    >>> op = AddOne()
+    >>> result = op(inputs=5)  # Returns 6
 """
 
 from __future__ import annotations
@@ -61,20 +41,12 @@ T_out = OutputT
 
 
 class Operator(EmberModule, abc.ABC, Generic[InputT, OutputT]):
-    """
-    Abstract base class for all computational operators in Ember.
+    """Abstract base for computational operators.
 
-    Operators are immutable, validated transformations from typed inputs to typed
-    outputs.
-    Subclasses implement the forward() method with their core logic, while this base
-    class handles input/output validation and error management.
-
-    The class uses a Template Method pattern: __call__() orchestrates execution flow
-    while forward() provides the specific implementation.
+    Subclasses implement forward() while the base handles validation.
 
     Attributes:
-        specification: ClassVar[Specification[InputT, OutputT]]: Defines the input/output
-            contract that all subclasses must provide.
+        specification: Input/output contract definition.
     """
 
     # Class variable to be overridden by subclasses
@@ -82,22 +54,13 @@ class Operator(EmberModule, abc.ABC, Generic[InputT, OutputT]):
 
     @abc.abstractmethod
     def forward(self, *, inputs: InputT) -> OutputT:
-        """
-        Implements the core computational logic of the operator.
+        """Execute operator logic with validated inputs.
 
-        This abstract method represents the heart of the Template Method pattern,
-        defining the customization point for concrete operator implementations.
-        Subclasses must implement this method to provide their specific computational
-        logic while inheriting the standardized validation and execution flow from
-        the base class.
+        Args:
+            inputs: Pre-validated input matching specification.
 
-        The forward method is guaranteed to receive validated inputs that conform
-        to the operator's input model specification, removing the need for defensive
-        validation code within implementations. Similarly, the return value will be
-        automatically validated against the output model specification, ensuring
-        consistent interface contracts.
-
-        Implementation Requirements:
+        Returns:
+            Output matching specification.
         1. Must be stateless - no modification of instance variables
         2. Must be idempotent - repeated calls with same inputs yield same outputs
         3. Must not have side effects - computation only affects return value

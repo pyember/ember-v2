@@ -1,7 +1,6 @@
-"""Configuration loader module.
+"""Configuration loader for Ember settings.
 
-This module provides functions for loading configuration from various sources
-and transforming it into a validated EmberConfig object.
+Load and validate configuration from files and environment variables.
 """
 
 import os
@@ -17,10 +16,10 @@ def merge_dicts(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any
 
     Args:
         base: Base dictionary
-        override: Dictionary with values that override the base
+        override: Values that override the base
 
     Returns:
-        Merged dictionary where override values take precedence
+        Merged dictionary with override precedence
     """
     result = base.copy()
 

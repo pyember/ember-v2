@@ -1,14 +1,6 @@
-"""
-Verbosity Control for Ember
+"""Verbosity control for output levels.
 
-Provides centralized verbosity management for Ember applications,
-allowing users to control output detail levels consistently.
-
-This module offers:
-- Verbosity level management
-- Argument parser integration
-- Context-aware output control
-- Environment variable support
+Centralized management of output detail with environment variable support.
 """
 
 import os
@@ -22,13 +14,13 @@ from ember.core.utils.progress import get_default_reporter
 
 
 class VerbosityLevel(IntEnum):
-    """
-    Verbosity levels for Ember applications.
+    """Verbosity levels for output control.
     
-    QUIET: Suppress all but essential output
-    NORMAL: Default level with clean, user-friendly output
-    VERBOSE: Include additional information and progress
-    DEBUG: Show all debugging information
+    Attributes:
+        QUIET: Essential output only
+        NORMAL: Default clean output
+        VERBOSE: Additional details
+        DEBUG: All debug information
     """
     QUIET = 0
     NORMAL = 1

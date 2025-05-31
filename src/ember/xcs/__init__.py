@@ -9,16 +9,47 @@ Core API (just 4 functions):
 - @trace: Execution analysis and debugging
 - vmap: Transform single-item → batch operations
 - get_jit_stats: Performance metrics
+
+Natural API: Just write Python. XCS handles the rest.
 """
 
-# Core optimization
-from ember.xcs.jit import jit, get_jit_stats
+# Import natural implementations that hide internal details
+from ember.xcs.natural_v2 import (
+    natural_jit as jit,
+    natural_vmap as vmap,
+    get_transformation_info as _get_transformation_info
+)
 
-# Analysis and debugging  
+# Analysis and debugging (already clean)
 from ember.xcs.trace import trace
 
-# Transformations
-from ember.xcs.transforms.vmap import vmap
+
+def get_jit_stats(func=None):
+    """Get optimization statistics.
+    
+    Args:
+        func: Optional function to get stats for
+        
+    Returns:
+        User-friendly statistics dictionary
+    """
+    if func is not None:
+        # Get stats for specific function
+        info = _get_transformation_info(func)
+        if info.get('has_jit'):
+            return {
+                'optimized': True,
+                'transformations': info.get('transformations', []),
+            }
+        else:
+            return {'optimized': False}
+    else:
+        # Global stats - simplified
+        return {
+            'version': '2.0.0',
+            'natural_api': True,
+            'transformations_available': ['jit', 'vmap', 'trace']
+        }
 
 # Public API - only what users actually need
 __all__ = [

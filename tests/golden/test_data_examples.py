@@ -18,7 +18,7 @@ class TestDataExamples(GoldenTestBase):
         from ember.core.utils.data.base.models import DatasetEntry
 
         # Get the file path
-        file_path = Path(__file__).parent.parent.parent / "src" / "ember" / "examples" / "data" / "data_api_example.py"
+        file_path = Path(__file__).parent.parent.parent / "src" / "ember" / "examples" / "legacy" / "data" / "data_api_example.py"
 
         # Create mock dataset entries
         mock_entries = [
@@ -57,7 +57,7 @@ class TestDataExamples(GoldenTestBase):
         mock_data.builder.return_value = mock_builder
         
         extra_patches = [
-            patch("ember.examples.data.data_api_example.data", mock_data)]
+            patch("ember.examples.legacy.data.data_api_example.data", mock_data)]
 
         result = self.run_example_with_mocks(
             file_path,
@@ -73,7 +73,7 @@ class TestDataExamples(GoldenTestBase):
         from pathlib import Path
         
         # Get the file path
-        file_path = Path(__file__).parent.parent.parent / "src" / "ember" / "examples" / "data" / "custom_dataset_example.py"
+        file_path = Path(__file__).parent.parent.parent / "src" / "ember" / "examples" / "legacy" / "data" / "custom_dataset_example.py"
         
         # Check if file exists, skip if not
         if not file_path.exists():
@@ -100,7 +100,7 @@ class TestDataExamples(GoldenTestBase):
         from pathlib import Path
         
         # Get the file path
-        file_path = Path(__file__).parent.parent.parent / "src" / "ember" / "examples" / "data" / "context_example.py"
+        file_path = Path(__file__).parent.parent.parent / "src" / "ember" / "examples" / "legacy" / "data" / "context_example.py"
         
         # Mock the data context and registry
         mock_registry = MagicMock()
@@ -137,7 +137,7 @@ class TestDataExamples(GoldenTestBase):
         from pathlib import Path
         
         # Get the file path
-        file_path = Path(__file__).parent.parent.parent / "src" / "ember" / "examples" / "data" / "transformation_example.py"
+        file_path = Path(__file__).parent.parent.parent / "src" / "ember" / "examples" / "legacy" / "data" / "transformation_example.py"
         
         # This is an XCS transform example that should be in the xcs folder
         pytest.skip("transformation_example.py is an XCS transforms example, not a data example")
@@ -148,7 +148,7 @@ class TestDataExamples(GoldenTestBase):
         from ember.core.utils.data.base.models import DatasetInfo, TaskType
         
         # Get the file path
-        file_path = Path(__file__).parent.parent.parent / "src" / "ember" / "examples" / "data" / "explore_datasets.py"
+        file_path = Path(__file__).parent.parent.parent / "src" / "ember" / "examples" / "legacy" / "data" / "explore_datasets.py"
         
         # Mock dataset info objects
         mmlu_info = DatasetInfo(
@@ -210,7 +210,7 @@ class TestDataExamples(GoldenTestBase):
     
     def test_all_data_examples_syntax(self):
         """Verify all data examples have valid syntax."""
-        files = self.get_example_files("data")
+        files = self.get_example_files("legacy/data")
         
         for file_path in files:
             error = self.check_syntax(file_path)
@@ -218,7 +218,7 @@ class TestDataExamples(GoldenTestBase):
     
     def test_data_examples_use_correct_imports(self):
         """Check that data examples use appropriate imports."""
-        files = self.get_example_files("data")
+        files = self.get_example_files("legacy/data")
         
         import_suggestions = []
         for file_path in files:

@@ -1,0 +1,1 @@
+"""Legacy examples preserved for backward compatibility."""

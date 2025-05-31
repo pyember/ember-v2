@@ -11,7 +11,7 @@ from ember.core.config.manager import ConfigManager
 
 
 def register(subparsers) -> argparse.ArgumentParser:
-    """Add config command to subparsers."""
+    """Register config command."""
     parser = subparsers.add_parser(
         "config",
         help="Manage Ember configuration",

@@ -1,53 +1,12 @@
-"""OpenAI provider implementation for the Ember framework.
+"""OpenAI provider implementation.
 
-This module provides a comprehensive integration with OpenAI language models
-(including GPT-3.5, GPT-4, GPT-4o, and future variants) with the Ember framework.
-It handles all aspects of model interaction including auth, request formatting,
-response parsing, error handling, retry logic, and usage tracking specifically for
-the OpenAI API.
+Integrates OpenAI models (GPT-3.5, GPT-4, GPT-4o) with automatic
+retry, model-specific parameters, and usage tracking.
 
-The implementation follows OpenAI's best practices for API integration, including
-for parameter handling, retry mechanisms, error categorization,
-and logging. It supports all OpenAI model variants with appropriate
-parameter adjustments for model-specific requirements.
-
-Classes:
-    OpenAIProviderParams: TypedDict defining OpenAI-specific parameters
-    OpenAIChatParameters: Parameter conversion for OpenAI chat completions
-    OpenAIModel: Core implementation of the OpenAI provider
-
-Details:
-    - Authentication and client configuration for OpenAI API
-    - Automatic retry with exponential backoff for transient errors
-    - Specialized error handling for different error types
-    - Model-specific parameter handling (e.g., removing temperature for o1 models)
-    - Parameter validation and transformation
-    - Detailed logging for monitoring and debugging
-    - Usage statistics calculation for cost tracking
-    - Proper timeout handling to prevent hanging requests
-
-Usage example:
-    ```python
-    # Direct usage (prefer using ModelRegistry or API)
-    from ember.core.registry.model.base.schemas.model_info import ModelInfo, ProviderInfo
-
-    # Configure model information
-    model_info = ModelInfo(
-        id="openai:gpt-4o",
-        name="gpt-4o",
-        provider=ProviderInfo(name="OpenAI", api_key="sk-...")
-    )
-
-    # Initialize the model
-    model = OpenAIModel(model_info)
-
-    # Basic usage
-    response = model("What is the Ember framework?")
-    # Access response content with response.data
-
-    # Example: "The Ember framework is a Python library for composable LLM applications..."
-
-    # Advanced usage with more parameters
+Example:
+    >>> model = OpenAIModel(model_info)
+    >>> response = model("What is machine learning?")
+    >>> print(response.data)
     response = model(
         "Generate creative ideas",
         context="You are a helpful creative assistant",

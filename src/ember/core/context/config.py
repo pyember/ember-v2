@@ -1,7 +1,6 @@
 """Configuration management component.
 
-This module provides a component for managing configuration with
-efficient access patterns and lazy loading.
+Efficient config access with lazy loading and environment variable support.
 """
 
 import os
@@ -14,16 +13,10 @@ from .registry import Registry
 
 
 class ConfigComponent(Component):
-    """Configuration management component.
+    """Configuration management with lazy loading.
 
-    This component is responsible for loading and providing access to
-    configuration from files and environment variables with minimal overhead.
-
-    Features:
-    - Lazy loading: Configuration is only loaded when first accessed
-    - Multiple sources: File and environment variables
-    - Thread safety: Safe for concurrent access
-    - Zero overhead: Cached access paths for fast repeated lookups
+    Thread-safe config access from files and environment variables
+    with zero overhead for repeated lookups.
     """
 
     def __init__(
@@ -31,12 +24,12 @@ class ConfigComponent(Component):
         registry: Optional[Registry] = None,
         config_path: Optional[str] = None,
         config_data: Optional[Dict[str, Any]] = None):
-        """Initialize with registry and optional config source.
+        """Initialize configuration component.
 
         Args:
-            registry: Registry to use (current thread's if None)
-            config_path: Path to config file (environment if None)
-            config_data: Direct config data (overrides file)
+            registry: Thread registry (current if None)
+            config_path: Config file path (env if None)
+            config_data: Direct config (overrides file)
         """
         super().__init__(registry)
         self._config_path = config_path or os.environ.get("EMBER_CONFIG")

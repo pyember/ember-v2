@@ -223,18 +223,16 @@ def _jit_operator_class(cls: Type, strategy: Strategy, settings: JITSettings) ->
     if not hasattr(cls, "forward"):
         raise ValueError(f"Operator class {cls.__name__} must have a forward method")
 
-    # Get the forward method - we'll use it directly in call
+    # Get the forward method - we'll use it directly
     original_forward = cls.forward
 
     # Create a forward proxy factory - used to handle binding self properly
     create_proxy = _create_operator_forward_proxy(strategy, settings)
 
-    # We compile the full operation inside the __call__ method, not just forward
     def jit_init(self, *args, **kwargs):
-        # Filter out 'inputs' parameter which belongs to __call__, not __init__
-        init_kwargs = {k: v for k, v in kwargs.items() if k != "inputs"}
-        # Initialize the class normally
-        cls.__init__(self, *args, **init_kwargs)
+        # Initialize the class normally - parent handles all the complexity
+        cls.__init__(self, *args, **kwargs)
+        
         # Create a proxy and compile it - this happens per instance
         self._forward_proxy = create_proxy(self, original_forward)
         
@@ -256,18 +254,14 @@ def _jit_operator_class(cls: Type, strategy: Strategy, settings: JITSettings) ->
         # This enables metrics lookups from operator to compiled_func
         cache._operator_registry[id(self)] = id(self._compiled_func)
 
-    def jit_call(self, **kwargs):
-        # Get required inputs - everything else is passed to the compiled function as-is
-        inputs = kwargs.get("inputs", {})
-
+    def jit_forward(self, *, inputs):
+        """JIT-optimized forward method that delegates to compiled function."""
         # Import here to avoid circular dependencies
         from ember.xcs.tracer.xcs_tracing import TracerContext
+        from ember.xcs.jit.cache import get_cache
 
         # Get current tracing context to properly propagate tracing through call chain
         tracer = TracerContext.get_current()
-
-        # Get the cache for recording metrics
-        from ember.xcs.jit.cache import get_cache
         cache = get_cache()
         func_id = id(self._compiled_func)
 
@@ -297,12 +291,14 @@ def _jit_operator_class(cls: Type, strategy: Strategy, settings: JITSettings) ->
             return self._compiled_func(inputs=inputs)
 
     # Create the JIT-optimized class
+    # Only override what we need to - __init__ and forward
+    # Let parent __call__ handle all the input processing
     return type(
         class_name,
-        (cls),
+        (cls,),
         {
             "__init__": jit_init,
-            "__call__": jit_call,
+            "forward": jit_forward,
             "__doc__": cls.__doc__,
         })
 

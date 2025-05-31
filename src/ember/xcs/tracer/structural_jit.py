@@ -756,8 +756,7 @@ def structural_jit(
 
                 # Save original result and add original operator node
                 graph.original_result = original_result
-                graph.add_node(
-                    operator=original_call.__get__(self),
+                graph.add(original_call.__get__(self),
                     node_id="original_operator")
 
                 # Record compilation time

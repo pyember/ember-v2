@@ -1,1 +1,1 @@
-"""Evaluation suite examples for testing and benchmarking."""
+"""Examples of evaluation pipelines and benchmarking workflows."""

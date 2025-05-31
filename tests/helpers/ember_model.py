@@ -1,9 +1,6 @@
-"""
-Stub implementation of EmberModel and related protocols for testing.
+"""Test stubs for EmberModel and protocols.
 
-This module provides stub implementations of EmberModel and related protocols
-to support tests that depend on these interfaces without requiring the full
-implementation.
+Minimal implementations for testing without full dependencies.
 """
 
 from __future__ import annotations
@@ -26,14 +23,14 @@ from pydantic import BaseModel
 # Define the protocols first (simplified versions)
 @runtime_checkable
 class EmberSerializable(Protocol):
-    """Protocol for objects that can be serialized to/from dict and JSON formats."""
+    """Protocol for serializable objects."""
 
     def as_dict(self) -> Dict[str, object]:
-        """Convert to a dictionary representation."""
+        """Convert to dictionary."""
         ...
 
     def as_json(self) -> str:
-        """Convert to a JSON string."""
+        """Convert to JSON."""
         ...
 
     @classmethod

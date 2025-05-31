@@ -1,53 +1,12 @@
-"""Anthropic Claude provider implementation for the Ember framework.
+"""Anthropic Claude provider implementation.
 
-This module provides a comprehensive integration with Anthropic's Claude language models,
-implementing the provider interface defined by the Ember framework. It handles
-all aspects of communicating with the Anthropic API, including auth, request formatting,
-response parsing, error handling, and usage tracking.
+Integrates Claude models with automatic retry, structured error handling,
+and support for both legacy and messages API formats.
 
-The implementation conforms to Anthropic's "best practices" for API integration,
-supporting both the legacy Claude prompt format and the modern messages API format.
-It handles automatic retries for transient errors, detailed logging, and
-error handling to ensure reliability in prod environments.
-
-Key classes:
-    AnthropicProviderParams: TypedDict for Anthropic-specific parameters
-    AnthropicConfig: Helper for loading and caching model configuration
-    AnthropicChatParameters: Parameter conversion for Anthropic chat requests
-    AnthropicModel: Core provider implementation for Anthropic models
-
-Details:
-    - Authentication and client configuration for Anthropic API
-    - Parameter validation and transformation
-    - Structured error handling with detailed logging
-    - Usage statistics calculation for cost tracking
-    - Automatic retries with exponential backoff
-    - Thread-safe implementation for concurrent requests
-    - Support for both legacy and modern Anthropic API endpoints
-    - Uses the official Anthropic Python SDK
-    - Handles API versioning and compatibility
-    - Provides fallback mechanisms for configuration errors
-    - Implements proper timeout handling to prevent hanging requests
-    - Calculates token usage for cost estimation and monitoring
-
-Usage example:
-    ```python
-    # Direct usage (prefer using ModelRegistry or API)
-    from ember.core.registry.model.base.schemas.model_info import ModelInfo, ProviderInfo
-
-    # Configure model information
-    model_info = ModelInfo(
-        id="anthropic:claude-3-sonnet",
-        name="claude-3-sonnet",
-        provider=ProviderInfo(name="Anthropic", api_key="sk-ant-...")
-    )
-
-    # Initialize the model
-    model = AnthropicModel(model_info)
-
-    # Generate a response
-    response = model("What is the Ember framework?")
-    # Access response content with response.data
+Example:
+    >>> model = AnthropicModel(model_info)
+    >>> response = model("Explain quantum computing")
+    >>> print(response.data)
 
     # Example: "Ember is a framework for building composable LLM applications..."
 

@@ -1,15 +1,12 @@
-"""Minimal Example
+"""Minimal Example - Simplest possible Ember operator.
 
-This module demonstrates the simplest possible Ember operator.
+Shows the fundamental operator pattern: typed inputs, deterministic
+transformations, and structured outputs.
 
-This example illustrates how the Ember `Operator` construct provides a minimal
-foundation that can be used for language-model transformations or to wrap
-arbitrary function logic.
-
-To run:
-    uv run python src/ember/examples/basic/minimal_example.py
-    uv run python src/ember/examples/basic/minimal_example.py --verbose
-    uv run python src/ember/examples/basic/minimal_example.py --quiet
+Example:
+    >>> op = MinimalOperator(increment=5, multiplier=2)
+    >>> result = op(value=10)
+    >>> print(result.value)  # (10 + 5) * 2 = 30
 """
 
 from typing import Any, Dict, List, Optional, Type
@@ -135,7 +132,6 @@ class MinimalOperator(Operator[MinimalInput, MinimalOutput]):
 
 
 def main() -> None:
-    """Example demonstrating the simplified XCS architecture."""
     """Run a simple demonstration of the MinimalOperator."""
     # Set up argument parser with verbosity controls
     parser = create_argument_parser("Demonstrate the MinimalOperator")

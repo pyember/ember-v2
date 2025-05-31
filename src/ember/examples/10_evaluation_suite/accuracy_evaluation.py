@@ -1,20 +1,12 @@
-"""
-Example: Accuracy Evaluation - Measuring System Performance
-Difficulty: Intermediate
-Time: ~10 minutes
-Prerequisites: 04_compound_ai/simple_ensemble.py
+"""Accuracy Evaluation - Measure AI system performance.
 
-Learning Objectives:
-- Build evaluation frameworks for AI systems
-- Calculate meaningful metrics
-- Compare different approaches
-- Track performance over time
+Build evaluation frameworks with metrics, statistical analysis,
+and performance tracking for compound AI systems.
 
-Key Concepts:
-- Test dataset creation
-- Metric calculation
-- Statistical significance
-- Performance tracking
+Example:
+    >>> evaluator = SystemEvaluator(metrics=["accuracy", "f1"])
+    >>> results = evaluator(predictions=preds, ground_truth=labels)
+    >>> print(f"Accuracy: {results['accuracy']:.2%}")
 """
 
 import sys

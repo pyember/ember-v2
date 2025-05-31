@@ -13,14 +13,14 @@ Transform all documentation to world-class standards - the kind of precise, eleg
 ## Progress Tracking
 
 ### Core Infrastructure
-- [ ] ember/__init__.py
+- [x] ember/__init__.py - Streamlined module docs, concise function docs
 - [ ] ember/core/__init__.py
-- [ ] ember/core/exceptions.py
+- [x] ember/core/exceptions.py - Simplified all docstrings, removed verbosity
 - [ ] ember/core/non_compact.py
 
 ### Type System
 - [ ] ember/core/types/__init__.py
-- [ ] ember/core/types/protocols.py
+- [x] ember/core/types/protocols.py - Minimal, focused protocol docs
 - [ ] ember/core/types/type_check.py
 - [ ] ember/core/types/type_vars.py
 - [ ] ember/core/types/config_types.py

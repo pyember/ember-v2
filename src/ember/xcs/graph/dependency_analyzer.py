@@ -1,9 +1,7 @@
-"""
-Dependency analysis for XCS computation graphs.
+"""Dependency analysis for computation graphs.
 
-Provides unified dependency tracking and analysis for all graph operations,
-supporting topological sorting, transitive closure calculation, and execution
-wave computation for parallel scheduling.
+Computes node dependencies, topological ordering, and execution waves
+for optimal parallel scheduling.
 """
 
 from typing import Dict, List, Set
@@ -12,24 +10,16 @@ from ember.xcs.graph import Graph
 
 
 class DependencyAnalyzer:
-    """Unified dependency analyzer for XCS graphs.
-
-    Analyzes node dependencies and constructs dependency graphs for
-    scheduling and optimization purposes.
-    """
+    """Analyzes graph dependencies for scheduling."""
 
     def analyze(self, graph: Graph) -> Dict[str, Set[str]]:
-        """Analyze all dependencies in a graph.
-
-        Computes the complete dependency relationship between all nodes,
-        including transitive dependencies.
+        """Compute complete dependency graph including transitive dependencies.
 
         Args:
-            graph: The graph to analyze
+            graph: Graph to analyze.
 
         Returns:
-            Dictionary mapping each node to its complete set of dependencies
-            (direct and transitive)
+            Map of node ID to all dependencies (direct and transitive).
         """
         direct_deps = self.build_dependency_graph(graph)
         return self.compute_transitive_closure(direct_deps)

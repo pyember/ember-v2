@@ -1,9 +1,6 @@
-"""
-Model Registry Initialization Module
+"""Model registry initialization from configuration.
 
-This module provides the integration between the centralized configuration system
-and the model registry, handling the initialization process with clean error handling
-and consistent logging.
+Bridges configuration system and model registry with clean error handling.
 """
 
 import logging
@@ -27,8 +24,7 @@ def _convert_model_config_to_model_info(
     model_config: Any,
     provider_config: Any,
     api_key: str) -> ModelInfo:
-    """
-    Convert from configuration model to ModelInfo.
+    """Convert configuration to ModelInfo.
 
     Args:
         model_id: Full model identifier

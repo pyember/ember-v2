@@ -1,6 +1,13 @@
-"""Ember Core Model Registry Initialization.
+"""Model registry for language model providers.
 
-This module provides the core components for model registry functionality.
+Central registry for discovering, loading, and managing language models
+from various providers (OpenAI, Anthropic, etc).
+
+Example:
+    >>> from ember.core.registry.model import ModelRegistry
+    >>> registry = ModelRegistry()
+    >>> model = registry.get_model("gpt-4")
+    >>> response = model.generate("What is AI?")
 """
 
 from __future__ import annotations
@@ -49,14 +56,14 @@ from ember.core.registry.model.providers.base_provider import (
 
 # Add load_model function
 def load_model(model_id: str, registry: ModelRegistry) -> BaseProviderModel:
-    """Public helper to load model instances from registry.
+    """Load a model instance from the registry.
 
     Args:
-        model_id (str): Model identifier string
-        registry (ModelRegistry): ModelRegistry instance to query
+        model_id: Model identifier (e.g., "gpt-4", "claude-3")
+        registry: ModelRegistry instance to query
 
     Returns:
-        Instantiated provider model
+        Instantiated provider model ready for use
     """
     return registry.get_model(model_id)
 
@@ -101,13 +108,13 @@ def initialize_ember(
     force_discovery: bool = False) -> ModelRegistry:
     """Initialize the Ember model registry.
 
-    DEPRECATED: Use initialize_registry from ember.core.registry.model.initialization instead.
+    DEPRECATED: Use initialize_registry from ember.core.registry.model.initialization.
 
     Args:
-        config_path (str | None): Optional path to config file
-        auto_register (bool): Automatically register models from config
-        auto_discover (bool): Enable provider model discovery
-        force_discovery (bool): Force model discovery even if auto_discover is False
+        config_path: Optional path to config file
+        auto_register: Automatically register models from config
+        auto_discover: Enable provider model discovery
+        force_discovery: Force discovery even if auto_discover is False
 
     Returns:
         Initialized ModelRegistry instance

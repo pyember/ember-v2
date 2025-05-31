@@ -1,1 +1,1 @@
-"""Shared utilities for Ember examples."""
+"""Shared utilities and helper functions for examples."""

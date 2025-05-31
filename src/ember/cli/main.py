@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""
-Ember CLI - Main entry point
-
-A beautiful command-line interface for the Ember AI framework.
-"""
+"""Ember CLI - Command-line interface for Ember AI framework."""
 
 import sys
 import argparse
@@ -24,7 +20,7 @@ from ember.cli.commands import (
 
 
 def create_parser() -> argparse.ArgumentParser:
-    """Create the main argument parser with global options."""
+    """Create main argument parser."""
     parser = argparse.ArgumentParser(
         prog="ember",
         description="Ember AI - Command-line interface for building compound AI systems",

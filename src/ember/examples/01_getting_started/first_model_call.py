@@ -1,18 +1,12 @@
-"""
-Example: First Model Call - Make Your First LLM API Call
-Difficulty: Basic
-Time: ~2 minutes
-Prerequisites: hello_world.py
+"""First Model Call - Direct LLM interaction with Ember.
 
-Learning Objectives:
-- Make your first LLM API call
-- Understand the models API
-- Handle model responses
+Shows three ways to call language models: direct invocation,
+reusable instances, and system prompts.
 
-Key Concepts:
-- models API
-- Model responses
-- Error handling
+Example:
+    >>> from ember.api import models
+    >>> response = models("gpt-3.5-turbo", "What is AI?")
+    >>> print(response.text)
 """
 
 import sys
@@ -25,7 +19,6 @@ from _shared.example_utils import print_section_header, print_example_output, en
 
 
 def main():
-    """Example demonstrating the simplified XCS architecture."""
     """Make your first LLM API call with Ember."""
     print_section_header("First Model Call")
     

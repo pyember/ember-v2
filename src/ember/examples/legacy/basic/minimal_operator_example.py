@@ -8,14 +8,40 @@ To run:
 """
 
 # Import the minimal example
-from ember.examples.basic.minimal_example import MinimalInput, MinimalOperator, main
+from ember.examples.legacy.basic.minimal_example import MinimalInput, MinimalOperator
+
+def demonstrate_minimal_operator():
+    """Run the minimal operator demonstration."""
+    print("\n=== Minimal Operator Example ===\n")
+    
+    # Create the operator
+    op = MinimalOperator(increment=5, multiplier=2)
+    
+    # Basic Example
+    print("Basic Example")
+    print("-------------")
+    input_data = MinimalInput(value=10)
+    result = op(inputs=input_data)
+    print(f"  Input      : {input_data.value}")
+    print(f"  Result     : {result.value}")
+    print(f"  Operations : {len(result.steps)}")
+    
+    # Advanced Example
+    print("\n\nAdvanced Example")
+    print("----------------")
+    input_data = MinimalInput(value=7)
+    result = op(inputs=input_data, options={"square": True, "add": 3})
+    print(f"  Input      : {input_data.value}")
+    print(f"  Options    : {{'square': True, 'add': 3}}")
+    print(f"  Result     : {result.value}")
+    print(f"  Operations : {len(result.steps)}")
 
 if __name__ == "__main__":
-    # Run the example from the minimal_example module
-    main()
+    # Run the minimal operator demonstration
+    demonstrate_minimal_operator()
 
     # Additional demonstration of composition
-    print("\n=== Operator Composition Example ===\n")
+    print("\n\n=== Operator Composition Example ===\n")
 
     # Create operators with different configurations
     op1 = MinimalOperator(increment=2, multiplier=3)

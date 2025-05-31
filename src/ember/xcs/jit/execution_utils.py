@@ -36,31 +36,8 @@ def execute_compiled_graph(
     execution_start = time.time()
 
     try:
-        # Extract execution parameters from graph metadata or options
-        parallel = True
-        timeout = None
-        
-        if hasattr(graph, "execution_mode"):
-            mode = getattr(graph, "execution_mode", "auto")
-            if mode == "sequential":
-                parallel = False
-            elif hasattr(graph, "execution_options"):
-                mode_options = getattr(graph, "execution_options", {})
-                if "max_workers" in mode_options:
-                    parallel = mode_options["max_workers"]
-                if "timeout_seconds" in mode_options:
-                    timeout = mode_options["timeout_seconds"]
-        elif options:
-            # Extract from provided options dict
-            parallel = options.get("use_parallel", True)
-            if options.get("scheduler") == "sequential":
-                parallel = False
-            elif options.get("max_workers"):
-                parallel = options["max_workers"]
-            timeout = options.get("timeout_seconds")
-
-        # Execute the graph with simplified API
-        result_dict = graph.run(inputs, parallel=parallel, timeout=timeout)
+        # Execute the graph - it automatically determines parallelism
+        result_dict = graph.run(inputs)
 
         # Determine root node or output node
         root_id = None

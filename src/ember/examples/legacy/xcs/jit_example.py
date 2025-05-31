@@ -1,21 +1,12 @@
-"""JIT Ensemble Demonstration.
+"""JIT Ensemble - Performance optimization with execution tracing.
 
-This module demonstrates three variants of a "LargeEnsemble" operator using Ember's
-API:
-    1) BaselineEnsemble: Executes eagerly without parallelism
-    2) ParallelEnsemble: Leverages concurrency via a scheduling plan
-    3) JITEnsemble: Combines parallel execution with JIT tracing to cache the concurrency plan
+Compares three ensemble implementations: baseline (serial), 
+parallel (concurrent), and JIT (cached execution plans).
 
-It measures the total and per-query execution times for each approach, highlighting the
-performance benefits of JIT compilation with the @jit decorator. This example focuses
-on the trace-based JIT approach, which is one of three complementary approaches in Ember's
-JIT system (the others being structural_jit and autograph).
-
-For a comprehensive explanation of the relationship between these approaches,
-see docs/xcs/JIT_OVERVIEW.md.
-
-To run:
-    uv run python src/ember/examples/xcs/jit_example.py
+Example:
+    >>> ensemble = JITEnsemble(num_agents=5)
+    >>> result = ensemble(question="What is AI?")
+    >>> print(f"Speedup: {result.baseline_time / result.jit_time:.2f}x")
 """
 
 import logging

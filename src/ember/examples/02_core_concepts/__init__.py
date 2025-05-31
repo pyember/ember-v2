@@ -1,1 +1,1 @@
-"""Core concepts examples for Ember."""
+"""Examples demonstrating core Ember concepts and operators."""

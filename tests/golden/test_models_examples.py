@@ -1,6 +1,6 @@
 """Golden tests for models examples.
 
-This module tests all examples in the ember/examples/models directory.
+This module tests all examples in the ember/examples/legacy/models directory.
 """
 
 import pytest
@@ -17,7 +17,7 @@ class TestModelsExamples(GoldenTestBase):
         from pathlib import Path
         
         # Get the file path
-        file_path = Path(__file__).parent.parent.parent / "src" / "ember" / "examples" / "models" / "model_api_example.py"
+        file_path = Path(__file__).parent.parent.parent / "src" / "ember" / "examples" / "legacy" / "models" / "model_api_example.py"
         
         # Run with proper mocks
         extra_patches = [
@@ -42,7 +42,7 @@ class TestModelsExamples(GoldenTestBase):
         from pathlib import Path
         
         # Get the file path
-        file_path = Path(__file__).parent.parent.parent / "src" / "ember" / "examples" / "models" / "list_models.py"
+        file_path = Path(__file__).parent.parent.parent / "src" / "ember" / "examples" / "legacy" / "models" / "list_models.py"
         
         # Mock models.list()
         mock_models = MagicMock()
@@ -77,7 +77,7 @@ class TestModelsExamples(GoldenTestBase):
         from pathlib import Path
         
         # Get the file path
-        file_path = Path(__file__).parent.parent.parent / "src" / "ember" / "examples" / "models" / "model_registry_example.py"
+        file_path = Path(__file__).parent.parent.parent / "src" / "ember" / "examples" / "legacy" / "models" / "model_registry_example.py"
         
         # Mock the models API
         mock_models = MagicMock()
@@ -121,7 +121,7 @@ class TestModelsExamples(GoldenTestBase):
         from pathlib import Path
         
         # Get the file path
-        file_path = Path(__file__).parent.parent.parent / "src" / "ember" / "examples" / "models" / "function_style_api.py"
+        file_path = Path(__file__).parent.parent.parent / "src" / "ember" / "examples" / "legacy" / "models" / "function_style_api.py"
         
         # This example just shows patterns, doesn't need complex mocks
         result = self.run_example_with_mocks(
@@ -141,7 +141,7 @@ class TestModelsExamples(GoldenTestBase):
     
     def test_all_models_examples_syntax(self):
         """Verify all models examples have valid syntax."""
-        files = self.get_example_files("models")
+        files = self.get_example_files("legacy/models")
         
         for file_path in files:
             error = self.check_syntax(file_path)
@@ -149,7 +149,7 @@ class TestModelsExamples(GoldenTestBase):
     
     def test_models_examples_use_simplified_api(self):
         """Check that models examples use the simplified API."""
-        files = self.get_example_files("models")
+        files = self.get_example_files("legacy/models")
         
         outdated_patterns = []
         for file_path in files:
