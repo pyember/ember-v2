@@ -6,7 +6,7 @@ import pytest
 from typing import List, Dict, Any
 import warnings
 
-from ember.core.module import Module
+from ember._internal.module import Module
 
 
 class OrchestrationModule(Module):

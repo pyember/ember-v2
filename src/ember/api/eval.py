@@ -68,8 +68,8 @@ Custom Evaluator Implementation:
 
 from typing import Any, Callable, Dict
 
-from ember.core.utils.eval.base_evaluator import EvaluationResult, IEvaluator
-from ember.core.utils.eval.registry import EvaluatorRegistry
+from ember.utils.eval.base_evaluator import EvaluationResult, IEvaluator
+from ember.utils.eval.registry import EvaluatorRegistry
 
 # Initialize registry with standard evaluators
 _REGISTRY = EvaluatorRegistry()
@@ -78,7 +78,7 @@ _REGISTRY = EvaluatorRegistry()
 # Register standard evaluators
 def _init_registry():
     """Initialize the evaluator registry with standard evaluators."""
-    from ember.core.utils.eval.evaluators import (
+    from ember.utils.eval.evaluators import (
         ExactMatchEvaluator,
         NumericToleranceEvaluator,
         PartialRegexEvaluator)

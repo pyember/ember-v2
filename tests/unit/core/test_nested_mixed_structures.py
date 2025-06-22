@@ -7,7 +7,7 @@ import pytest
 from typing import List, Dict, Any, Optional, Tuple
 import warnings
 
-from ember.core.module import Module
+from ember._internal.module import Module
 
 
 @dataclasses.dataclass

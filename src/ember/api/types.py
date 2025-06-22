@@ -14,10 +14,8 @@ Examples:
 
 from typing import Any, ClassVar, Dict, Generic, List, Optional, Type, TypeVar, Union
 
-from ember.core.types import EmberSerializable, EmberTyped, InputT, OutputT, TypeInfo
-
 # Re-export core types
-from ember.core.types.ember_model import EmberModel
+from ember._internal.types import EmberModel
 
 
 # Utility function for extracting values from various response types
@@ -64,13 +62,6 @@ def extract_value(response: Any, key: str, default: Any = None) -> Any:
 __all__ = [
     # Base types
     "EmberModel",  # Base model for input/output types
-    # Type variables
-    "InputT",  # Type variable for operator inputs
-    "OutputT",  # Type variable for operator outputs
-    # Protocols
-    "EmberTyped",
-    "EmberSerializable",
-    "TypeInfo",
     # Utility functions
     "extract_value",  # Extract values from response objects
     # Re-exported typing primitives

@@ -42,7 +42,7 @@ import ember.api.xcs as xcs  # Execution optimization system
 operator = operators
 
 # Import core components
-from ember.core.context.ember_context import EmberContext
+# from ember._internal.context.ember_context import EmberContext  # Not used by new API
 
 # Import data API components
 from ember.api.data import (

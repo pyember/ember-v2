@@ -13,7 +13,7 @@ except ImportError:
     HAS_JAX = False
     tree_util = None
 
-from ember.core.module import Module
+from ember._internal.module import Module
 
 
 @dataclass(frozen=True)

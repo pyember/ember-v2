@@ -16,7 +16,7 @@ from typing import List, Tuple, Any, Dict
 from concurrent.futures import ThreadPoolExecutor
 
 from ember.xcs import vmap, pmap, scan, grad
-from ember.core.operators import Operator
+from ember.operators import Operator
 from ember.api import models
 
 

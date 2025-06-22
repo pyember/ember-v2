@@ -5,7 +5,7 @@ import jax.numpy as jnp
 import pytest
 from typing import List
 
-from ember.core.module import Module
+from ember._internal.module import Module
 from ember.xcs import vmap
 
 

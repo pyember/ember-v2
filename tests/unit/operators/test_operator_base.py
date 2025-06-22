@@ -10,8 +10,8 @@ import pytest
 from unittest.mock import Mock
 from typing import Optional
 
-from ember.core.operators import Operator
-from ember.core.types.ember_model import EmberModel
+from ember.operators import Operator
+from ember._internal.types import EmberModel
 
 
 class TestOperatorBase:

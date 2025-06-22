@@ -10,7 +10,7 @@ import pytest
 from unittest.mock import Mock, patch
 
 from ember.api.models import models, ModelBinding, Response
-from ember.core.exceptions import ModelNotFoundError
+from ember._internal.exceptions import ModelNotFoundError
 
 
 class TestModelBinding:
@@ -127,7 +127,7 @@ class TestModelBinding:
     
     def test_binding_error_propagation(self):
         """Test that errors propagate through bindings."""
-        from ember.core.exceptions import ProviderAPIError
+        from ember._internal.exceptions import ProviderAPIError
         
         with patch('ember.api.models._global_models_api._registry') as mock_registry:
             mock_registry.get_model.return_value = Mock()

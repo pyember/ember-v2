@@ -20,7 +20,7 @@ import threading
 import time
 from typing import Any, Dict, List, Optional
 
-from ember.core.exceptions import (
+from ember._internal.exceptions import (
     ModelNotFoundError,
     ModelProviderError,
     ProviderAPIError,

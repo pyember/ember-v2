@@ -12,7 +12,7 @@ import jax
 import jax.numpy as jnp
 from typing import Any
 
-from ember.core.operators import Operator, LearnableRouter
+from ember.operators import Operator, LearnableRouter
 
 
 # Global call tracker for testing

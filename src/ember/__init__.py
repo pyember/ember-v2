@@ -92,9 +92,9 @@ def initialize_ember(
         Initialized model registry.
     """
     # Import modules where needed to avoid circular dependencies
-    from ember.core.config.manager import create_config_manager
+    from ember._internal.config.manager import create_config_manager
     from ember.models import ModelRegistry
-    from ember.core.utils.logging import configure_logging
+    from ember.utils.logging import configure_logging
 
     # 0. Configure logging first
     configure_logging(verbose=verbose_logging)
@@ -133,8 +133,8 @@ def init(
         >>> response = service("gpt-4", "Explain quantum computing")
     """
     from ember.api.models import ModelService, UsageService
-    from ember.core.config.manager import create_config_manager
-    from ember.core.registry.model.initialization import initialize_registry
+    from ember._internal.config.manager import create_config_manager
+    # from ember._internal.registry.model.initialization import initialize_registry  # Deprecated
 
     # Initialize configuration if needed
     config_manager = None
@@ -145,8 +145,8 @@ def init(
     elif config is not None and hasattr(config, "set") and hasattr(config, "get"):
         config_manager = config
 
-    # Initialize the registry with auto-discovery
-    registry = initialize_registry(auto_discover=True, config_manager=config_manager)
+    # Initialize the registry directly
+    registry = ModelRegistry()
 
     # Create usage service if tracking is enabled
     usage_service = UsageService() if usage_tracking else None
@@ -168,7 +168,11 @@ def init(
 
 
 # Import logging utilities for convenience
-from ember.core.utils.logging import configure_logging, set_component_level
+from ember.utils.logging import configure_logging, set_component_level
+
+# Check if user needs onboarding
+from ember.onboard import suggest_onboarding
+suggest_onboarding()
 
 
 # Public interface - only export the main API components

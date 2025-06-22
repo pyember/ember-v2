@@ -259,5 +259,5 @@ build-backend = "setuptools.build_meta"
 package-dir = {"" = "src"}
 packages = ["ember"]
 
-[project.scripts]
-ember = "ember.cli.main:main"
+# [project.scripts]
+# Future: ember = "ember.onboard:main"  # Interactive onboarding as CLI

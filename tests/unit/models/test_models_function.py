@@ -10,7 +10,7 @@ import pytest
 from unittest.mock import Mock, patch
 
 from ember.api.models import models, Response
-from ember.core.exceptions import ModelNotFoundError, ModelProviderError, ProviderAPIError
+from ember._internal.exceptions import ModelNotFoundError, ModelProviderError, ProviderAPIError
 
 
 class TestModelsFunction:

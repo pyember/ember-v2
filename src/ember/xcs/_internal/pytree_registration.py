@@ -8,7 +8,7 @@ import jax
 import jax.tree_util as tree_util
 from typing import Any, List, Tuple
 
-from ember.core.module import Module
+from ember._internal.module import Module
 
 
 def register_ember_pytrees():

@@ -12,7 +12,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 
 from ember.models.providers.base import BaseProvider
 from ember.models.schemas import ChatResponse, UsageStats
-from ember.core.exceptions import (
+from ember._internal.exceptions import (
     ProviderAPIError,
     ModelProviderError,
 )

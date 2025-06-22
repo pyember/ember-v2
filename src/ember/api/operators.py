@@ -55,12 +55,12 @@ See Also:
 """
 
 # Core API imports
-from ember.core.operators import (
+from ember.operators import (
     Operator,
     chain,
     ensemble,
 )
-from ember.core.registry.specification import Specification
+# from ember._internal.registry.specification import Specification  # Deprecated - new operators use input_spec/output_spec
 from ember.api.decorators import op
 
 __all__ = [
@@ -69,7 +69,7 @@ __all__ = [
     'op',
     'chain',
     'ensemble',
-    'Specification',
+    # 'Specification',  # Deprecated - new operators use input_spec/output_spec
 ]
 
 # For backward compatibility and migration

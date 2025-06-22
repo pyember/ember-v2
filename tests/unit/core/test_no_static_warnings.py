@@ -6,7 +6,7 @@ import jax.numpy as jnp
 from typing import List
 import pytest
 
-from ember.core.module import Module
+from ember._internal.module import Module
 
 
 class TensorOp(Module):

@@ -12,7 +12,7 @@ import time
 from unittest.mock import Mock, patch, MagicMock
 
 from ember.models.registry import ModelRegistry
-from ember.core.exceptions import ModelNotFoundError, ModelProviderError
+from ember._internal.exceptions import ModelNotFoundError, ModelProviderError
 
 
 class TestModelRegistry:

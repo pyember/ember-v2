@@ -32,25 +32,25 @@ IMPORT_MAPPINGS = [
     
     # Operator imports
     (r'from ember\.core\.registry\.operator\.base\.operator_base import Operator',
-     'from ember.core.operators import Operator'),
+     'from ember.operators import Operator'),
     (r'from ember\.core\.registry\.operator\.core\.ensemble import EnsembleOperator',
-     'from ember.core.operators.ensemble import EnsembleOperator'),
+     'from ember._internal.operators.ensemble import EnsembleOperator'),
     (r'from ember\.core\.registry\.operator\.core\.most_common import MostCommonOperator',
-     'from ember.core.operators.selectors import MostCommonOperator'),
+     'from ember._internal.operators.selectors import MostCommonOperator'),
     (r'from ember\.core\.registry\.operator\.core\.verifier import VerifierOperator',
-     'from ember.core.operators.judges import VerifierOperator'),
+     'from ember._internal.operators.judges import VerifierOperator'),
     (r'from ember\.core\.registry\.operator\.base\._module import static_field',
      '# static_field removed - use regular class attributes'),
     
     # Specification imports
     (r'from ember\.core\.registry\.specification\.specification import Specification',
-     'from ember.core.operators.specification import Specification'),
+     'from ember._internal.operators.specification import Specification'),
     
     # Plugin system
     (r'from ember\.core\.plugin_system import registered_providers',
      '# Use test_providers from conftest instead'),
     (r'from ember\.core\.plugin_system import.*',
-     'from ember.core.plugin_system import PluginSystem'),
+     'from ember._internal.plugin_system import PluginSystem'),
 ]
 
 def fix_imports_in_file(file_path: Path) -> bool:

@@ -17,7 +17,7 @@ Following Google Python Style Guide:
 
 from typing import Callable, List
 
-from ember.core.operators.base import Operator
+from ember.operators.base import Operator
 
 
 def op(fn: Callable) -> Operator:

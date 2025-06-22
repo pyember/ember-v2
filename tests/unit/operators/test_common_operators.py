@@ -12,7 +12,7 @@ from unittest.mock import Mock
 from collections import Counter
 from typing import Any
 
-from ember.core.operators import (
+from ember.operators import (
     Operator, Ensemble, Chain, Router, Retry, Cache,
     ensemble, chain, router
 )

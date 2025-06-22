@@ -15,7 +15,7 @@ from typing import Union, Optional, Any, Dict, List, TYPE_CHECKING
 
 from ember.models import ModelRegistry
 from ember.models.schemas import ChatResponse
-from ember.core.exceptions import (
+from ember._internal.exceptions import (
     ModelError,
     ModelNotFoundError,
     ProviderAPIError
