@@ -5,10 +5,11 @@ It centralizes type definitions to ensure consistency and compatibility
 across the codebase.
 
 Examples:
-    from ember.api.types import EmberModel, Field
+    from ember.api.types import EmberModel
 
     class MyInputModel(EmberModel):
-        text: str = Field(description="Input text")
+        text: str
+        max_length: int = 100
 """
 
 from typing import Any, ClassVar, Dict, Generic, List, Optional, Type, TypeVar, Union
@@ -16,7 +17,7 @@ from typing import Any, ClassVar, Dict, Generic, List, Optional, Type, TypeVar, 
 from ember.core.types import EmberSerializable, EmberTyped, InputT, OutputT, TypeInfo
 
 # Re-export core types
-from ember.core.types.ember_model import EmberModel, Field
+from ember.core.types.ember_model import EmberModel
 
 
 # Utility function for extracting values from various response types
@@ -63,7 +64,6 @@ def extract_value(response: Any, key: str, default: Any = None) -> Any:
 __all__ = [
     # Base types
     "EmberModel",  # Base model for input/output types
-    "Field",  # Field for model definitions
     # Type variables
     "InputT",  # Type variable for operator inputs
     "OutputT",  # Type variable for operator outputs

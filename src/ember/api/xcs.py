@@ -1,43 +1,38 @@
-"""Simplified XCS API - Zero Configuration, Maximum Power.
+"""XCS API - Smart execution made simple.
 
-The XCS (eXecution Coordination System) provides automatic optimization
-for compound AI systems with just four essential functions:
+The new XCS provides automatic optimization with zero configuration.
+Just use @jit and let XCS handle the rest.
 
-- @jit: Zero-configuration optimization for any function or operator
-- @trace: Execution analysis and debugging  
-- vmap: Transform single-item functions to batch processors
-- get_jit_stats: Performance metrics and insights
+Examples:
+    from ember.api.xcs import jit
+    
+    @jit
+    def process(data):
+        return model(data)
+    
+    # That's it! Automatic parallelization, caching, and optimization.
 
-That's it. No strategies to choose, no modes to configure.
-
-Natural API: Just write Python. XCS handles the rest.
+For the 10% who need more control:
+    from ember.api.xcs import jit, Config
+    
+    @jit(config=Config(cache=False))
+    def process_sensitive(data):
+        return secure_model(data)
 """
 
-# Import everything from the clean XCS module
-# Use simple implementations for stability
-from ember.xcs.jit.simple_jit import jit
-from ember.xcs.simple_vmap import vmap
-from ember.xcs.trace import trace
+# Re-export the simple API
+from ember.xcs import jit, get_jit_stats
 
-def get_jit_stats(func=None):
-    """Get optimization statistics."""
-    # Simple implementation for now
-    return {
-        'version': '2.0.0',
-        'natural_api': True,
-        'transformations_available': ['jit', 'vmap', 'trace']
-    }
+# Config for advanced users (hidden by default)
+# Users must explicitly import this
+from ember.xcs.config import Config as _Config
 
-# Aliases for backward compatibility
-autograph = trace  # Similar functionality for execution analysis
+# Make Config available but not in __all__
+Config = _Config
 
 __all__ = [
-    # Core API - just 4 functions
-    "jit",           # Automatic optimization
-    "trace",         # Execution analysis
-    "get_jit_stats", # Performance monitoring
-    "vmap",          # Single-item → batch transformation
-    
-    # Compatibility alias
-    "autograph",     # Alias for trace
+    # The 90% API - just these two functions
+    'jit',
+    'get_jit_stats',
+    # Config is available but not advertised in __all__
 ]

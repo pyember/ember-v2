@@ -1,74 +1,87 @@
-"""Operators API for composable language model operations.
+"""Operators API for Ember.
 
-Operators are the fundamental computational units in Ember, providing type-safe
-composition of language model operations.
+This module provides the public API for Ember's operator system, exposing
+the simplified design with progressive disclosure.
 
-Example:
-    >>> from ember.api.operators import Operator, EmberModel, Field
-    >>> 
-    >>> class QuestionInput(EmberModel):
-    ...     question: str = Field(..., description="Question to answer")
-    >>> 
-    >>> class AnswerOutput(EmberModel):
-    ...     answer: str = Field(..., description="Response to the question")
-    >>> 
-    >>> class QuestionAnswerer(Operator[QuestionInput, AnswerOutput]):
-    ...     def forward(self, inputs: QuestionInput) -> AnswerOutput:
-    ...         response = self.model.generate(inputs.question)
-    ...         return AnswerOutput(answer=response)
-    >>> 
-    >>> # Ensemble multiple operators
-    >>> from ember.api.operators import EnsembleOperator
-    >>> ensemble = EnsembleOperator(
-    ...     operators=[
-    ...         QuestionAnswerer(model="gpt-4"),
-    ...         QuestionAnswerer(model="claude-3")
-    ...     ]
-    ... )
+Key components:
+    Operator: Base class for all operators with optional validation
+    @op: Decorator to convert functions to operators
+    Common operators: Ensemble, Chain, Router, etc.
+
+Basic usage:
+    from ember.api import operators
+    
+    # Use the decorator for simple cases
+    @operators.op
+    def summarize(text: str) -> str: 
+        return ember.model("gpt-4")(f"Summarize: {text}")
+    
+    # Or create operator classes for more control
+    class MyOperator(operators.Operator):
+        def forward(self, input):
+            return process(input)
+    @operators.measure
+    def expensive_op(data):
+        # Metrics tracked: latency, tokens, cost
+        return model(data)
+    
+    # Compose operators
+    pipeline = operators.chain(
+        preprocess,
+        summarize,
+        postprocess
+    )
+
+Advanced usage:
+    from ember.operators.advanced import Operator, TreeProtocol
+    
+    class CustomOperator(Operator):
+        def forward(self, x):
+            return self.process(x)
+
+Experimental features:
+    from ember.operators.experimental import trace, jit_compile
+    
+    # Trace execution for optimization
+    traced = trace(my_operator)
+    
+    # Compile to optimized IR
+    compiled = jit_compile(my_operator)
+
+See Also:
+    ember.core.operators: Core operator implementations
+    ember.operators.advanced: Advanced operator patterns
+    ember.operators.experimental: Experimental features
 """
 
-# Define improved type variables with explicit bounds and variance
-from typing import TypeVar
-
-# Core imports from operator base
-from ember.core.registry.operator.base.operator_base import Operator
-from ember.core.registry.specification.specification import Specification
-from ember.core.types.ember_model import EmberModel, Field
-
-# Contravariant for inputs (accepts superclasses of the specified type)
-# Covariant for outputs (accepts the specified type and its subclasses)
-InputT = TypeVar("InputT", bound=EmberModel, contravariant=True)
-OutputT = TypeVar("OutputT", bound=EmberModel, covariant=True)
-
-# Re-export useful types
-from typing import Any, Dict, List, Optional, TypeVar, Union
-
-# Core operator implementations
-from ember.core.registry.operator.core.ensemble import EnsembleOperator
-from ember.core.registry.operator.core.most_common import (
-    MostCommonAnswerSelectorOperator as MostCommonAnswerSelector)
-from ember.core.registry.operator.core.selector_judge import SelectorJudgeOperator
-from ember.core.registry.operator.core.synthesis_judge import JudgeSynthesisOperator
-from ember.core.registry.operator.core.verifier import VerifierOperator
+# Core API imports
+from ember.core.operators import (
+    Operator,
+    chain,
+    ensemble,
+)
+from ember.core.registry.specification import Specification
+from ember.api.decorators import op
 
 __all__ = [
-    # Base classes
-    "Operator",  # Base operator class for extension
-    "Specification",  # Specification for operators
-    "EmberModel",  # Base model class for inputs/outputs
-    "Field",  # Field definition for model attributes
-    "InputT",
-    "OutputT",  # Type variables for generics
-    # Built-in operators
-    "EnsembleOperator",  # Runs multiple operators in parallel
-    "MostCommonAnswerSelector",  # Selects most frequent answer
-    "VerifierOperator",  # Verifies candidate answers
-    "SelectorJudgeOperator",  # Selects best answer using a judge
-    "JudgeSynthesisOperator",  # Synthesizes a response from multiple answers
-    # Useful types
-    "List",
-    "Dict",
-    "Any",
-    "Optional",
-    "Union",
-    "TypeVar"]
+    # Core classes and functions
+    'Operator',
+    'op',
+    'chain',
+    'ensemble',
+    'Specification',
+]
+
+# For backward compatibility and migration
+def __getattr__(name):
+    """Lazy loading for advanced and experimental features."""
+    if name == 'advanced':
+        from ember.operators import advanced
+        return advanced
+    elif name == 'experimental':
+        from ember.operators import experimental
+        return experimental
+    elif name == 'legacy':
+        from ember.operators import legacy
+        return legacy
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

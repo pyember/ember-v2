@@ -1,342 +1,275 @@
-"""Loading Datasets - Efficient data processing with Ember.
+"""Loading Datasets - Simple data loading with Ember's new API.
 
-Learn to stream, filter, and transform datasets using operators.
-Shows batch processing, aggregation, and pipeline patterns.
+Difficulty: Basic
+Time: ~5 minutes
+
+Learning Objectives:
+- Load datasets with the simple data API
+- Use streaming for memory efficiency
+- Apply filters and transformations
+- Understand the progressive disclosure design
 
 Example:
     >>> from ember.api import data
-    >>> dataset = data("mmlu", streaming=True, limit=100)
-    >>> for batch in dataset.batch(32):
-    ...     process(batch)
+    >>> # Stream data (memory efficient)
+    >>> for item in data.stream("mmlu"):
+    ...     process(item)
+    >>> 
+    >>> # Or load into memory
+    >>> dataset = data.load("mmlu", split="test")
 """
 
 import sys
 from pathlib import Path
-from typing import Iterator, Dict, Any
+from typing import List, Dict, Any
 
 sys.path.append(str(Path(__file__).parent.parent))
 
 from _shared.example_utils import print_section_header, print_example_output
 from ember.api import data, operators
+from ember.api.xcs import jit, vmap
 
 
 def main():
-    """Example demonstrating the simplified XCS architecture."""
-    """Learn to work with datasets in Ember."""
-    print_section_header("Working with Datasets")
+    """Learn to work with datasets using Ember's simple API."""
+    print_section_header("Loading and Processing Datasets")
     
     # Part 1: Simple Data Loading
-    print("📁 Part 1: Creating Simple Datasets\n")
+    print("Part 1: Basic Data Loading")
+    print("=" * 50 + "\n")
     
-    # Create a simple in-memory dataset
-    simple_data = [
+    # For demo, create a simple data source
+    demo_data = [
         {"id": 1, "text": "Machine learning is fascinating", "category": "tech"},
         {"id": 2, "text": "I love cooking pasta", "category": "food"},
         {"id": 3, "text": "The weather is beautiful today", "category": "general"},
         {"id": 4, "text": "Python is a great language", "category": "tech"},
-        {"id": 5, "text": "Pizza is my favorite food", "category": "food"}]
+        {"id": 5, "text": "Pizza is my favorite food", "category": "food"},
+        {"id": 6, "text": "Neural networks are powerful", "category": "tech"},
+        {"id": 7, "text": "Coffee keeps me productive", "category": "food"},
+        {"id": 8, "text": "The sunset was amazing", "category": "general"}
+    ]
     
-    print(f"Created simple dataset with {len(simple_data)} entries")
-    print_example_output("First entry", simple_data[0])
+    print("Demo: Working with in-memory data")
+    print(f"Total items: {len(demo_data)}")
+    print_example_output("First item", demo_data[0])
     
-    # Part 2: Dataset Processing Operator
-    print("\n" + "="*50)
-    print("🔄 Part 2: Dataset Processing with Operators")
-    print("="*50 + "\n")
+    # Process with simple functions
+    def add_text_length(item: dict) -> dict:
+        """Add text length to each item."""
+        return {**item, "text_length": len(item["text"])}
     
-    class DataProcessor(operators.Operator):
-        """Processes dataset entries."""
-        
-        specification = operators.Specification()
-        
-        def __init__(self, *, add_length: bool = True, lowercase: bool = True):
-            self.add_length = add_length
-            self.lowercase = lowercase
-        
-        def forward(self, *, inputs):
-            entry = inputs.get("entry", {})
-            
-            # Process the entry
-            processed = entry.copy()
-            
-            if "text" in processed:
-                if self.lowercase:
-                    processed["text_lower"] = processed["text"].lower()
-                if self.add_length:
-                    processed["text_length"] = len(processed["text"])
-            
-            # Add processing metadata
-            processed["processed"] = True
-            
-            return processed
+    # Process all items
+    processed = [add_text_length(item) for item in demo_data]
+    print_example_output("Processed item", processed[0])
     
-    # Process dataset
-    processor = DataProcessor()
-    processed_data = []
+    # Part 2: Streaming Pattern
+    print("\n" + "=" * 50)
+    print("Part 2: Streaming Data Pattern")
+    print("=" * 50 + "\n")
     
-    for entry in simple_data:
-        result = processor(entry=entry)
-        processed_data.append(result)
+    # Simulate streaming from a data source
+    def stream_demo_data():
+        """Simulate streaming data source."""
+        for item in demo_data:
+            yield item
     
-    print("Processed dataset:")
-    print_example_output("Original", simple_data[0])
-    print_example_output("Processed", processed_data[0])
+    print("Processing data as a stream:")
+    count = 0
+    for item in stream_demo_data():
+        if item["category"] == "tech":
+            count += 1
+            print(f"  Tech item {count}: {item['text'][:30]}...")
     
-    # Part 3: Streaming Datasets
-    print("\n" + "="*50)
-    print("🌊 Part 3: Streaming Large Datasets")
-    print("="*50 + "\n")
+    print_example_output("Tech items found", count)
     
-    class StreamingDataset(operators.Operator):
-        """Simulates a streaming dataset."""
-        
-        specification = operators.Specification()
-        
-        def __init__(self, *, size: int = 1000):
-            self.size = size
-        
-        def generate_entry(self, idx: int) -> Dict[str, Any]:
-            """Generate a single data entry."""
-            categories = ["tech", "science", "health", "business", "entertainment"]
-            topics = {
-                "tech": ["AI", "programming", "cloud", "data"],
-                "science": ["physics", "biology", "chemistry", "astronomy"],
-                "health": ["fitness", "nutrition", "medicine", "wellness"],
-                "business": ["startup", "finance", "marketing", "leadership"],
-                "entertainment": ["movies", "music", "games", "books"]
-            }
-            
-            category = categories[idx % len(categories)]
-            topic = topics[category][idx % len(topics[category])]
-            
-            return {
-                "id": idx,
-                "text": f"This is about {topic} in {category}",
-                "category": category,
-                "topic": topic,
-                "score": (idx % 100) / 100.0
-            }
-        
-        def stream(self) -> Iterator[Dict[str, Any]]:
-            """Stream data entries."""
-            for i in range(self.size):
-                yield self.generate_entry(i)
-        
-        def forward(self, *, inputs):
-            batch_size = inputs.get("batch_size", 10)
-            offset = inputs.get("offset", 0)
-            
-            # Return a batch
-            batch = []
-            for i in range(offset, min(offset + batch_size, self.size)):
-                batch.append(self.generate_entry(i))
-            
-            return {
-                "batch": batch,
-                "batch_size": len(batch),
-                "has_more": offset + batch_size < self.size
-            }
+    # Part 3: Filter and Transform
+    print("\n" + "=" * 50)
+    print("Part 3: Filter and Transform")
+    print("=" * 50 + "\n")
     
-    # Create streaming dataset
-    streamer = StreamingDataset(size=100)
+    # Simple filter function
+    def is_tech_item(item: dict) -> bool:
+        """Filter for tech items."""
+        return item["category"] == "tech"
+    
+    # Simple transform function
+    def enrich_item(item: dict) -> dict:
+        """Add metadata to item."""
+        return {
+            **item,
+            "word_count": len(item["text"].split()),
+            "uppercase_text": item["text"].upper(),
+            "is_long": len(item["text"]) > 30
+        }
+    
+    # Apply filter and transform
+    tech_items = [item for item in demo_data if is_tech_item(item)]
+    enriched_items = [enrich_item(item) for item in tech_items]
+    
+    print("Filtered and transformed items:")
+    for item in enriched_items:
+        print(f"  ID {item['id']}: {item['word_count']} words, long={item['is_long']}")
+    
+    # Part 4: Batch Processing
+    print("\n" + "=" * 50)
+    print("Part 4: Batch Processing")
+    print("=" * 50 + "\n")
+    
+    def process_batch(items: List[dict]) -> List[dict]:
+        """Process a batch of items."""
+        # Use vmap for efficient batch processing
+        batch_enrich = vmap(enrich_item)
+        return batch_enrich(items)
     
     # Process in batches
-    print("Processing streaming dataset in batches:")
-    total_processed = 0
-    offset = 0
+    batch_size = 3
+    for i in range(0, len(demo_data), batch_size):
+        batch = demo_data[i:i + batch_size]
+        processed_batch = process_batch(batch)
+        print(f"Processed batch {i//batch_size + 1}: {len(processed_batch)} items")
     
-    while True:
-        batch_result = streamer(batch_size=20, offset=offset)
-        batch = batch_result["batch"]
-        
-        if not batch:
-            break
-        
-        total_processed += len(batch)
-        print(f"  Processed batch: {len(batch)} entries (total: {total_processed})")
-        
-        offset += len(batch)
-        
-        if not batch_result["has_more"]:
-            break
+    # Part 5: Using the Data API (Conceptual)
+    print("\n" + "=" * 50)
+    print("Part 5: Using Ember's Data API")
+    print("=" * 50 + "\n")
     
-    # Part 4: Data Filtering and Transformation
-    print("\n" + "="*50)
-    print("🎯 Part 4: Filtering and Transformation")
-    print("="*50 + "\n")
+    print("With real datasets, you would use:")
+    print("\n1. Streaming (memory efficient):")
+    print("   for item in data.stream('dataset_name'):")
+    print("       process(item)")
     
-    class DataFilter(operators.Operator):
-        """Filters dataset based on criteria."""
+    print("\n2. Loading (when you need all data):")
+    print("   dataset = data.load('dataset_name', split='train')")
+    
+    print("\n3. Chaining operations:")
+    print("   results = (data.stream('dataset')")
+    print("             .filter(lambda x: x['score'] > 0.5)")
+    print("             .transform(add_metadata)")
+    print("             .first(100))")
+    
+    print("\n4. Custom data sources:")
+    print("   data.register('my_data', MyDataSource())")
+    print("   for item in data.stream('my_data'):")
+    print("       process(item)")
+    
+    # Part 6: Performance with JIT
+    print("\n" + "=" * 50)
+    print("Part 6: Optimizing with @jit")
+    print("=" * 50 + "\n")
+    
+    @jit
+    def analyze_text(item: dict) -> dict:
+        """Analyze text with JIT optimization."""
+        text = item["text"]
+        words = text.split()
         
-        specification = operators.Specification()
+        # Simulate complex analysis
+        features = {
+            "length": len(text),
+            "words": len(words),
+            "avg_word_length": sum(len(w) for w in words) / len(words) if words else 0,
+            "has_ml_terms": any(term in text.lower() for term in ["ml", "ai", "learning"]),
+            "sentiment_hint": "positive" if any(w in text.lower() for w in ["love", "great", "amazing"]) else "neutral"
+        }
         
-        def __init__(self, *, category: str = None, min_score: float = None):
-            self.category = category
-            self.min_score = min_score
+        return {**item, "analysis": features}
+    
+    # Process with JIT
+    print("Analyzing items with JIT optimization:")
+    analyzed = [analyze_text(item) for item in demo_data[:3]]
+    
+    for item in analyzed:
+        print(f"\nID {item['id']}: {item['text'][:30]}...")
+        print(f"  Analysis: {item['analysis']}")
+    
+    # Part 7: Real-World Pattern
+    print("\n" + "=" * 50)
+    print("Part 7: Real-World Data Pipeline")
+    print("=" * 50 + "\n")
+    
+    def create_data_pipeline():
+        """Create a complete data processing pipeline."""
         
-        def forward(self, *, inputs):
-            data = inputs.get("data", [])
-            
-            filtered = []
-            for entry in data:
-                # Apply filters
-                if self.category and entry.get("category") != self.category:
-                    continue
-                if self.min_score and entry.get("score", 0) < self.min_score:
-                    continue
-                
-                filtered.append(entry)
-            
+        @jit
+        def preprocess(item: dict) -> dict:
+            """Preprocess text data."""
+            text = item.get("text", "").strip().lower()
             return {
-                "filtered_data": filtered,
-                "original_count": len(data),
-                "filtered_count": len(filtered),
-                "filter_rate": len(filtered) / len(data) if data else 0
+                **item,
+                "processed_text": text,
+                "tokens": text.split()
             }
-    
-    class DataAggregator(operators.Operator):
-        """Aggregates data statistics."""
         
-        specification = operators.Specification()
-        
-        def forward(self, *, inputs):
-            data = inputs.get("data", [])
-            
-            if not data:
-                return {"stats": {}, "count": 0}
-            
-            # Calculate statistics
-            categories = {}
-            total_score = 0
-            
-            for entry in data:
-                cat = entry.get("category", "unknown")
-                categories[cat] = categories.get(cat, 0) + 1
-                total_score += entry.get("score", 0)
-            
+        @jit
+        def extract_features(item: dict) -> dict:
+            """Extract features from preprocessed data."""
+            tokens = item.get("tokens", [])
             return {
-                "stats": {
-                    "total_entries": len(data),
-                    "categories": categories,
-                    "avg_score": total_score / len(data) if data else 0,
-                    "unique_categories": len(categories)
-                },
-                "count": len(data)
+                **item,
+                "features": {
+                    "token_count": len(tokens),
+                    "unique_tokens": len(set(tokens)),
+                    "avg_token_length": sum(len(t) for t in tokens) / len(tokens) if tokens else 0
+                }
             }
-    
-    # Generate sample data
-    sample_batch = streamer(batch_size=50, offset=0)["batch"]
-    
-    # Filter tech entries
-    tech_filter = DataFilter(category="tech")
-    filtered = tech_filter(data=sample_batch)
-    
-    print(f"Tech filtering:")
-    print_example_output("Original count", filtered["original_count"])
-    print_example_output("Filtered count", filtered["filtered_count"])
-    print_example_output("Filter rate", f"{filtered['filter_rate']:.1%}")
-    
-    # Aggregate statistics
-    aggregator = DataAggregator()
-    stats = aggregator(data=sample_batch)
-    
-    print(f"\nDataset statistics:")
-    for key, value in stats["stats"].items():
-        print_example_output(key, value)
-    
-    # Part 5: Complete Data Pipeline
-    print("\n" + "="*50)
-    print("🏗️ Part 5: Complete Data Processing Pipeline")
-    print("="*50 + "\n")
-    
-    class DataPipeline(operators.Operator):
-        """Complete data processing pipeline."""
         
-        specification = operators.Specification()
+        def pipeline(data_source):
+            """Complete pipeline."""
+            results = []
+            for item in data_source:
+                # Step 1: Preprocess
+                preprocessed = preprocess(item)
+                
+                # Step 2: Extract features
+                with_features = extract_features(preprocessed)
+                
+                # Step 3: Filter (only items with enough tokens)
+                if with_features["features"]["token_count"] >= 3:
+                    results.append(with_features)
+            
+            return results
         
-        def __init__(self):
-            self.processor = DataProcessor()
-            self.filter = DataFilter(min_score=0.5)
-            self.aggregator = DataAggregator()
-        
-        def forward(self, *, inputs):
-            dataset_size = inputs.get("dataset_size", 100)
-            batch_size = inputs.get("batch_size", 20)
-            
-            # Create dataset
-            dataset = StreamingDataset(size=dataset_size)
-            
-            # Process in batches
-            all_processed = []
-            offset = 0
-            
-            while offset < dataset_size:
-                # Get batch
-                batch_result = dataset(batch_size=batch_size, offset=offset)
-                batch = batch_result["batch"]
-                
-                # Process each entry
-                processed_batch = []
-                for entry in batch:
-                    processed = self.processor(entry=entry)
-                    processed_batch.append(processed)
-                
-                # Filter batch
-                filtered_result = self.filter(data=processed_batch)
-                all_processed.extend(filtered_result["filtered_data"])
-                
-                offset += len(batch)
-            
-            # Final aggregation
-            final_stats = self.aggregator(data=all_processed)
-            
-            return {
-                "total_processed": len(all_processed),
-                "statistics": final_stats["stats"],
-                "pipeline_stages": ["load", "process", "filter", "aggregate"]
-            }
+        return pipeline
     
-    # Run the pipeline
-    pipeline = DataPipeline()
-    result = pipeline(dataset_size=200, batch_size=50)
+    # Use the pipeline
+    pipeline = create_data_pipeline()
+    results = pipeline(demo_data)
     
-    print("Data Pipeline Results:")
-    print_example_output("Total processed", result["total_processed"])
-    print("\nStatistics:")
-    for key, value in result["statistics"].items():
-        print_example_output(f"  {key}", value)
+    print(f"Pipeline processed {len(results)} items")
+    print("\nSample result:")
+    if results:
+        sample = results[0]
+        print_example_output("Original", sample["text"])
+        print_example_output("Tokens", sample["tokens"][:5])
+        print_example_output("Features", sample["features"])
     
-    # Part 6: Tips for Real Datasets
-    print("\n" + "="*50)
-    print("💡 Part 6: Working with Real Datasets")
-    print("="*50 + "\n")
-    
-    print("When using Ember's data API with real datasets:")
-    print("\n1. Use the dataset registry:")
-    print("   dataset = data.load_dataset('mmlu', split='test')")
-    
-    print("\n2. Stream large datasets:")
-    print("   for batch in dataset.stream(batch_size=32):")
-    print("       process_batch(batch)")
-    
-    print("\n3. Transform on the fly:")
-    print("   dataset = dataset.map(transform_fn)")
-    print("   dataset = dataset.filter(filter_fn)")
-    
-    print("\n4. Cache processed data:")
-    print("   dataset = dataset.cache('processed_data.pkl')")
-    
-    print("\n" + "="*50)
+    # Summary
+    print("\n" + "=" * 50)
     print("✅ Key Takeaways")
-    print("="*50)
-    print("\n1. Process data in batches for memory efficiency")
-    print("2. Use operators for reusable data transformations")
-    print("3. Stream large datasets instead of loading all at once")
-    print("4. Filter early to reduce processing overhead")
-    print("5. Aggregate statistics for data understanding")
-    print("6. Build pipelines for complex workflows")
+    print("=" * 50)
     
-    print("\nNext: Explore streaming_data.py for advanced patterns!")
+    print("\n1. Use streaming for large datasets:")
+    print("   - data.stream() for memory efficiency")
+    print("   - Process items one at a time")
+    
+    print("\n2. Simple functions for data processing:")
+    print("   - No complex classes needed")
+    print("   - Compose functions naturally")
+    
+    print("\n3. Optimize with @jit and vmap:")
+    print("   - @jit for single-item processing")
+    print("   - vmap for batch operations")
+    
+    print("\n4. Chain operations fluently:")
+    print("   - Filter → Transform → Aggregate")
+    print("   - Clean, readable pipelines")
+    
+    print("\n5. Register custom data sources:")
+    print("   - Integrate any data format")
+    print("   - Consistent API for all sources")
+    
+    print("\nNext: See streaming_data.py for advanced streaming patterns!")
     
     return 0
 

@@ -379,28 +379,39 @@ class CodeExecutor:
         """
         try:
             import psutil
-
-            # Try to create a psutil process from subprocess pid
-            p = psutil.Process(process.pid)
-            peak_memory = 0.0
-
-            # Check memory usage while process is running
-            while process.poll() is None:
-                try:
-                    # Get memory info for the process
-                    mem_info = p.memory_info()
-                    current_memory = mem_info.rss / (1024 * 1024)  # Convert to MB
-                    peak_memory = max(peak_memory, current_memory)
-
-                    # Short sleep to avoid excessive CPU usage
-                    time.sleep(0.05)
-                except (psutil.NoSuchProcess, psutil.AccessDenied):
-                    break
-
-            return peak_memory
-        except (ImportError, PermissionError):
-            # If psutil isn't available or we don't have permission, just return 0
+            HAS_PSUTIL = True
+        except ImportError:
+            HAS_PSUTIL = False
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.debug("psutil not available - memory monitoring disabled")
             return 0.0
+
+        if HAS_PSUTIL:
+            try:
+                # Try to create a psutil process from subprocess pid
+                p = psutil.Process(process.pid)
+                peak_memory = 0.0
+
+                # Check memory usage while process is running
+                while process.poll() is None:
+                    try:
+                        # Get memory info for the process
+                        mem_info = p.memory_info()
+                        current_memory = mem_info.rss / (1024 * 1024)  # Convert to MB
+                        peak_memory = max(peak_memory, current_memory)
+
+                        # Short sleep to avoid excessive CPU usage
+                        time.sleep(0.05)
+                    except (psutil.NoSuchProcess, psutil.AccessDenied):
+                        break
+
+                return peak_memory
+            except (PermissionError, Exception):
+                # If we don't have permission or any other error, just return 0
+                return 0.0
+        
+        return 0.0
 
     def run_code(
         self, code: str, language: str, input_data: str, timeout: Optional[float] = None

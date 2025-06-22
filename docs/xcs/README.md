@@ -1,124 +1,143 @@
-# Ember XCS: High-Performance Execution Framework
+# Ember XCS: Smart Execution Made Simple
 
-The Ember XCS (Accelerated Compound Systems) module provides a high-performance execution framework for computational graphs, enabling intelligent scheduling, just-in-time tracing, and advanced parallel execution transformations.
+XCS provides automatic optimization with zero configuration. Just use `@jit` and let XCS handle the rest.
 
-## Core Features
-
-- **Just-In-Time Compilation**: Automatically optimize operator execution paths
-- **Intelligent Graph Building**: Create and execute computational graphs
-- **Parallelization Transforms**: Vectorize and parallelize operations
-- **Structural Analysis**: Analyze operator structures for optimized execution 
-- **Distributed Computing**: Support for mesh-based distribution
-
-## Architecture
-
-XCS is designed with a clean, modular architecture consisting of these key components:
-
-- **Tracer**: JIT compilation and structural analysis
-- **Engine**: Efficient execution scheduling and runtime management
-- **Graph**: Computational graph representation and manipulation
-- **Transforms**: Function transformations for vectorization and parallelization
-- **Utils**: Common utility functions and tree manipulation tools
-
-The system is built on functional programming principles and follows SOLID design patterns throughout its implementation.
-
-For a detailed explanation of the JIT system architecture and the relationship between autograph, jit, and structural_jit, see [JIT Overview](JIT_OVERVIEW.md).
-
-## Usage Examples
-
-### Just-In-Time Compilation
+## The Complete API
 
 ```python
 from ember.api.xcs import jit
 
 @jit
-class MyOperator(Operator):
-    def forward(self, *, inputs):
-        # Complex computation
-        return {"result": processed_data}
+def process(data):
+    return model(data)
+
+# That's it! Automatic parallelization, caching, and optimization.
 ```
 
-### Automatic Graph Building
+## What XCS Does For You
+
+When you add `@jit` to a function or operator:
+
+1. **Automatic Parallelization** - Identifies and executes independent operations in parallel
+2. **Smart Caching** - Caches results intelligently based on inputs
+3. **JIT Compilation** - Optimizes execution paths based on actual usage patterns
+4. **Resource Management** - Handles memory and compute resources efficiently
+
+## Examples
+
+### Basic Usage
 
 ```python
-from ember.api.xcs import autograph, execute
+from ember.api import ember
+from ember.api.xcs import jit
 
-with autograph() as graph:
-    # Operations are traced, not executed
-    result1 = op1(inputs={"query": "Example"})
-    result2 = op2(inputs=result1)
-    
-# Execute the graph with optimized scheduling
-results = execute(graph)
+@ember.op
+@jit
+async def analyze_documents(documents: list[str]) -> list[dict]:
+    """Analyze multiple documents with automatic optimization."""
+    return await ember.parallel([
+        analyze_single(doc) for doc in documents
+    ])
 ```
 
-### Function Transforms
+### Performance Monitoring
 
 ```python
-from ember.api.xcs import vmap, pmap
+from ember.api.xcs import jit, get_jit_stats
 
-# Vectorize a function to process batches
-batch_fn = vmap(single_item_function)
-batch_results = batch_fn([item1, item2, item3])
+@jit
+def expensive_operation(data):
+    # Complex processing
+    return result
 
-# Parallelize across multiple cores/devices
-parallel_fn = pmap(heavy_computation)
-parallel_results = parallel_fn(large_dataset)
+# Run your operations
+for item in dataset:
+    expensive_operation(item)
+
+# Check performance stats
+stats = get_jit_stats()
+print(f"Cache hits: {stats['cache_hits']}")
+print(f"Average execution time: {stats['avg_time_ms']}ms")
 ```
 
-### Structural JIT
+### Advanced Configuration (For the 10%)
+
+If you need more control:
 
 ```python
-from ember.api.xcs import structural_jit
+from ember.api.xcs import jit, Config
 
-@structural_jit
-class CompositeOperator(Operator):
-    def __init__(self):
-        self.op1 = SubOperator1()
-        self.op2 = SubOperator2()
-        
-    def forward(self, *, inputs):
-        # Operations automatically parallelized based on structure
-        intermediate = self.op1(inputs=inputs)
-        result = self.op2(inputs=intermediate)
-        return result
+# Disable caching for sensitive data
+@jit(config=Config(cache=False))
+def process_sensitive(data):
+    return secure_model(data)
+
+# Custom cache size
+@jit(config=Config(cache_size=1000))
+def process_large_dataset(item):
+    return transform(item)
 ```
 
-### Advanced Configuration
+## When to Use @jit
 
+Use `@jit` when you have:
+- Functions called repeatedly with similar inputs
+- Operations that can benefit from parallelization
+- Complex pipelines that need optimization
+
+Don't use `@jit` for:
+- One-time operations
+- Functions with side effects
+- I/O bound operations (already optimized)
+
+## How It Works
+
+XCS uses sophisticated tracing and analysis to understand your code's structure and data flow. It then automatically:
+
+1. Identifies parallelizable operations
+2. Builds an optimized execution graph
+3. Caches results when beneficial
+4. Adapts to your actual usage patterns
+
+All of this happens automatically - you just add `@jit`.
+
+## Migration from Old XCS
+
+If you're using the old XCS API:
+
+**Before:**
 ```python
-from ember.api.xcs import XCSExecutionOptions, JITOptions
+from ember.xcs.graph import Graph
+from ember.xcs.engine import execute_graph
+from ember.xcs.engine.execution_options import execution_options
 
-# Configure JIT compilation with precompilation
-@jit(options=JITOptions(
-    sample_input={"query": "example"}, 
-    cache_size=100
-))
-class OptimizedOperator(Operator):
-    def forward(self, *, inputs):
-        return process_complex_input(inputs)
-
-# Configure execution environment
-with XCSExecutionOptions(
-    scheduler="parallel",
-    max_workers=4,
-    timeout=30.0
-):
-    results = complex_operation(data)
+graph = Graph()
+# ... build graph ...
+with execution_options(parallel=True):
+    result = execute_graph(graph)
 ```
 
-## Simplified Imports
-
-XCS provides a clean, simplified import structure through the `ember.api.xcs` module. All key functionality is available with short, intuitive imports:
-
+**After:**
 ```python
-from ember.api.xcs import jit, vmap, pmap, autograph, execute, structural_jit
+from ember.api.xcs import jit
+
+@jit
+def my_pipeline(data):
+    # Your pipeline logic
+    return result
 ```
 
-For more details, see [Simplified Imports](SIMPLIFIED_IMPORTS.md).
+That's it! The new API handles all the complexity for you.
 
-## Additional Resources
+## Best Practices
 
-- Check the [examples directory](../../src/ember/examples/xcs) for practical demonstrations
-- See the source code for implementation details
-- Refer to the project README for overall framework information
+1. **Add @jit to Hot Paths** - Functions called frequently benefit most
+2. **Keep Functions Pure** - Avoid side effects for best optimization
+3. **Monitor Performance** - Use `get_jit_stats()` to verify improvements
+4. **Start Simple** - Just use `@jit`, add Config only if needed
+
+## Further Reading
+
+- [Performance Guide](./PERFORMANCE_GUIDE.md) - Optimization tips
+- [JIT Overview](./JIT_OVERVIEW.md) - Technical details
+- [Migration Guide](./MIGRATION_GUIDE.md) - Migrating from old XCS

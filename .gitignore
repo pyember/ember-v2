@@ -1,0 +1,102 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Environments
+.env
+.env.local
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+
+# Database
+*.db
+*.sqlite3
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# Distribution / packaging
+.Python
+pip-wheel-metadata/
+share/python-wheels/
+*.manifest
+*.spec
+
+# Unit test / coverage reports
+coverage.xml
+*.cover
+.hypothesis/
+nosetests.xml
+
+# Translations
+*.mo
+*.pot
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Cython debug symbols
+cython_debug/
+# Deprecated code moved during cleanup
+.deprecated/

@@ -1,686 +1,1219 @@
-"""Data API for dataset operations.
+"""Data loading and streaming for machine learning datasets.
 
-Provides a streamlined interface for loading, transforming, and working with datasets.
+This module provides a unified interface for loading and processing datasets
+from various sources including HuggingFace, local files, and custom sources.
+The API emphasizes streaming by default for memory efficiency while providing
+explicit eager loading when needed.
 
-The primary pattern is direct loading:
-    >>> from ember.api import data
-    >>> mmlu_data = data("mmlu")
+The design follows progressive disclosure: simple usage for common cases,
+with advanced functionality available through method chaining when needed.
 
-For advanced usage with transformations:
-    >>> dataset = (
-    ...     data.builder()
-    ...     .from_registry("mmlu")
-    ...     .subset("physics")
-    ...     .split("test")
-    ...     .sample(100)
-    ...     .transform(lambda x: {"query": f"Question: {x['question']}"})
-    ...     .build()
-    ... )
+Typical usage:
+    Basic streaming::
 
-Memory-efficient streaming:
-    >>> for item in data("mmlu", streaming=True):
-    ...     process(item)
+        for item in stream("mmlu"):
+            print(item["question"], item["answer"])
+
+    Loading with filters::
+
+        physics_items = load("mmlu", 
+                            subset="physics", 
+                            filter=lambda x: x["metadata"]["difficulty"] == "hard")
+
+    Advanced chaining::
+
+        results = (stream("squad")
+                  .filter(lambda x: len(x["question"]) > 50)
+                  .transform(lambda x: {**x, "prompt": format_prompt(x)})
+                  .first(100))
+
+    Custom data sources::
+
+        class APIDataSource:
+            def read_batches(self, batch_size=32):
+                for page in fetch_pages():
+                    yield page["items"]
+        
+        register("api_data", APIDataSource())
 """
 
+from __future__ import annotations
+
+import csv
+import json
 import threading
+from dataclasses import dataclass
+from pathlib import Path
 from typing import (
     Any,
     Callable,
     Dict,
-    Generic,
     Iterator,
     List,
     Optional,
-    TypeVar,
-    Union)
-
-from ember.core.context.ember_context import EmberContext
-from ember.core.utils.data.base.config import BaseDatasetConfig as DatasetConfig
-from ember.core.utils.data.base.models import DatasetEntry, DatasetInfo, TaskType
-from ember.core.utils.data.base.transformers import IDatasetTransformer
-from ember.core.utils.data.context.data_context import DataContext
-from ember.core.utils.data.registry import register
-
-# Registry will be initialized when DataContext is created
-
-# Type variables for generic typing
-T = TypeVar("T")
-U = TypeVar("U")
+    Protocol,
+    Union,
+    runtime_checkable,
+)
 
 
-class DataItem:
-    """Normalized representation of a dataset item.
+@runtime_checkable
+class DataSource(Protocol):
+    """Protocol defining the interface for data sources.
+    
+    Any class implementing this protocol can be used as a data source
+    for the streaming and loading functions. The protocol requires only
+    one method: read_batches.
+    
+    Example implementation::
+    
+        class CustomSource:
+            def __init__(self, data: List[Dict]):
+                self.data = data
+                
+            def read_batches(self, batch_size: int = 32) -> Iterator[List[Dict[str, Any]]]:
+                for i in range(0, len(self.data), batch_size):
+                    yield self.data[i:i + batch_size]
+    """
+    
+    def read_batches(self, batch_size: int = 32) -> Iterator[List[Dict[str, Any]]]:
+        """Yield batches of dictionaries from the data source.
+        
+        Args:
+            batch_size: Number of items per batch. Implementations should
+                respect this for memory efficiency.
+                
+        Yields:
+            Lists of dictionaries, each list containing up to batch_size items.
+            The final batch may contain fewer items.
+        """
+        ...
 
-    Provides consistent attribute access across different dataset formats.
 
+@dataclass(frozen=True)
+class DatasetInfo:
+    """Metadata about a dataset.
+    
+    Contains essential information for understanding dataset characteristics
+    and making decisions about processing strategies.
+    
     Attributes:
-        question: The question text.
-        options: Answer options as a dictionary.
-        answer: The correct answer.
+        name: Unique identifier for the dataset.
+        description: Human-readable description of the dataset's purpose.
+        size_bytes: Total size in bytes (0 if unknown).
+        example_count: Number of examples (0 if unknown).
+        example_item: A single example item showing the data schema.
+        streaming_supported: Whether the dataset supports streaming.
     """
-
-    def __init__(self, entry: Any) -> None:
-        """Initialize DataItem.
-
-        Args:
-            entry: Dataset entry (DatasetEntry, dict, or compatible object).
-        """
-        self._entry = entry
-        self._normalized = self._normalize(entry)
-
-    def _normalize(self, entry: Any) -> Dict[str, Any]:
-        """Convert entry to normalized dictionary.
-
-        Args:
-            entry: Dataset entry to normalize.
-
-        Returns:
-            Normalized dictionary representation.
-        """
-        if isinstance(entry, dict):
-            return entry
-
-        normalized = {}
-
-        # Handle DatasetEntry from Ember (prioritize this)
-        if isinstance(entry, DatasetEntry):
-            # Copy content dictionary
-            if hasattr(entry, "content") and isinstance(entry.content, dict):
-                normalized.update(entry.content)
-
-            # Copy metadata dictionary
-            if hasattr(entry, "metadata") and isinstance(entry.metadata, dict):
-                normalized.update(entry.metadata)
-
-            # Copy direct attributes with consistent naming
-            if hasattr(entry, "query"):
-                normalized["question"] = entry.query
-            if hasattr(entry, "choices"):
-                normalized["options"] = entry.choices
-
-            return normalized
-
-        # Handle other object types
-        if hasattr(entry, "__dict__"):
-            normalized.update(entry.__dict__)
-
-        # Extract important attributes if present
-        for src, dst in [
-            ("query", "question"),
-            ("question", "question"),
-            ("choices", "options"),
-            ("options", "options"),
-            ("answer", "answer"),
-            ("correct_answer", "answer")]:
-            if hasattr(entry, src):
-                normalized[dst] = getattr(entry, src)
-
-        return normalized
-
-    @property
-    def question(self) -> Optional[str]:
-        """Return the question text."""
-        return self._normalized.get("question")
-
-    @property
-    def options(self) -> Dict[str, str]:
-        """Return answer options as a dictionary."""
-        options = self._normalized.get("options", {})
-        return options if isinstance(options, dict) else {}
-
-    @property
-    def answer(self) -> Optional[str]:
-        """Return the correct answer."""
-        return self._normalized.get("answer")
-
-    def __getattr__(self, name: str) -> Any:
-        """Access attributes not covered by properties.
-
-        Args:
-            name: Attribute name.
-
-        Returns:
-            Attribute value.
-
-        Raises:
-            AttributeError: If attribute not found.
-        """
-        # Check normalized dictionary
-        if name in self._normalized:
-            return self._normalized[name]
-
-        # Check original entry
-        if hasattr(self._entry, name):
-            return getattr(self._entry, name)
-
-        # Not found
-        raise AttributeError(f"'{self.__class__.__name__}' has no attribute '{name}'")
-
-    def __repr__(self) -> str:
-        """Create string representation.
-
-        Returns:
-            String representation of the item
-        """
-        question = self.question
-        if question:
-            preview = question[:50] + ("..." if len(question) > 50 else "")
-            return f"DataItem('{preview}')"
-        return f"DataItem({self._normalized})"
+    name: str
+    description: str
+    size_bytes: int
+    example_count: int
+    example_item: Dict[str, Any]
+    streaming_supported: bool = True
 
 
-class Dataset(Generic[T]):
-    """A dataset representation with convenient access to entries.
-
-    Attributes:
-        entries: List of dataset entries
-        info: Dataset metadata
+def stream(
+    source: Union[str, DataSource],
+    *,
+    subset: Optional[str] = None,
+    split: Optional[str] = None,
+    filter: Optional[Callable[[Dict[str, Any]], bool]] = None,
+    transform: Optional[Callable[[Dict[str, Any]], Dict[str, Any]]] = None,
+    batch_size: int = 32,
+    max_items: Optional[int] = None,
+    normalize: bool = True
+) -> StreamIterator:
+    """Stream data from a source with optional processing.
+    
+    Provides memory-efficient iteration over datasets with support for
+    filtering, transformation, and limiting. Returns a StreamIterator
+    that supports method chaining for complex pipelines.
+    
+    Args:
+        source: Dataset name (e.g., "mmlu") or DataSource instance.
+        subset: Dataset configuration or subset name (e.g., "high_school_physics").
+        split: Dataset split to load ("train", "validation", or "test").
+        filter: Predicate function to filter items. Items are kept when
+            the function returns True.
+        transform: Function to transform each item. Receives a dict and
+            should return a dict.
+        batch_size: Number of items to load per batch for efficiency.
+            Does not affect iteration interface.
+        max_items: Maximum number of items to yield. None for unlimited.
+        normalize: Whether to normalize items to standard schema with
+            "question", "answer", "choices", and "metadata" fields.
+            
+    Returns:
+        StreamIterator that yields dictionaries and supports chaining.
+        
+    Raises:
+        ValueError: If the dataset name is not found in registry.
+        FileNotFoundError: If a FileSource points to missing file.
+        ImportError: If HuggingFace datasets not installed for HF sources.
+        
+    Examples:
+        Basic iteration over a dataset::
+        
+            for item in stream("mmlu"):
+                print(f"Q: {item['question']}")
+                print(f"A: {item['answer']}")
+                
+        Loading a specific subset and split::
+        
+            for item in stream("mmlu", subset="anatomy", split="test"):
+                evaluate(item)
+                
+        Filtering items inline::
+        
+            for item in stream("squad", 
+                             filter=lambda x: len(x["question"]) > 100):
+                process_long_question(item)
+                
+        Transforming items inline::
+        
+            for item in stream("gsm8k",
+                             transform=lambda x: {
+                                 **x, 
+                                 "prompt": f"Solve: {x['question']}"
+                             }):
+                print(item["prompt"])
+                
+        Using method chaining for complex pipelines::
+        
+            hard_physics = (stream("mmlu", subset="physics")
+                           .filter(lambda x: x["metadata"]["difficulty"] > 3)
+                           .transform(add_few_shot_examples)
+                           .limit(50))
+                           
+            for item in hard_physics:
+                evaluate_with_cot(item)
+                
+        Custom data source::
+        
+            class MyData:
+                def read_batches(self, batch_size=32):
+                    yield [{"question": "Q1", "answer": "A1"}]
+                    
+            for item in stream(MyData()):
+                print(item)
     """
-
-    def __init__(self, entries: List[T], info: Optional[DatasetInfo] = None):
-        """Initialize a Dataset with entries and optional info.
-
-        Args:
-            entries: List of dataset entries
-            info: Optional dataset metadata
-        """
-        self.entries = entries
-        self.info = info
-
-    def __getitem__(self, idx: int) -> T:
-        """Get a dataset entry by index.
-
-        Args:
-            idx: Index of the entry to retrieve
-
-        Returns:
-            The dataset entry at the specified index
-
-        Raises:
-            IndexError: If the index is out of range
-        """
-        return self.entries[idx]
-
-    def __iter__(self) -> Iterator[T]:
-        """Iterate over dataset entries.
-
-        Returns:
-            Iterator over dataset entries
-        """
-        return iter(self.entries)
-
-    def __len__(self) -> int:
-        """Get the number of entries in the dataset.
-
-        Returns:
-            Number of entries
-        """
-        return len(self.entries)
+    # Resolve source to DataSource instance
+    if isinstance(source, str):
+        data_source = _registry.get_source(source, subset, split)
+    else:
+        data_source = source
+        
+    # Create iterator with all configuration
+    return StreamIterator(
+        source=data_source, 
+        filter=filter,
+        transform=transform,
+        batch_size=batch_size,
+        max_items=max_items,
+        normalize=normalize
+    )
 
 
-class DatasetBuilder:
-    """Builder for dataset loading configuration.
-
-    Provides a fluent interface for specifying dataset parameters and transformations
-    before loading. Enables method chaining for concise, readable dataset preparation.
+class StreamIterator:
+    """Iterator over data with support for chaining operations.
+    
+    Created by the stream() function, this class provides iteration over
+    data items with support for progressive enhancement through method
+    chaining. All methods return new iterators, allowing immutable
+    operation chains.
+    
+    The iterator is lazy - no data is loaded until iteration begins,
+    and transformations are applied on-the-fly for memory efficiency.
+    
+    Examples:
+        Basic iteration::
+        
+            for item in stream("mmlu"):
+                print(item["question"])
+                
+        Chaining operations::
+        
+            filtered = stream("mmlu").filter(lambda x: "physics" in x["question"])
+            transformed = filtered.transform(lambda x: {**x, "difficulty": 5})
+            first_ten = transformed.limit(10)
+            
+            for item in first_ten:
+                print(item)
+                
+        Collecting results::
+        
+            # Get first 5 items as a list
+            items = stream("mmlu").first(5)
+            
+            # Collect all filtered items (caution with large datasets)
+            physics = stream("mmlu").filter(is_physics).collect()
     """
-
-    def __init__(self, *, context: Union[EmberContext, DataContext]) -> None:
-        """Initialize dataset builder with default configuration.
-
+    
+    def __init__(
+        self,
+        source: DataSource,
+        *,
+        filter: Optional[Callable[[Dict[str, Any]], bool]] = None,
+        transform: Optional[Callable[[Dict[str, Any]], Dict[str, Any]]] = None,
+        batch_size: int = 32,
+        max_items: Optional[int] = None,
+        normalize: bool = True
+    ):
+        """Initialize iterator with source and processing configuration.
+        
         Args:
-            context: EmberContext or DataContext for dataset operations
+            source: DataSource to read from.
+            filter: Optional filter predicate.
+            transform: Optional transformation function.
+            batch_size: Batch size for reading from source.
+            max_items: Maximum items to yield.
+            normalize: Whether to normalize items.
         """
-        if isinstance(context, EmberContext):
-            # Store EmberContext and get DataContext from it
-            self._ember_context = context
-            self._data_context = DataContext.create_from_ember_context(context)
+        self._source = source
+        self._filter = filter
+        self._transform = transform
+        self._batch_size = batch_size
+        self._max_items = max_items
+        self._normalize = normalize
+        
+    def __iter__(self) -> Iterator[Dict[str, Any]]:
+        """Iterate over items with all processing applied.
+        
+        Yields:
+            Dictionaries representing data items, with normalization,
+            filtering, and transformation applied as configured.
+        """
+        count = 0
+        
+        for batch in self._source.read_batches(self._batch_size):
+            for item in batch:
+                # Apply max_items limit
+                if self._max_items is not None and count >= self._max_items:
+                    return
+                    
+                # Normalize if requested
+                if self._normalize:
+                    item = _normalize(item)
+                    
+                # Apply filter
+                if self._filter and not self._filter(item):
+                    continue
+                    
+                # Apply transformation
+                if self._transform:
+                    item = self._transform(item)
+                    
+                yield item
+                count += 1
+    
+    def filter(self, predicate: Callable[[Dict[str, Any]], bool]) -> StreamIterator:
+        """Create a new iterator with an additional filter.
+        
+        Multiple filters are combined with AND logic - an item must pass
+        all filters to be yielded.
+        
+        Args:
+            predicate: Function that returns True to keep an item.
+            
+        Returns:
+            New StreamIterator with the filter applied.
+            
+        Examples:
+            Single filter::
+            
+                physics = stream("mmlu").filter(lambda x: x["metadata"]["subject"] == "physics")
+                
+            Multiple filters::
+            
+                hard_physics = (stream("mmlu")
+                               .filter(lambda x: x["metadata"]["subject"] == "physics")
+                               .filter(lambda x: x["metadata"]["difficulty"] > 3))
+                               
+            Complex filter::
+            
+                def has_equation(item):
+                    return any(c in item["question"] for c in "=∫∑∏")
+                    
+                math_questions = stream("mmlu").filter(has_equation)
+        """
+        # Combine with existing filter using AND logic
+        if self._filter:
+            old_filter = self._filter
+            new_filter = lambda x: old_filter(x) and predicate(x)
         else:
-            # Use provided DataContext
-            self._data_context = context
-            self._ember_context = None
-
-        self._dataset_name: Optional[str] = None
-        self._split: Optional[str] = None
-        self._sample_size: Optional[int] = None
-        self._seed: Optional[int] = None
-        self._config: Dict[str, Any] = {}
-        self._transformers: List[IDatasetTransformer] = []
-        self._streaming: bool = True  # Default to streaming for efficiency
-        self._batch_size: Optional[int] = None
-
-    def from_registry(self, dataset_name: str) -> "DatasetBuilder":
-        """Specify dataset to load from registry.
-
-        Args:
-            dataset_name: Name of the registered dataset
-
-        Returns:
-            Self for method chaining
-
-        Raises:
-            ValueError: If dataset is not found in registry
-        """
-        registry = self._data_context.registry
-        if not registry.get(name=dataset_name):
-            available = registry.list_datasets()
-            raise ValueError(
-                f"Dataset '{dataset_name}' not found. Available datasets: {available}"
-            )
-        self._dataset_name = dataset_name
-        return self
-
-    def subset(self, subset_name: str) -> "DatasetBuilder":
-        """Select dataset subset.
-
-        Args:
-            subset_name: Name of the subset to select
-
-        Returns:
-            Self for method chaining
-        """
-        self._config["subset"] = subset_name
-        return self
-
-    def split(self, split_name: str) -> "DatasetBuilder":
-        """Set dataset split.
-
-        Args:
-            split_name: Name of the split (e.g., "train", "test", "validation")
-
-        Returns:
-            Self for method chaining
-        """
-        self._split = split_name
-        return self
-
-    def sample(self, count: int) -> "DatasetBuilder":
-        """Set number of samples to load.
-
-        Args:
-            count: Number of samples
-
-        Returns:
-            Self for method chaining
-
-        Raises:
-            ValueError: If count is negative
-        """
-        if count < 0:
-            raise ValueError(f"Sample count must be non-negative, got {count}")
-        self._sample_size = count
-        return self
-
-    def seed(self, seed_value: int) -> "DatasetBuilder":
-        """Set random seed for reproducible sampling.
-
-        Args:
-            seed_value: Random seed value
-
-        Returns:
-            Self for method chaining
-        """
-        self._seed = seed_value
-        return self
-
+            new_filter = predicate
+            
+        return StreamIterator(
+            source=self._source,
+            filter=new_filter,
+            transform=self._transform,
+            batch_size=self._batch_size,
+            max_items=self._max_items,
+            normalize=self._normalize
+        )
+    
     def transform(
-        self,
-        transform_fn: Union[
-            Callable[[Dict[str, Any]], Dict[str, Any]], IDatasetTransformer
-        ]) -> "DatasetBuilder":
-        """Add transformation function to dataset processing pipeline.
-
-        Transformations are applied in the order they're added.
-
+        self, 
+        fn: Callable[[Dict[str, Any]], Dict[str, Any]]
+    ) -> StreamIterator:
+        """Create a new iterator with an additional transformation.
+        
+        Multiple transformations are applied in order - each transformation
+        receives the output of the previous one.
+        
         Args:
-            transform_fn: Function that transforms dataset items or transformer instance
-
+            fn: Function that transforms an item dictionary.
+            
         Returns:
-            Self for method chaining
+            New StreamIterator with the transformation applied.
+            
+        Examples:
+            Add a field::
+            
+                with_id = stream("mmlu").transform(
+                    lambda x: {**x, "id": generate_uuid()}
+                )
+                
+            Format for prompting::
+            
+                prompted = stream("gsm8k").transform(
+                    lambda x: {
+                        **x,
+                        "prompt": f"Problem: {x['question']}\\nSolution:"
+                    }
+                )
+                
+            Chain transformations::
+            
+                processed = (stream("squad")
+                            .transform(clean_whitespace)
+                            .transform(add_context_length)
+                            .transform(format_for_model))
         """
-        # Import here to avoid circular imports
-        from ember.core.utils.data.base.transformers import (
-            DatasetType,
-            IDatasetTransformer)
-
-        # Use transformer directly if it implements the interface
-        if isinstance(transform_fn, IDatasetTransformer):
-            self._transformers.append(transform_fn)
-            return self
-
-        # Create adapter for function-based transformers
-        class FunctionTransformer(IDatasetTransformer):
-            """Adapter converting functions to IDatasetTransformer."""
-
-            def __init__(self, fn: Callable[[Dict[str, Any]], Dict[str, Any]]) -> None:
-                """Initialize with transformation function.
-
-                Args:
-                    fn: Function that transforms dataset items
-                """
-                self._transform_fn = fn
-
-            def transform(self, *, data: DatasetType) -> DatasetType:
-                """Apply transformation to dataset.
-
-                Args:
-                    data: Dataset to transform
-
-                Returns:
-                    Transformed dataset
-                """
-                if hasattr(data, "map") and callable(getattr(data, "map", None)):
-                    # For HuggingFace datasets
-                    return data.map(self._transform_fn)  # type: ignore
-                if isinstance(data, list):
-                    # For list of dictionaries
-                    return [self._transform_fn(item) for item in data]
-                # For other data structures
-                return self._transform_fn(data)  # type: ignore
-
-            def transform_item(self, item: Dict[str, Any]) -> Dict[str, Any]:
-                """Transform a single item.
-
-                Args:
-                    item: Item to transform
-
-                Returns:
-                    Transformed item
-                """
-                return self._transform_fn(item)
-
-        self._transformers.append(FunctionTransformer(transform_fn))
-        return self
-
-    def config(self, **kwargs) -> "DatasetBuilder":
-        """Set additional configuration parameters.
-
-        Args:
-            **kwargs: Configuration parameters as keyword arguments
-
-        Returns:
-            Self for method chaining
-        """
-        self._config.update(kwargs)
-        return self
-
-    def batch_size(self, size: int) -> "DatasetBuilder":
-        """Set batch size for streaming datasets.
-
-        Args:
-            size: Batch size (must be positive)
-
-        Returns:
-            Self for method chaining
-
-        Raises:
-            ValueError: If size is not positive
-        """
-        if size <= 0:
-            raise ValueError(f"Batch size must be positive, got {size}")
-        self._batch_size = size
-        return self
-
-    def streaming(self, enabled: bool = True) -> "DatasetBuilder":
-        """Enable or disable streaming mode.
-
-        Args:
-            enabled: Whether to use streaming mode
-
-        Returns:
-            Self for method chaining
-        """
-        self._streaming = enabled
-        return self
-
-    def limit(self, count: int) -> "DatasetBuilder":
-        """Limit the number of items (alias for sample).
-
-        Args:
-            count: Maximum number of items
-
-        Returns:
-            Self for method chaining
-        """
-        return self.sample(count)
-
-    def build(
-        self, dataset_name: Optional[str] = None
-    ) -> Union[Dataset[DatasetEntry], Iterator[DataItem]]:
-        """Build and load dataset with configured parameters.
-
-        Args:
-            dataset_name: Name of dataset to load (optional if set via from_registry)
-
-        Returns:
-            Loaded dataset with applied transformations or streaming iterator
-
-        Raises:
-            ValueError: If dataset name is not provided or dataset not found
-        """
-        # Determine final dataset name
-        final_name = dataset_name or self._dataset_name
-        if not final_name:
-            raise ValueError(
-                "Dataset name must be provided either via build() or from_registry()"
-            )
-
-        # Get dataset registry from data context
-        registry = self._data_context.registry
-
-        # Get dataset entry from registry
-        dataset_entry = registry.get(name=final_name)
-        if not dataset_entry:
-            available = registry.list_datasets()
-            raise ValueError(
-                f"Dataset '{final_name}' not found. Available datasets: {available}"
-            )
-
-        if self._streaming:
-            # Use optimized streaming dataset creation
-            dataset = self._data_context.get_streaming_dataset(
-                name=final_name,
-                transformers=self._transformers,
-                batch_size=self._batch_size
-                or 32,  # Use builder's batch size or default
-            )
-
-            # Apply limit if specified
-            if self._sample_size is not None:
-                dataset = dataset.limit(self._sample_size)
-
-            # Wrap in DataItem for normalized access
-            return map(DataItem, dataset)
+        # Combine with existing transformation
+        if self._transform:
+            old_transform = self._transform
+            new_transform = lambda x: fn(old_transform(x))
         else:
-            # Handle Hugging Face dataset-specific configs
-            config_name = self._config.get("subset")
+            new_transform = fn
+            
+        return StreamIterator(
+            source=self._source,
+            filter=self._filter,
+            transform=new_transform,
+            batch_size=self._batch_size,
+            max_items=self._max_items,
+            normalize=self._normalize
+        )
+    
+    def limit(self, n: int) -> StreamIterator:
+        """Create a new iterator that yields at most n items.
+        
+        If the iterator already has a limit, the minimum is used.
+        
+        Args:
+            n: Maximum number of items to yield.
+            
+        Returns:
+            New StreamIterator with the limit applied.
+            
+        Examples:
+            Get first 10 items::
+            
+                for item in stream("mmlu").limit(10):
+                    print(item["question"])
+                    
+            Combine with filtering::
+            
+                # Get up to 5 physics questions
+                physics_sample = (stream("mmlu")
+                                 .filter(lambda x: "physics" in x["metadata"]["subject"])
+                                 .limit(5))
+        """
+        current_max = self._max_items
+        if current_max is None:
+            new_max = n
+        else:
+            new_max = min(current_max, n)
+            
+        return StreamIterator(
+            source=self._source,
+            filter=self._filter,
+            transform=self._transform,
+            batch_size=self._batch_size,
+            max_items=new_max,
+            normalize=self._normalize
+        )
+        
+    def first(self, n: int) -> List[Dict[str, Any]]:
+        """Get the first n items as a list.
+        
+        Convenience method equivalent to list(iterator.limit(n)).
+        
+        Args:
+            n: Number of items to get.
+            
+        Returns:
+            List containing up to n items.
+            
+        Examples:
+            Get first 5 items::
+            
+                items = stream("mmlu").first(5)
+                print(f"Got {len(items)} items")
+                
+            Get filtered sample::
+            
+                hard_questions = (stream("mmlu")
+                                 .filter(lambda x: x["metadata"]["difficulty"] > 4)
+                                 .first(10))
+        """
+        return list(self.limit(n))
+        
+    def collect(self) -> List[Dict[str, Any]]:
+        """Collect all items into a list.
+        
+        Warning:
+            This loads all data into memory. Use with caution on large
+            datasets or infinite streams. Consider using limit() first
+            or processing items one at a time.
+            
+        Returns:
+            List of all items from the iterator.
+            
+        Examples:
+            Collect filtered subset::
+            
+                physics_questions = (stream("mmlu")
+                                    .filter(lambda x: x["metadata"]["subject"] == "physics")
+                                    .collect())
+                                    
+            Safe collection with limit::
+            
+                sample = stream("large_dataset").limit(1000).collect()
+        """
+        return list(self)
 
-            # Create configuration object
-            config = DatasetConfig(
-                split=self._split,
-                sample_size=self._sample_size,
-                random_seed=self._seed,
-                config_name=config_name,  # Pass as config_name to HF Dataset
-                **self._config)
 
-            # Import service components
-            from ember.core.utils.data.base.loaders import HuggingFaceDatasetLoader
-            from ember.core.utils.data.base.samplers import DatasetSampler
-            from ember.core.utils.data.base.validators import DatasetValidator
-            from ember.core.utils.data.service import DatasetService
-
-            # Create data service with transformers
-            service = DatasetService(
-                loader=HuggingFaceDatasetLoader(),
-                validator=DatasetValidator(),
-                sampler=DatasetSampler(),
-                transformers=self._transformers)
-
-            # Load and prepare dataset
-            entries = service.load_and_prepare(
-                dataset_info=dataset_entry.info,
-                prepper=dataset_entry.prepper,
-                config=config,
-                num_samples=self._sample_size)
-
-            return Dataset(entries=entries, info=dataset_entry.info)
-
-
-class DataAPI:
-    """Unified API for data operations.
-
-    Provides a clean facade for all data operations with explicit
-    dependency management through context.
+def load(
+    source: Union[str, DataSource],
+    *,
+    subset: Optional[str] = None,
+    split: Optional[str] = None,
+    filter: Optional[Callable[[Dict[str, Any]], bool]] = None,
+    transform: Optional[Callable[[Dict[str, Any]], Dict[str, Any]]] = None,
+    max_items: Optional[int] = None,
+    normalize: bool = True
+) -> List[Dict[str, Any]]:
+    """Load data into memory as a list.
+    
+    Convenience function that streams data and collects it into a list.
+    Equivalent to stream(...).collect() but makes the memory usage explicit
+    in the function name.
+    
+    Args:
+        source: Dataset name or DataSource instance.
+        subset: Dataset configuration or subset name.
+        split: Dataset split ("train", "validation", or "test").
+        filter: Predicate function to filter items.
+        transform: Function to transform each item.
+        max_items: Maximum number of items to load.
+        normalize: Whether to normalize items to standard schema.
+        
+    Returns:
+        List of dictionaries containing the loaded data.
+        
+    Raises:
+        ValueError: If dataset not found.
+        MemoryError: If dataset too large for memory.
+        
+    Examples:
+        Load a small dataset::
+        
+            data = load("squad", split="validation")
+            print(f"Loaded {len(data)} examples")
+            
+        Load with filtering::
+        
+            physics = load("mmlu", 
+                          subset="high_school_physics",
+                          filter=lambda x: x["metadata"]["difficulty"] > 2)
+                          
+        Load limited sample::
+        
+            sample = load("large_dataset", max_items=1000)
+            
+        Load and transform::
+        
+            prompted = load("gsm8k",
+                           transform=lambda x: {
+                               **x,
+                               "input": format_prompt(x["question"])
+                           })
     """
+    return list(stream(
+        source, 
+        subset=subset,
+        split=split,
+        filter=filter,
+        transform=transform,
+        max_items=max_items,
+        normalize=normalize
+    ))
 
-    # Import registry at class level to make it available for backward compatibility
-    from ember.core.utils.data.registry import DATASET_REGISTRY
 
-    def __init__(self, context: Union[EmberContext, DataContext]):
-        """Initialize with explicit context.
+def metadata(dataset: str) -> DatasetInfo:
+    """Get metadata for a registered dataset.
+    
+    Args:
+        dataset: Name of the dataset to get metadata for.
+        
+    Returns:
+        DatasetInfo object with dataset metadata.
+        
+    Raises:
+        ValueError: If dataset not found in registry.
+        
+    Examples:
+        Check dataset size::
+        
+            info = metadata("mmlu")
+            size_gb = info.size_bytes / 1e9 if info.size_bytes else "Unknown"
+            print(f"Dataset size: {size_gb} GB")
+            print(f"Example count: {info.example_count:,}")
+            
+        Examine data schema::
+        
+            info = metadata("squad")
+            print("Example item:")
+            print(json.dumps(info.example_item, indent=2))
+            
+        Check streaming support::
+        
+            info = metadata("custom_dataset")
+            if info.streaming_supported:
+                print("Streaming supported - memory efficient")
+            else:
+                print("No streaming - will load all data")
+    """
+    return _registry.get_metadata(dataset)
 
+
+def list_datasets() -> List[str]:
+    """List all registered dataset names.
+    
+    Returns:
+        Sorted list of dataset names available for loading.
+        
+    Examples:
+        Show available datasets::
+        
+            datasets = list_datasets()
+            print(f"Available datasets: {len(datasets)}")
+            for name in datasets:
+                print(f"  - {name}")
+                
+        Check if dataset exists::
+        
+            if "mmlu" in list_datasets():
+                data = stream("mmlu")
+    """
+    return _registry.list_available()
+
+
+def register(
+    name: str, 
+    source: DataSource, 
+    metadata: Optional[DatasetInfo] = None
+) -> None:
+    """Register a custom data source.
+    
+    Makes a data source available for loading by name through the
+    stream() and load() functions.
+    
+    Args:
+        name: Unique name to register the source under.
+        source: DataSource implementation.
+        metadata: Optional metadata about the dataset.
+        
+    Raises:
+        TypeError: If source doesn't implement DataSource protocol.
+        
+    Examples:
+        Register a file source::
+        
+            register("my_data", FileSource("data/train.jsonl"))
+            
+            # Now usable by name
+            for item in stream("my_data"):
+                process(item)
+                
+        Register a custom source::
+        
+            class RedisSource:
+                def __init__(self, key_pattern):
+                    self.pattern = key_pattern
+                    self.redis = redis.Redis()
+                    
+                def read_batches(self, batch_size=32):
+                    keys = self.redis.keys(self.pattern)
+                    for i in range(0, len(keys), batch_size):
+                        batch = []
+                        for key in keys[i:i+batch_size]:
+                            batch.append(json.loads(self.redis.get(key)))
+                        yield batch
+                        
+            register("redis_data", RedisSource("items:*"))
+            
+        Register with metadata::
+        
+            register(
+                "custom_qa",
+                FileSource("qa_data.json"),
+                DatasetInfo(
+                    name="custom_qa",
+                    description="Internal QA dataset",
+                    size_bytes=1024000,
+                    example_count=5000,
+                    example_item={"question": "...", "answer": "..."},
+                    streaming_supported=True
+                )
+            )
+    """
+    if not isinstance(source, DataSource):
+        raise TypeError(
+            f"Source must implement DataSource protocol. "
+            f"Got {type(source).__name__}"
+        )
+    _registry.register(name, source, metadata)
+
+
+def from_file(
+    path: Union[str, Path], 
+    **kwargs
+) -> StreamIterator:
+    """Stream data from a file.
+    
+    Convenience function for streaming from files without explicit
+    FileSource creation. Supports JSON, JSONL, and CSV formats.
+    
+    Args:
+        path: Path to file. Format detected from extension.
+        **kwargs: Additional arguments passed to stream().
+        
+    Returns:
+        StreamIterator over file contents.
+        
+    Raises:
+        FileNotFoundError: If file doesn't exist.
+        ValueError: If file format not supported.
+        
+    Examples:
+        Stream from JSONL::
+        
+            for item in from_file("data.jsonl"):
+                print(item["text"])
+                
+        Stream from CSV with filtering::
+        
+            for item in from_file("data.csv", 
+                                filter=lambda x: float(x["score"]) > 0.8):
+                process(item)
+                
+        Stream with transformation::
+        
+            for item in from_file("raw_data.json",
+                                transform=lambda x: {
+                                    "input": x["text"],
+                                    "label": x["category"]
+                                }):
+                train_model(item)
+    """
+    return stream(FileSource(path), **kwargs)
+
+
+def load_file(
+    path: Union[str, Path], 
+    **kwargs
+) -> List[Dict[str, Any]]:
+    """Load file data into memory.
+    
+    Convenience function for loading files without explicit FileSource
+    creation. Supports JSON, JSONL, and CSV formats.
+    
+    Args:
+        path: Path to file. Format detected from extension.
+        **kwargs: Additional arguments passed to load().
+        
+    Returns:
+        List of dictionaries from file.
+        
+    Raises:
+        FileNotFoundError: If file doesn't exist.
+        ValueError: If file format not supported.
+        MemoryError: If file too large.
+        
+    Examples:
+        Load JSON file::
+        
+            data = load_file("config.json")
+            print(f"Loaded {len(data)} items")
+            
+        Load CSV with limit::
+        
+            sample = load_file("large_data.csv", max_items=100)
+            
+        Load and filter::
+        
+            valid_items = load_file("data.jsonl",
+                                  filter=lambda x: x.get("valid", False))
+    """
+    return load(FileSource(path), **kwargs)
+
+
+def _normalize(item: Dict[str, Any]) -> Dict[str, Any]:
+    """Normalize item to standard schema.
+    
+    Converts various dataset formats to a consistent schema with
+    standard field names. Handles common variations in field naming
+    across different datasets.
+    
+    Standard schema:
+        - question: The question, query, or prompt text
+        - answer: The answer, target, or label
+        - choices: Multiple choice options as a dictionary
+        - metadata: All other fields
+        
+    Args:
+        item: Dictionary to normalize.
+        
+    Returns:
+        Normalized dictionary with standard fields.
+        
+    Examples:
+        >>> _normalize({"query": "What is 2+2?", "target": "4"})
+        {"question": "What is 2+2?", "answer": "4", "choices": {}, "metadata": {}}
+        
+        >>> _normalize({"question": "Pick one", "options": ["A", "B", "C"]})
+        {"question": "Pick one", "answer": "", "choices": {"A": "A", "B": "B", "C": "C"}, "metadata": {}}
+    """
+    # Extract question with fallbacks
+    question = (
+        item.get("question") or 
+        item.get("query") or 
+        item.get("prompt") or 
+        item.get("text") or 
+        item.get("input", "")
+    )
+    
+    # Extract answer with fallbacks
+    answer = (
+        item.get("answer") or 
+        item.get("target") or 
+        item.get("label") or 
+        item.get("output") or 
+        item.get("response", "")
+    )
+    
+    # Extract choices, converting list to dict if needed
+    choices = item.get("choices") or item.get("options", {})
+    if isinstance(choices, list):
+        # Convert ["opt1", "opt2"] to {"A": "opt1", "B": "opt2"}
+        choices = {chr(65 + i): choice for i, choice in enumerate(choices)}
+    elif not isinstance(choices, dict):
+        choices = {}
+    
+    # Build normalized item
+    normalized = {
+        "question": question,
+        "answer": answer,
+        "choices": choices,
+        "metadata": {}
+    }
+    
+    # Handle existing metadata field
+    if "metadata" in item and isinstance(item["metadata"], dict):
+        normalized["metadata"].update(item["metadata"])
+    
+    # Add remaining fields to metadata
+    excluded_keys = {
+        "question", "query", "prompt", "text", "input",
+        "answer", "target", "label", "output", "response",
+        "choices", "options", "metadata"
+    }
+    
+    for key, value in item.items():
+        if key not in excluded_keys:
+            normalized["metadata"][key] = value
+    
+    return normalized
+
+
+class HuggingFaceSource:
+    """Data source for HuggingFace datasets.
+    
+    Provides streaming access to datasets from the HuggingFace Hub.
+    Requires the 'datasets' package to be installed.
+    
+    Examples:
+        Load a standard dataset::
+        
+            source = HuggingFaceSource("squad", split="validation")
+            for batch in source.read_batches():
+                process_batch(batch)
+                
+        Load with configuration::
+        
+            source = HuggingFaceSource("super_glue", config="boolq", split="train")
+            
+        Use with register::
+        
+            register("my_hf_dataset", 
+                    HuggingFaceSource("username/dataset-name", split="test"))
+    """
+    
+    def __init__(
+        self, 
+        name: str, 
+        split: Optional[str] = None, 
+        config: Optional[str] = None
+    ):
+        """Initialize HuggingFace source.
+        
         Args:
-            context: EmberContext or DataContext, uses default if not provided
+            name: Dataset name on HuggingFace Hub.
+            split: Dataset split. Defaults to "train".
+            config: Dataset configuration name for multi-config datasets.
         """
-        if isinstance(context, EmberContext):
-            # Store EmberContext and get DataContext from it
-            self._ember_context = context
-            self._data_context = DataContext.create_from_ember_context(context)
-        else:
-            # Use provided DataContext
-            self._data_context = context
-            self._ember_context = None
-
-    def initialize_registry(self) -> None:
-        """Initialize registry for backward compatibility.
-
-        Required by tests that call this method directly.
-
-        This is a no-op since the registry is initialized during context creation.
-        """
-        # Registry is already initialized by data context
-        pass
-
-    def __call__(
-        self,
-        dataset_name: str,
-        *,
-        streaming: bool = True,
-        limit: Optional[int] = None,
-        **kwargs: Any) -> Union[Iterator[DataItem], List[DatasetEntry]]:
-        """Load dataset with specified parameters.
-
+        self.name = name
+        self.split = split or "train"
+        self.config = config
+        self._dataset = None
+    
+    def with_config(
+        self, 
+        subset: Optional[str] = None, 
+        split: Optional[str] = None
+    ) -> HuggingFaceSource:
+        """Create a new source with different configuration.
+        
         Args:
-            dataset_name: Name of dataset to load
-            streaming: Whether to use streaming mode
-            limit: Optional maximum number of items
-            **kwargs: Additional filtering criteria
-
+            subset: New configuration name.
+            split: New split name.
+            
         Returns:
-            Dataset items or iterator
-
+            New HuggingFaceSource with updated configuration.
+        """
+        return HuggingFaceSource(
+            name=self.name,
+            split=split or self.split,
+            config=subset or self.config
+        )
+        
+    def read_batches(
+        self, 
+        batch_size: int = 32
+    ) -> Iterator[List[Dict[str, Any]]]:
+        """Read batches from HuggingFace dataset.
+        
+        Args:
+            batch_size: Number of items per batch.
+            
+        Yields:
+            Lists of dictionaries from the dataset.
+            
         Raises:
-            ValueError: If dataset not found
+            ImportError: If datasets package not installed.
+            ValueError: If dataset not found.
         """
-        # Start with builder
-        builder = self.builder().from_registry(dataset_name)
+        try:
+            from datasets import load_dataset
+        except ImportError:
+            raise ImportError(
+                "HuggingFace datasets not installed. "
+                "Install with: pip install datasets"
+            )
+        
+        # Load dataset lazily with streaming
+        if self._dataset is None:
+            self._dataset = load_dataset(
+                self.name, 
+                self.config, 
+                split=self.split,
+                streaming=True
+            )
+        
+        # Yield batches
+        batch = []
+        for item in self._dataset:
+            batch.append(dict(item))
+            if len(batch) >= batch_size:
+                yield batch
+                batch = []
+        
+        # Yield final partial batch
+        if batch:
+            yield batch
 
-        # Apply limit if specified
-        if limit is not None:
-            builder.limit(limit)
 
-        # Set streaming mode
-        builder.streaming(streaming)
-
-        # Apply any additional filters
-        if kwargs:
-
-            def filter_fn(item: Dict[str, Any]) -> bool:
-                for key, value in kwargs.items():
-                    if item.get(key) != value:
-                        return False
-                return True
-
-            builder.transform(lambda item: item if filter_fn(item) else None)
-
-        # Build dataset
-        return builder.build()
-
-    def builder(self) -> DatasetBuilder:
-        """Create dataset builder with current context.
-
-        Returns:
-            Dataset builder
-        """
-        if self._ember_context:
-            return DatasetBuilder(context=self._ember_context)
-        return DatasetBuilder(context=self._data_context)
-
-    def list(self) -> List[str]:
-        """List all available datasets.
-
-        Returns:
-            List of dataset names
-        """
-        return self._data_context.registry.list_datasets()
-
-    def info(self, name: str) -> Optional[DatasetInfo]:
-        """Get information about a dataset.
-
+class FileSource:
+    """Data source for local files.
+    
+    Supports JSON, JSONL, and CSV file formats. Format is detected
+    from file extension.
+    
+    File format details:
+        - JSON: Expects array of objects or single object
+        - JSONL: One JSON object per line
+        - CSV: First row used as headers
+        
+    Examples:
+        Load JSONL file::
+        
+            source = FileSource("data/train.jsonl")
+            for batch in source.read_batches(batch_size=64):
+                train_on_batch(batch)
+                
+        Load CSV file::
+        
+            source = FileSource("data/results.csv")
+            register("results", source)
+            
+        Use with Path object::
+        
+            from pathlib import Path
+            source = FileSource(Path.home() / "data" / "test.json")
+    """
+    
+    def __init__(self, path: Union[Path, str]):
+        """Initialize file source.
+        
         Args:
-            name: Dataset name
-
-        Returns:
-            Dataset information or None if not found
+            path: Path to file. Must exist and have supported extension.
+            
+        Raises:
+            FileNotFoundError: If file doesn't exist.
         """
-        dataset = self._data_context.registry.get(name=name)
-        if dataset and hasattr(dataset, "info"):
-            return dataset.info
-        return None
+        self.path = Path(path)
+        if not self.path.exists():
+            raise FileNotFoundError(f"File not found: {self.path}")
+        
+    def read_batches(
+        self, 
+        batch_size: int = 32
+    ) -> Iterator[List[Dict[str, Any]]]:
+        """Read batches from file.
+        
+        Args:
+            batch_size: Number of items per batch.
+            
+        Yields:
+            Lists of dictionaries from file.
+            
+        Raises:
+            ValueError: If file format not supported.
+            json.JSONDecodeError: If JSON/JSONL malformed.
+        """
+        suffix = self.path.suffix.lower()
+        
+        if suffix == ".jsonl":
+            yield from self._read_jsonl(batch_size)
+        elif suffix == ".json":
+            yield from self._read_json(batch_size)
+        elif suffix == ".csv":
+            yield from self._read_csv(batch_size)
+        else:
+            raise ValueError(
+                f"Unsupported file type: {suffix}\n"
+                f"Supported: .json, .jsonl, .csv"
+            )
+    
+    def _read_jsonl(self, batch_size: int) -> Iterator[List[Dict[str, Any]]]:
+        """Read JSONL file in batches."""
+        batch = []
+        with open(self.path, 'r', encoding='utf-8') as f:
+            for line_num, line in enumerate(f, 1):
+                line = line.strip()
+                if not line:  # Skip empty lines
+                    continue
+                    
+                try:
+                    batch.append(json.loads(line))
+                except json.JSONDecodeError as e:
+                    raise json.JSONDecodeError(
+                        f"Invalid JSON on line {line_num}: {e.msg}",
+                        e.doc,
+                        e.pos
+                    )
+                    
+                if len(batch) >= batch_size:
+                    yield batch
+                    batch = []
+                    
+        if batch:
+            yield batch
+            
+    def _read_json(self, batch_size: int) -> Iterator[List[Dict[str, Any]]]:
+        """Read JSON file in batches."""
+        with open(self.path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            
+        if isinstance(data, list):
+            # Yield batches from list
+            for i in range(0, len(data), batch_size):
+                yield data[i:i + batch_size]
+        elif isinstance(data, dict):
+            # Single object
+            yield [data]
+        else:
+            raise ValueError(
+                f"JSON file must contain array or object, got {type(data).__name__}"
+            )
+            
+    def _read_csv(self, batch_size: int) -> Iterator[List[Dict[str, Any]]]:
+        """Read CSV file in batches."""
+        with open(self.path, 'r', encoding='utf-8', newline='') as f:
+            reader = csv.DictReader(f)
+            batch = []
+            
+            for row in reader:
+                # Convert to regular dict to ensure JSON serializable
+                batch.append(dict(row))
+                
+                if len(batch) >= batch_size:
+                    yield batch
+                    batch = []
+                    
+            if batch:
+                yield batch
 
+
+class _Registry:
+    """Internal registry for named datasets.
+    
+    Thread-safe storage for dataset sources and metadata with
+    automatic initialization of common datasets.
+    """
+    
+    def __init__(self):
+        """Initialize empty registry with thread lock."""
+        self._sources: Dict[str, DataSource] = {}
+        self._metadata: Dict[str, DatasetInfo] = {}
+        self._lock = threading.Lock()
+        self._initialize_defaults()
+    
+    def _initialize_defaults(self):
+        """Register commonly used datasets."""
+        # Standard evaluation datasets
+        standard_datasets = {
+            "mmlu": ("cais/mmlu", "test", "all"),
+            "squad": ("squad", "validation", None),
+            "gsm8k": ("gsm8k", "test", "main"),
+            "hellaswag": ("Rowan/hellaswag", "validation", None),
+            "truthfulqa": ("truthful_qa", "validation", "multiple_choice"),
+            "arc": ("ai2_arc", "test", "ARC-Challenge"),
+            "winogrande": ("winogrande", "validation", "winogrande_xl"),
+        }
+        
+        for name, (hf_name, split, config) in standard_datasets.items():
+            source = HuggingFaceSource(hf_name, split, config)
+            self.register(name, source)
+    
     def register(
-        self,
-        *,
-        name: str,
-        source: str,
-        task_type: Union[TaskType, str],
-        prepper_class: Optional[Any] = None,
-        description: str = "") -> None:
-        """Register a new dataset.
+        self, 
+        name: str, 
+        source: DataSource, 
+        metadata: Optional[DatasetInfo] = None
+    ) -> None:
+        """Register a data source with optional metadata."""
+        with self._lock:
+            self._sources[name] = source
+            if metadata:
+                self._metadata[name] = metadata
+    
+    def get_source(
+        self, 
+        name: str, 
+        subset: Optional[str] = None, 
+        split: Optional[str] = None
+    ) -> DataSource:
+        """Get source, trying registry first then HuggingFace."""
+        with self._lock:
+            if name in self._sources:
+                source = self._sources[name]
+                # Handle sources that support configuration
+                if hasattr(source, 'with_config'):
+                    return source.with_config(subset=subset, split=split)
+                return source
+            
+        # Try as HuggingFace dataset if not in registry
+        return HuggingFaceSource(name, split=split, config=subset)
+                
+    def get_metadata(self, name: str) -> DatasetInfo:
+        """Get or generate metadata for a dataset."""
+        with self._lock:
+            if name in self._metadata:
+                return self._metadata[name]
+                
+        # Generate metadata by loading one example
+        try:
+            example = None
+            for item in stream(name, max_items=1, normalize=False):
+                example = item
+                break
+            
+            metadata = DatasetInfo(
+                name=name,
+                description=f"Dataset: {name}",
+                size_bytes=0,  # Unknown without full scan
+                example_count=0,  # Unknown without full scan
+                example_item=example or {},
+                streaming_supported=True
+            )
+            
+            with self._lock:
+                self._metadata[name] = metadata
+                
+            return metadata
+            
+        except Exception as e:
+            # Return minimal metadata on error
+            return DatasetInfo(
+                name=name,
+                description=f"Dataset: {name} (error loading)",
+                size_bytes=0,
+                example_count=0,
+                example_item={},
+                streaming_supported=True
+            )
+    
+    def list_available(self) -> List[str]:
+        """List all registered dataset names."""
+        with self._lock:
+            return sorted(list(self._sources.keys()))
 
-        Args:
-            name: Dataset name
-            source: Dataset source
-            task_type: Task type
-            prepper_class: Optional prepper class
-            description: Optional description
-        """
-        # Convert string task_type to enum if needed
-        if isinstance(task_type, str):
-            task_enum = getattr(TaskType, task_type.upper(), None)
-            if task_enum is None:
-                raise ValueError(f"Invalid task type: {task_type}")
-            task_type = task_enum
 
-        # Use the DataContext's register_dataset method
-        self._data_context.register_dataset(
-            name=name,
-            source=source,
-            task_type=task_type,
-            prepper_class=prepper_class,
-            description=description)
+# Global registry instance
+_registry = _Registry()
 
 
 __all__ = [
-    # Primary API
-    "DataAPI",
-    "Dataset",
-    "DatasetBuilder",
-    "DatasetConfig",
-    # Data models
-    "DataItem",
-    "DatasetInfo",
-    "DatasetEntry",
-    "TaskType",
-    # Context integration
-    "DataContext"]
+    # Main functions
+    'stream',
+    'load', 
+    'metadata',
+    'list_datasets',
+    'register',
+    
+    # File convenience functions
+    'from_file',
+    'load_file',
+    
+    # Types and classes
+    'DataSource',
+    'DatasetInfo',
+    'StreamIterator',
+    'FileSource',
+    'HuggingFaceSource',
+]

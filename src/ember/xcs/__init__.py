@@ -1,68 +1,44 @@
-"""XCS (eXecution Coordination System) - Zero Configuration, Maximum Power.
+"""XCS: Smart execution for Ember.
 
-The XCS provides automatic optimization for compound AI systems through
-intelligent analysis of your code structure. Just add @jit to any function
-or operator and XCS handles the rest.
+Just use @jit. That's it.
 
-Core API (just 4 functions):
-- @jit: Zero-configuration optimization 
-- @trace: Execution analysis and debugging
-- vmap: Transform single-item → batch operations
-- get_jit_stats: Performance metrics
+Examples:
+    from ember.xcs import jit
+    
+    @jit
+    def my_function(x):
+        return model(x)
+    
+    # Automatic optimization with zero configuration!
 
-Natural API: Just write Python. XCS handles the rest.
+For advanced users (rare):
+    from ember.xcs import jit, vmap, pmap, scan, grad
+    
+    # Intelligent batching
+    @vmap
+    def batch_process(x):
+        return model(x)
+    
+    # Distributed execution
+    @pmap
+    def distributed_process(x):
+        return model(x)
+    
+    # Automatic differentiation
+    @grad
+    def loss_function(params):
+        return compute_loss(params)
 """
 
-# Import natural implementations that hide internal details
-from ember.xcs.natural_v2 import (
-    natural_jit as jit,
-    natural_vmap as vmap,
-    get_transformation_info as _get_transformation_info
-)
+# Core transformations - these subsume JAX transformations
+from ember.xcs.transformations import jit, vmap, pmap, scan, grad
 
-# Analysis and debugging (already clean)
-from ember.xcs.trace import trace
+# Simple utility for stats
+from ember.xcs._simple import get_jit_stats
 
+# That's the complete public API!
+__all__ = ['jit', 'vmap', 'pmap', 'scan', 'grad', 'get_jit_stats']
 
-def get_jit_stats(func=None):
-    """Get optimization statistics.
-    
-    Args:
-        func: Optional function to get stats for
-        
-    Returns:
-        User-friendly statistics dictionary
-    """
-    if func is not None:
-        # Get stats for specific function
-        info = _get_transformation_info(func)
-        if info.get('has_jit'):
-            return {
-                'optimized': True,
-                'transformations': info.get('transformations', []),
-            }
-        else:
-            return {'optimized': False}
-    else:
-        # Global stats - simplified
-        return {
-            'version': '2.0.0',
-            'natural_api': True,
-            'transformations_available': ['jit', 'vmap', 'trace']
-        }
-
-# Public API - only what users actually need
-__all__ = [
-    # Core API - just 4 functions
-    "jit",           # Automatic optimization
-    "trace",         # Execution analysis  
-    "get_jit_stats", # Performance monitoring
-    "vmap",          # Single-item → batch transformation
-    
-    # No more exports - keep it simple!
-    # Removed: pmap (not useful for I/O-bound operations)
-    # Removed: Graph, Node (internal implementation details)
-    # Removed: ExecutionOptions (zero-configuration philosophy)
-    # Removed: explain_jit_selection (too much internal detail)
-    # Removed: trace_execution (redundant with trace)
-]
+# Note: The old complex API is preserved but hidden.
+# Power users can still access it via ember.xcs.legacy
+# but we don't advertise this.

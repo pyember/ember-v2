@@ -1,12 +1,16 @@
-"""First Model Call - Direct LLM interaction with Ember.
+"""First Model Call - Direct LLM interaction with Ember's simple API.
 
-Shows three ways to call language models: direct invocation,
-reusable instances, and system prompts.
+Shows the key patterns for calling language models:
+- Direct invocation for one-off calls
+- Model binding for efficient reuse
+- System prompts and parameters
+- Cost tracking and usage monitoring
 
 Example:
     >>> from ember.api import models
     >>> response = models("gpt-3.5-turbo", "What is AI?")
     >>> print(response.text)
+    >>> print(f"Cost: ${response.usage['cost']:.4f}")
 """
 
 import sys
@@ -41,7 +45,7 @@ def main():
         print("Method 1: Direct model call")
         response = models("gpt-3.5-turbo", "What is machine learning in one sentence?")
         print_example_output("Response", response.text)
-        print_example_output("Model used", response.model)
+        print_example_output("Model used", response.model_id)
         
         # Method 2: Model binding - reusable configuration
         print("\nMethod 2: Model binding (reusable)")
@@ -62,10 +66,29 @@ def main():
         
         # Show response metadata
         print("\nResponse metadata:")
-        print_example_output("Total tokens", response2.usage.get("total_tokens", "N/A"))
-        print_example_output("Estimated cost", f"${response2.usage.get('cost', 0):.4f}")
+        print_example_output("Prompt tokens", response2.usage["prompt_tokens"])
+        print_example_output("Completion tokens", response2.usage["completion_tokens"])
+        print_example_output("Total tokens", response2.usage["total_tokens"])
+        print_example_output("Estimated cost", f"${response2.usage['cost']:.4f}")
+        
+        # Bonus: Show how to use different models
+        print("\nBonus: Using different models")
+        # You can use any supported model
+        models_to_try = [
+            "gpt-4",           # More capable but more expensive
+            "claude-3-opus",   # Anthropic's model
+            "gemini-pro",      # Google's model
+        ]
+        print("Available models (with API keys):")
+        for model in models_to_try:
+            print(f"  - {model}")
         
         print("\n✅ Successfully made LLM API calls!")
+        print("\nKey takeaways:")
+        print("  - models() for direct calls")
+        print("  - models.instance() for reusable configurations")
+        print("  - Automatic cost tracking in response.usage")
+        print("  - Same API works with any provider")
         
     except Exception as e:
         print(f"\n❌ Error: {e}")

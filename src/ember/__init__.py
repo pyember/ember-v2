@@ -48,7 +48,7 @@ ModelRegistryType = TypeVar("ModelRegistryType")
 
 # Import primary API components - these are the only public interfaces
 from ember.api import models  # Language model access (models.openai.gpt4, etc.)
-from ember.api import non  # Network of Networks patterns (non.UniformEnsemble, etc.)
+# TODO: Fix after moving non.py - from ember.api import non  # Network of Networks patterns (non.UniformEnsemble, etc.)
 from ember.api import operators  # Operator registry (operators.get_operator(), etc.)
 from ember.api import xcs  # Execution optimization (xcs.jit, etc.)
 
@@ -93,7 +93,7 @@ def initialize_ember(
     """
     # Import modules where needed to avoid circular dependencies
     from ember.core.config.manager import create_config_manager
-    from ember.core.registry.model.initialization import initialize_registry
+    from ember.models import ModelRegistry
     from ember.core.utils.logging import configure_logging
 
     # 0. Configure logging first
@@ -107,11 +107,8 @@ def initialize_ember(
         for provider, api_key in api_keys.items():
             config_manager.set_provider_api_key(provider, api_key)
 
-    # 3. Initialize the model registry
-    registry = initialize_registry(
-        config_manager=config_manager,
-        auto_discover=auto_discover,
-        force_discovery=force_discovery)
+    # 3. Initialize the model registry - simplified version
+    registry = ModelRegistry()
 
     # Context is initialized lazily via current_context()
 
@@ -170,11 +167,15 @@ def init(
     return service_wrapper
 
 
+# Import logging utilities for convenience
+from ember.core.utils.logging import configure_logging, set_component_level
+
+
 # Public interface - only export the main API components
 __all__ = [
     "models",  # Language model access
     "operators",  # Operator registry
-    "non",  # Network of Networks patterns
+    # "non",  # Network of Networks patterns - TODO: Fix after moving non.py
     "xcs",  # Execution optimization
     "initialize_ember",  # Global initialization function
     "init",  # Simple initialization function (matches README examples)

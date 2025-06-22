@@ -1,124 +1,97 @@
-"""Error Handling - Building resilient AI applications.
+"""Error Handling - Building resilient AI applications with Ember's new API.
 
-Learn how to handle errors gracefully in AI applications, including
-API failures, rate limits, timeouts, and invalid responses.
+Difficulty: Intermediate
+Time: ~10 minutes
+
+Learning Objectives:
+- Handle Ember's simplified exception types
+- Implement retry strategies with @jit
+- Build fallback chains with multiple models
+- Create robust error recovery patterns
 
 Example:
-    >>> from ember.core.exceptions import ModelError, RateLimitError
+    >>> from ember.api import models
+    >>> from ember.core.exceptions import ModelNotFoundError, ProviderAPIError
+    >>> 
     >>> try:
-    ...     response = model.generate(prompt)
-    ... except RateLimitError:
-    ...     # Handle rate limiting
+    >>>     response = models("gpt-4", "Hello")
+    >>> except ModelNotFoundError:
+    >>>     response = models("gpt-3.5-turbo", "Hello")  # Fallback
+    >>> except ProviderAPIError as e:
+    >>>     print(f"API error: {e}")
 """
 
 import sys
-from pathlib import Path
-from typing import Optional, Any, List
 import time
+from pathlib import Path
+from typing import Optional, List, Dict, Any
+import random
 
 sys.path.append(str(Path(__file__).parent.parent))
 
 from _shared.example_utils import print_section_header, print_example_output
+from ember.api import models, operators
+from ember.api.xcs import jit
 
 
-def example_basic_error_handling():
-    """Show basic error handling patterns."""
-    print("\n=== Basic Error Handling ===\n")
+def main():
+    """Learn error handling patterns with Ember's new API."""
+    print_section_header("Error Handling in AI Applications")
     
-    print("Common AI application errors:")
-    print("  • API errors (connection, authentication)")
-    print("  • Rate limiting")
-    print("  • Token limits exceeded")
-    print("  • Invalid responses")
-    print("  • Timeout errors\n")
+    # Part 1: New Exception Types
+    print("Part 1: Ember's Simplified Exception Types")
+    print("=" * 50 + "\n")
     
-    # Basic try-except pattern
-    print("Basic error handling:")
-    print("""
-    try:
-        response = model.generate(prompt)
-        result = response.text
-    except Exception as e:
-        print(f"Error: {e}")
-        result = "Failed to generate response"
-    """)
+    print("Ember's focused exception hierarchy:")
+    print("  • ModelError (base)")
+    print("    ├── ModelNotFoundError - Model doesn't exist")
+    print("    ├── ModelProviderError - Missing/invalid API key")
+    print("    └── ProviderAPIError - Provider errors (rate limits, etc.)")
+    print("\nGone: Complex hierarchies, ambiguous exceptions")
+    print("New: Clear, actionable exception types\n")
     
-    # Simulated error handling
-    def safe_api_call(prompt: str) -> str:
-        """Simulate safe API call with error handling."""
+    # Simulate error handling
+    def safe_model_call(model_name: str, prompt: str) -> str:
+        """Demonstrate basic error handling."""
         try:
-            # Simulate API call
-            if "error" in prompt.lower():
-                raise Exception("API Error: Invalid prompt")
-            return f"Response to: {prompt}"
+            # Simulate different error conditions
+            if model_name == "invalid-model":
+                raise Exception("ModelNotFoundError: Model 'invalid-model' not found")
+            elif model_name == "no-api-key":
+                raise Exception("ModelProviderError: Missing API key for provider")
+            elif "error" in prompt.lower():
+                raise Exception("ProviderAPIError: Rate limit exceeded")
+            
+            return f"Response from {model_name}: Success!"
+            
         except Exception as e:
-            return f"Error handled: {str(e)}"
+            error_type = str(e).split(":")[0]
+            return f"Handled {error_type}"
     
-    result = safe_api_call("Tell me about Python")
-    print(f"\nSuccess case: {result}")
+    # Test different scenarios
+    print("Error handling examples:")
+    scenarios = [
+        ("gpt-4", "Hello world"),
+        ("invalid-model", "Hello"),
+        ("gpt-4", "Trigger error please"),
+        ("no-api-key", "Test")
+    ]
     
-    result = safe_api_call("Trigger error please")
-    print(f"Error case: {result}")
-
-
-def example_specific_exceptions():
-    """Demonstrate handling specific exception types."""
-    print("\n\n=== Specific Exception Handling ===\n")
+    for model, prompt in scenarios:
+        result = safe_model_call(model, prompt)
+        print(f"  {model} → {result}")
     
-    # Define custom exceptions
-    class ModelError(Exception):
-        """Base exception for model errors."""
-        pass
+    # Part 2: Retry Strategies with Functions
+    print("\n" + "=" * 50)
+    print("Part 2: Retry Strategies (Function-Based)")
+    print("=" * 50 + "\n")
     
-    class RateLimitError(ModelError):
-        """Rate limit exceeded."""
-        def __init__(self, retry_after: int):
-            self.retry_after = retry_after
-            super().__init__(f"Rate limited. Retry after {retry_after}s")
-    
-    class TokenLimitError(ModelError):
-        """Token limit exceeded."""
-        def __init__(self, used: int, limit: int):
-            self.used = used
-            self.limit = limit
-            super().__init__(f"Token limit exceeded: {used}/{limit}")
-    
-    print("Ember exception hierarchy:")
-    print("  ModelError")
-    print("  ├── RateLimitError")
-    print("  ├── TokenLimitError")
-    print("  ├── AuthenticationError")
-    print("  └── InvalidResponseError\n")
-    
-    print("Handling specific exceptions:")
-    print("""
-    try:
-        response = model.generate(prompt)
-    except RateLimitError as e:
-        print(f"Rate limited. Waiting {e.retry_after}s...")
-        time.sleep(e.retry_after)
-        response = model.generate(prompt)  # Retry
-    except TokenLimitError as e:
-        print(f"Too many tokens: {e.used}/{e.limit}")
-        prompt = truncate_prompt(prompt)
-        response = model.generate(prompt)
-    except ModelError as e:
-        print(f"Model error: {e}")
-        response = fallback_response()
-    """)
-
-
-def example_retry_strategies():
-    """Show retry strategies for transient errors."""
-    print("\n\n=== Retry Strategies ===\n")
-    
-    def exponential_backoff_retry(
+    def retry_with_backoff(
         func,
         max_retries: int = 3,
-        base_delay: float = 1.0,
-        max_delay: float = 60.0
+        base_delay: float = 1.0
     ):
-        """Retry with exponential backoff."""
+        """Simple retry with exponential backoff."""
         for attempt in range(max_retries):
             try:
                 return func()
@@ -126,287 +99,288 @@ def example_retry_strategies():
                 if attempt == max_retries - 1:
                     raise
                 
-                delay = min(base_delay * (2 ** attempt), max_delay)
-                print(f"  Attempt {attempt + 1} failed: {e}")
-                print(f"  Retrying in {delay}s...")
+                delay = base_delay * (2 ** attempt)
+                print(f"  Attempt {attempt + 1} failed. Retrying in {delay}s...")
                 time.sleep(delay)
     
-    print("1. Exponential Backoff:")
-    print("   Delays: 1s → 2s → 4s → 8s → ...")
-    print("   Good for: Rate limits, temporary failures\n")
-    
-    print("2. Linear Backoff:")
-    print("   Delays: 1s → 2s → 3s → 4s → ...")
-    print("   Good for: Predictable recovery times\n")
-    
-    print("3. Immediate Retry:")
-    print("   Delays: 0s → 0s → 0s")
-    print("   Good for: Network blips\n")
-    
-    # Example usage
-    print("Example retry implementation:")
+    # Example with simulated failures
     attempts = 0
-    def flaky_operation():
+    
+    def flaky_api_call():
+        """Simulate a flaky API call."""
         nonlocal attempts
         attempts += 1
         if attempts < 3:
-            raise Exception(f"Transient error on attempt {attempts}")
-        return "Success!"
+            raise Exception("Temporary failure")
+        return "Success after retries!"
     
+    print("Testing retry logic:")
     try:
-        result = exponential_backoff_retry(flaky_operation)
-        print(f"\n{result} after {attempts} attempts")
+        result = retry_with_backoff(flaky_api_call)
+        print(f"Result: {result}")
     except Exception as e:
-        print(f"\nFailed after all retries: {e}")
-
-
-def example_fallback_patterns():
-    """Demonstrate fallback strategies."""
-    print("\n\n=== Fallback Patterns ===\n")
+        print(f"Failed after all retries: {e}")
     
-    print("Fallback strategies for AI applications:\n")
+    # Part 3: Model Fallback Chains
+    print("\n" + "=" * 50)
+    print("Part 3: Model Fallback Chains")
+    print("=" * 50 + "\n")
     
-    print("1. Model Fallback Chain:")
-    print("""
-    models = ['gpt-4', 'gpt-3.5-turbo', 'gpt-3.5-turbo-instruct']
+    def create_fallback_chain(models_list: List[str]):
+        """Create a function that tries models in order."""
+        def call_with_fallback(prompt: str) -> Dict[str, Any]:
+            errors = []
+            
+            for model_name in models_list:
+                try:
+                    # Simulate model calls
+                    if model_name == "gpt-4" and random.random() < 0.5:
+                        raise Exception("Rate limited")
+                    
+                    return {
+                        "text": f"Response from {model_name}",
+                        "model": model_name,
+                        "fallback_count": len(errors)
+                    }
+                    
+                except Exception as e:
+                    errors.append((model_name, str(e)))
+                    continue
+            
+            # All models failed
+            return {
+                "text": "All models failed",
+                "model": None,
+                "errors": errors
+            }
+        
+        return call_with_fallback
     
-    for model_name in models:
+    # Create fallback chain
+    fallback_models = ["gpt-4", "claude-3", "gpt-3.5-turbo"]
+    fallback_fn = create_fallback_chain(fallback_models)
+    
+    print("Testing fallback chain:")
+    for i in range(3):
+        result = fallback_fn("Test prompt")
+        print(f"  Try {i+1}: {result['model']} (fallbacks: {result.get('fallback_count', 0)})")
+    
+    # Part 4: JIT-Optimized Error Handling
+    print("\n" + "=" * 50)
+    print("Part 4: Optimized Error Handling with @jit")
+    print("=" * 50 + "\n")
+    
+    @jit
+    def robust_text_processor(text: str) -> dict:
+        """Process text with built-in error handling."""
         try:
-            response = use_model(model_name, prompt)
-            break
-        except ModelError:
-            continue
-    else:
-        response = "All models failed"
-    """)
+            # Validate input
+            if not text or len(text) > 10000:
+                raise ValueError("Invalid text length")
+            
+            # Process (simulated)
+            processed = text.strip().lower()
+            word_count = len(processed.split())
+            
+            return {
+                "status": "success",
+                "processed": processed,
+                "word_count": word_count
+            }
+            
+        except ValueError as e:
+            return {
+                "status": "error",
+                "error": str(e),
+                "processed": None
+            }
     
-    print("\n2. Cached Response Fallback:")
-    print("""
-    try:
-        response = model.generate(prompt)
-        cache.store(prompt, response)
-    except ModelError:
-        response = cache.get(prompt)
-        if not response:
-            response = default_response
-    """)
+    print("JIT-optimized error handling:")
+    test_texts = [
+        "  Normal text  ",
+        "",  # Empty
+        "Good text"
+    ]
     
-    print("\n3. Degraded Functionality:")
-    print("""
-    try:
-        # Full analysis with GPT-4
-        analysis = advanced_analysis(text)
-    except (ModelError, TimeoutError):
-        # Fallback to simpler analysis
-        analysis = basic_analysis(text)
-    """)
-
-
-def example_circuit_breaker():
-    """Show circuit breaker pattern."""
-    print("\n\n=== Circuit Breaker Pattern ===\n")
+    for text in test_texts:
+        result = robust_text_processor(text)
+        status = "✓" if result["status"] == "success" else "✗"
+        print(f"  {status} '{text[:20]}...' → {result['status']}")
+    
+    # Part 5: Circuit Breaker Pattern
+    print("\n" + "=" * 50)
+    print("Part 5: Simple Circuit Breaker")
+    print("=" * 50 + "\n")
     
     class CircuitBreaker:
-        def __init__(self, failure_threshold: int = 5, recovery_timeout: int = 60):
+        """Simple circuit breaker implementation."""
+        
+        def __init__(self, failure_threshold: int = 3, timeout: int = 60):
             self.failure_threshold = failure_threshold
-            self.recovery_timeout = recovery_timeout
-            self.failure_count = 0
+            self.timeout = timeout
+            self.failures = 0
             self.last_failure_time = None
-            self.state = "CLOSED"  # CLOSED, OPEN, HALF_OPEN
+            self.is_open = False
         
         def call(self, func, *args, **kwargs):
-            if self.state == "OPEN":
-                if time.time() - self.last_failure_time > self.recovery_timeout:
-                    self.state = "HALF_OPEN"
-                else:
-                    raise Exception("Circuit breaker is OPEN")
+            """Execute function with circuit breaker protection."""
+            # Check if circuit should be closed
+            if self.is_open and self.last_failure_time:
+                if time.time() - self.last_failure_time > self.timeout:
+                    self.is_open = False
+                    self.failures = 0
             
+            # If open, fail fast
+            if self.is_open:
+                raise Exception("Circuit breaker is OPEN")
+            
+            # Try the call
             try:
                 result = func(*args, **kwargs)
-                if self.state == "HALF_OPEN":
-                    self.state = "CLOSED"
-                    self.failure_count = 0
+                self.failures = 0  # Reset on success
                 return result
             except Exception as e:
-                self.failure_count += 1
+                self.failures += 1
                 self.last_failure_time = time.time()
                 
-                if self.failure_count >= self.failure_threshold:
-                    self.state = "OPEN"
+                if self.failures >= self.failure_threshold:
+                    self.is_open = True
+                    print(f"  Circuit breaker opened after {self.failures} failures")
+                
                 raise
     
-    print("Circuit Breaker States:")
-    print("  • CLOSED: Normal operation")
-    print("  • OPEN: Failing fast, rejecting calls")
-    print("  • HALF_OPEN: Testing if service recovered\n")
+    # Demo circuit breaker
+    breaker = CircuitBreaker(failure_threshold=2)
+    call_count = 0
     
-    print("Benefits:")
-    print("  • Prevents cascading failures")
-    print("  • Gives failing services time to recover")
-    print("  • Fails fast when service is down")
-    print("  • Automatic recovery detection")
-
-
-def example_error_context():
-    """Show error context and debugging."""
-    print("\n\n=== Error Context and Debugging ===\n")
+    def unreliable_service():
+        """Simulate unreliable service."""
+        nonlocal call_count
+        call_count += 1
+        if call_count <= 3:
+            raise Exception("Service unavailable")
+        return "Service recovered!"
     
-    class DetailedError(Exception):
-        """Error with additional context."""
-        def __init__(self, message: str, **context):
-            super().__init__(message)
-            self.context = context
-        
-        def __str__(self):
-            ctx_str = ", ".join(f"{k}={v}" for k, v in self.context.items())
-            return f"{super().__str__()} [{ctx_str}]"
-    
-    print("Rich error information:")
-    print("""
-    try:
-        response = model.generate(prompt)
-    except ModelError as e:
-        raise DetailedError(
-            "Model generation failed",
-            model=model_name,
-            prompt_length=len(prompt),
-            timestamp=datetime.now(),
-            attempt=retry_count,
-            original_error=str(e)
-        )
-    """)
-    
-    # Example
-    try:
-        raise DetailedError(
-            "API call failed",
-            endpoint="https://api.example.com/v1/generate",
-            status_code=429,
-            retry_after=60
-        )
-    except DetailedError as e:
-        print(f"\nExample error: {e}")
-
-
-def example_validation_errors():
-    """Handle validation and input errors."""
-    print("\n\n=== Validation and Input Errors ===\n")
-    
-    def validate_prompt(prompt: str) -> None:
-        """Validate prompt before sending to API."""
-        if not prompt:
-            raise ValueError("Prompt cannot be empty")
-        
-        if len(prompt) > 10000:
-            raise ValueError(f"Prompt too long: {len(prompt)} chars (max: 10000)")
-        
-        forbidden_patterns = ["<script>", "javascript:", "onclick="]
-        for pattern in forbidden_patterns:
-            if pattern in prompt.lower():
-                raise ValueError(f"Forbidden pattern detected: {pattern}")
-    
-    print("Input validation patterns:")
-    print("""
-    def safe_generate(prompt: str) -> str:
-        # Validate input
-        validate_prompt(prompt)
-        
-        # Sanitize if needed
-        prompt = sanitize_input(prompt)
-        
-        # Validate output
-        response = model.generate(prompt)
-        validate_response(response)
-        
-        return response.text
-    """)
-    
-    print("\nCommon validations:")
-    print("  • Length limits")
-    print("  • Character encoding")
-    print("  • Injection patterns")
-    print("  • Format requirements")
-    print("  • Business rules")
-
-
-def example_async_error_handling():
-    """Show error handling in async contexts."""
-    print("\n\n=== Async Error Handling ===\n")
-    
-    print("Handling errors in async operations:")
-    print("""
-    import asyncio
-    
-    async def async_generate(prompt: str):
+    print("Circuit breaker demo:")
+    for i in range(5):
         try:
-            response = await model.agenerate(prompt)
-            return response
-        except asyncio.TimeoutError:
-            return "Request timed out"
+            result = breaker.call(unreliable_service)
+            print(f"  Call {i+1}: Success - {result}")
         except Exception as e:
-            logger.error(f"Async generation failed: {e}")
-            raise
+            print(f"  Call {i+1}: Failed - {e}")
     
-    # Batch processing with error handling
-    async def process_batch(prompts: List[str]):
-        tasks = [async_generate(p) for p in prompts]
-        results = await asyncio.gather(*tasks, return_exceptions=True)
+    # Part 6: Real-World Pattern
+    print("\n" + "=" * 50)
+    print("Part 6: Real-World Error Handling Pattern")
+    print("=" * 50 + "\n")
+    
+    def create_robust_model_function(
+        primary_model: str = "gpt-4",
+        fallback_model: str = "gpt-3.5-turbo",
+        max_retries: int = 2
+    ):
+        """Create a robust model calling function."""
         
-        successful = []
-        failed = []
+        @jit
+        def robust_call(prompt: str) -> dict:
+            """Call model with full error handling."""
+            # Input validation
+            if not prompt or len(prompt) > 8000:
+                return {
+                    "success": False,
+                    "error": "Invalid prompt length",
+                    "text": None
+                }
+            
+            # Try primary model with retries
+            for attempt in range(max_retries):
+                try:
+                    # Simulate model call
+                    if random.random() < 0.3:  # 30% failure rate
+                        raise Exception("API error")
+                    
+                    return {
+                        "success": True,
+                        "text": f"Response from {primary_model}",
+                        "model": primary_model,
+                        "attempts": attempt + 1
+                    }
+                except Exception:
+                    if attempt < max_retries - 1:
+                        time.sleep(0.1 * (attempt + 1))
+                    continue
+            
+            # Try fallback model
+            try:
+                return {
+                    "success": True,
+                    "text": f"Response from {fallback_model} (fallback)",
+                    "model": fallback_model,
+                    "attempts": max_retries + 1
+                }
+            except Exception as e:
+                return {
+                    "success": False,
+                    "error": str(e),
+                    "text": None
+                }
         
-        for prompt, result in zip(prompts, results):
-            if isinstance(result, Exception):
-                failed.append((prompt, result))
-            else:
-                successful.append((prompt, result))
-        
-        return successful, failed
-    """)
-
-
-def main():
-    """Run all error handling examples."""
-    print_section_header("Error Handling in AI Applications")
+        return robust_call
     
-    print("🎯 Why Error Handling Matters:\n")
-    print("• AI APIs can fail unexpectedly")
-    print("• Rate limits are common")
-    print("• Network issues happen")
-    print("• Invalid responses occur")
-    print("• Costs can escalate with retries")
+    # Create and test robust function
+    robust_model = create_robust_model_function()
     
-    example_basic_error_handling()
-    example_specific_exceptions()
-    example_retry_strategies()
-    example_fallback_patterns()
-    example_circuit_breaker()
-    example_error_context()
-    example_validation_errors()
-    example_async_error_handling()
+    print("Testing robust model function:")
+    for i in range(5):
+        result = robust_model(f"Test prompt {i}")
+        if result["success"]:
+            print(f"  ✓ {result['model']} (attempts: {result['attempts']})")
+        else:
+            print(f"  ✗ Failed: {result['error']}")
     
-    print("\n" + "="*50)
+    # Part 7: Best Practices Summary
+    print("\n" + "=" * 50)
     print("✅ Error Handling Best Practices")
-    print("="*50)
-    print("\n1. Always handle specific exceptions first")
-    print("2. Implement retry logic with backoff")
-    print("3. Set reasonable timeout values")
-    print("4. Log errors with context")
-    print("5. Fail gracefully with fallbacks")
-    print("6. Validate inputs before API calls")
-    print("7. Monitor error rates and patterns")
-    print("8. Use circuit breakers for critical paths")
+    print("=" * 50)
     
-    print("\n🔧 Error Handling Checklist:")
-    print("□ Identify all failure modes")
-    print("□ Define retry strategies")
-    print("□ Implement fallback options")
-    print("□ Add comprehensive logging")
-    print("□ Set up monitoring/alerting")
-    print("□ Test error scenarios")
-    print("□ Document error behaviors")
+    print("\n1. Use Ember's focused exceptions:")
+    print("   - ModelNotFoundError → Try different model")
+    print("   - ProviderAPIError → Retry with backoff")
+    print("   - ModelProviderError → Check API keys")
     
-    print("\nNext: Explore more examples in other directories!")
+    print("\n2. Implement smart retries:")
+    print("   - Exponential backoff for rate limits")
+    print("   - Immediate retry for network blips")
+    print("   - Circuit breaker for persistent failures")
+    
+    print("\n3. Build fallback chains:")
+    print("   - Primary → Secondary → Fallback models")
+    print("   - Cached responses as last resort")
+    print("   - Graceful degradation")
+    
+    print("\n4. Optimize with @jit:")
+    print("   - Error handling code runs faster")
+    print("   - Validation is optimized")
+    print("   - Retry logic is efficient")
+    
+    print("\n5. Monitor and log:")
+    print("   - Track error rates")
+    print("   - Log with context")
+    print("   - Alert on anomalies")
+    
+    print("\nExample production pattern:")
+    print("```python")
+    print("from ember.api import models")
+    print("from ember.core.exceptions import ProviderAPIError")
+    print("")
+    print("@jit")
+    print("def safe_generate(prompt: str) -> str:")
+    print("    try:")
+    print("        return models('gpt-4', prompt).text")
+    print("    except ProviderAPIError:")
+    print("        # Fallback to cheaper model")
+    print("        return models('gpt-3.5-turbo', prompt).text")
+    print("```")
     
     return 0
 

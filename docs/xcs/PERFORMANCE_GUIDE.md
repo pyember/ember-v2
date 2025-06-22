@@ -122,7 +122,7 @@ results = sharded_fn(large_dataset)
 Fine-tune execution behavior with execution options:
 
 ```python
-from ember.xcs.engine.execution_options import execution_options
+from ember.api.xcs import execution_options
 
 with execution_options(
     use_parallel=True,      # Control parallel execution

@@ -11,7 +11,7 @@ from contextlib import contextmanager
 from typing import Any, Dict, Iterator, Optional, TypeVar
 
 from ember.core.config.manager import ConfigManager, create_config_manager
-from ember.core.registry.model.base.registry.model_registry import ModelRegistry
+from ember.models import ModelRegistry
 from ember.core.utils.logging import configure_logging
 
 from .context_metrics import EmberContextMetricsIntegration
@@ -78,12 +78,8 @@ class EmberContext:
         # Create config manager
         config_manager = create_config_manager(logger=logger)
 
-        # Create model registry with minimal configuration
-        from ember.core.registry.model.initialization import initialize_registry
-
-        model_registry = initialize_registry(
-            config_manager=config_manager, auto_discover=True
-        )
+        # Create model registry directly - simplified
+        model_registry = ModelRegistry()
 
         # Create context with default configuration
         context = EmberContext(

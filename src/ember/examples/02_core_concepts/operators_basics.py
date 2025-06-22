@@ -16,7 +16,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 
 from _shared.example_utils import print_section_header, print_example_output
-from ember.api import models
+from ember.api import models, operators
 from ember.api.xcs import jit, vmap
 
 
@@ -127,9 +127,53 @@ def main():
     print("\nFast Pipeline Results:")
     print_example_output("Cleaned", result2["cleaned_text"])
     
-    # Part 5: Real-World Pattern
+    # Part 5: Using the @op decorator
     print("\n" + "="*50)
-    print("Part 4: Practical Example - Question Analyzer")
+    print("Part 4: The @op Decorator")
+    print("="*50 + "\n")
+    
+    # Using @op decorator for operator features
+    @operators.op
+    def sentiment_analyzer(text: str) -> dict:
+        """Analyze sentiment of text."""
+        # Simple rule-based sentiment for demo
+        positive_words = ["good", "great", "excellent", "amazing", "wonderful"]
+        negative_words = ["bad", "terrible", "awful", "horrible", "poor"]
+        
+        text_lower = text.lower()
+        positive_count = sum(1 for word in positive_words if word in text_lower)
+        negative_count = sum(1 for word in negative_words if word in text_lower)
+        
+        if positive_count > negative_count:
+            sentiment = "positive"
+        elif negative_count > positive_count:
+            sentiment = "negative"
+        else:
+            sentiment = "neutral"
+        
+        return {
+            "text": text,
+            "sentiment": sentiment,
+            "positive_signals": positive_count,
+            "negative_signals": negative_count
+        }
+    
+    # The @op decorator gives us operator capabilities
+    print("Sentiment Analysis (with @op decorator):")
+    texts = [
+        "This is a great product!",
+        "Terrible experience, would not recommend.",
+        "It's okay, nothing special."
+    ]
+    
+    for text in texts:
+        result = sentiment_analyzer(text)
+        print(f"\n'{text}'")
+        print(f"  → Sentiment: {result['sentiment']}")
+    
+    # Part 6: Real-World Pattern
+    print("\n" + "="*50)
+    print("Part 5: Practical Example - Question Analyzer")
     print("="*50 + "\n")
     
     def analyze_question(question: str) -> dict:
@@ -185,14 +229,40 @@ def main():
     for i, result in enumerate(results):
         print(f"{i+1}. {result['type']} ({result['complexity']})")
     
+    # Part 7: Integration with Models (if API key available)
+    print("\n" + "="*50)
+    print("Part 6: Integration with Language Models")
+    print("="*50 + "\n")
+    
+    def ai_powered_analyzer(text: str) -> dict:
+        """Analyze text using AI (demo mode without API key)."""
+        # This shows how you'd integrate with models
+        print("In real usage with API key:")
+        print(f"  response = models('gpt-4', 'Analyze: {text[:30]}...')")
+        print("  return {'analysis': response.text}")
+        
+        # Demo response
+        return {
+            "text": text,
+            "analysis": "[AI analysis would appear here]",
+            "confidence": 0.95
+        }
+    
+    # Show the pattern
+    result = ai_powered_analyzer("The future of AI is bright")
+    print("\nAI-Powered Analysis:")
+    print_example_output("Input", result["text"])
+    print_example_output("Analysis", result["analysis"])
+    
     print("\n" + "="*50)
     print("✅ Key Takeaways")
     print("="*50)
     print("\n1. ANY function is an operator - no base classes!")
-    print("2. Use @jit for automatic optimization")
-    print("3. Use vmap() for batch processing")
-    print("4. Compose functions naturally with Python")
-    print("5. Clean, simple code that's easy to understand")
+    print("2. Use @op decorator for extra operator features")
+    print("3. Use @jit for automatic optimization")
+    print("4. Use vmap() for batch processing")
+    print("5. Compose functions naturally with Python")
+    print("6. Integrate models seamlessly in any function")
     
     print("\nNext: Explore more examples in the 03_simplified_apis directory!")
     

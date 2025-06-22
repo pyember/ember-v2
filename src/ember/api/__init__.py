@@ -32,7 +32,8 @@ Examples:
 # Import module namespaces
 import ember.api.eval as eval  # Evaluation module
 from ember.api.models import models  # Import the singleton instance, not the module
-import ember.api.non as non  # Network of Networks patterns
+# TODO: Fix non.py to use new operators_v2 system
+# import ember.api.non as non  # Network of Networks patterns
 import ember.api.operators as operators  # Operator system
 import ember.api.types as types
 import ember.api.xcs as xcs  # Execution optimization system
@@ -43,26 +44,61 @@ operator = operators
 # Import core components
 from ember.core.context.ember_context import EmberContext
 
-# Import high-level API components
-from ember.api.data import DataAPI  # Added
-from ember.api.data import Dataset  # Dataset container class
-from ember.api.data import DatasetBuilder  # Builder pattern for dataset configuration
-from ember.api.data import DatasetConfig  # Configuration for dataset loading
-from ember.api.data import DatasetEntry  # Individual dataset entry
-from ember.api.data import DatasetInfo  # Dataset metadata
-from ember.api.data import TaskType  # Enum of dataset task types
+# Import data API components
+from ember.api.data import (
+    stream,
+    load,
+    metadata,
+    list_datasets,
+    register,
+    from_file,
+    load_file,
+    DataSource,
+    DatasetInfo,
+    StreamIterator,
+    FileSource,
+    HuggingFaceSource,
+)
 
-# Initialize DataAPI and expose its methods
-data_api = DataAPI(EmberContext.current())
-data = data_api  # Expose as 'data' for cleaner API usage
-register_dataset = data_api.register
+# For backward compatibility, expose stream as 'data'
+data = stream
 from ember.api.eval import EvaluationPipeline  # Pipeline for batch evaluation
 from ember.api.eval import Evaluator  # Evaluator for model outputs
+
+
+# Import decorators
+from ember.api.decorators import op
+
+# Convenience function for creating model bindings
+def model(model_id: str, **params):
+    """Create a model binding for use in operators.
+    
+    This is a convenience function that wraps models.instance() for cleaner
+    operator code.
+    
+    Args:
+        model_id: Model identifier (e.g., "gpt-4", "claude-3")
+        **params: Default parameters for all calls (temperature, etc.)
+        
+    Returns:
+        ModelBinding that can be called multiple times
+        
+    Examples:
+        >>> # In an operator
+        >>> class MyOperator(ember.Operator):
+        ...     model: ModelBinding
+        ...     
+        ...     def __init__(self):
+        ...         self.model = ember.model("gpt-4", temperature=0.7)
+    """
+    return models.instance(model_id, **params)
 
 # Public interface - export facades, modules, and direct API components
 __all__ = [
     # Main facade objects
     "models",  # Model access (models.openai.gpt4o, etc.)
+    "model",   # Convenience function for creating model bindings
+    "op",      # Decorator for function-style operators
     "data",  # Data access (data("mmlu"), data.builder(), etc.)
     # Module namespaces
     "eval",  # Evaluation module
@@ -76,14 +112,18 @@ __all__ = [
     "ModelBuilder",  # Builder pattern for model configuration
     "ModelEnum",  # Type-safe model references
     # Data API components
-    "DataAPI",  # Added
-    "DatasetBuilder",  # Builder pattern for dataset loading
-    "Dataset",  # Dataset container class
-    "DatasetConfig",  # Configuration for dataset loading
-    "TaskType",  # Enum of dataset task types
+    "stream",  # Stream data (main function)
+    "load",  # Load data into memory
+    "metadata",  # Get dataset metadata
+    "list_datasets",  # List available datasets
+    "register",  # Register custom data source
+    "from_file",  # Stream from file
+    "load_file",  # Load file into memory
+    "DataSource",  # Protocol for data sources
     "DatasetInfo",  # Dataset metadata
-    "DatasetEntry",  # Individual dataset entry
-    "register_dataset",  # Dataset registration function
+    "StreamIterator",  # Iterator with chaining
+    "FileSource",  # File data source
+    "HuggingFaceSource",  # HuggingFace data source
     # Evaluation API components
     "Evaluator",  # Evaluator for model outputs
     "EvaluationPipeline",  # Pipeline for batch evaluation

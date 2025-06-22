@@ -1,4 +1,4 @@
-"""Hello World - Verify Ember installation.
+"""Hello World - Verify Ember installation and explore the simple API.
 
 Difficulty: Basic
 Time: ~1 minute
@@ -6,6 +6,7 @@ Time: ~1 minute
 Learning Objectives:
 - Verify Ember is installed correctly
 - Import basic Ember components
+- See how simple Ember's new API is
 - Run your first Ember code
 """
 
@@ -27,44 +28,49 @@ def main():
         import ember
         print("✓ Ember package imported successfully")
         
-        # Import core APIs
-        from ember.api import models, operators, non, xcs, data
+        # Import core APIs - notice how simple this is!
+        from ember.api import models, operators, data
+        from ember.api.xcs import jit
         print("✓ Core APIs imported successfully")
         
         # Check version
         if hasattr(ember, '__version__'):
             print_example_output("Ember version", ember.__version__)
         
-        # Create the simplest possible operator
-        from ember.api.operators import Operator, Specification
+        # The new Ember way: just write functions!
+        def greet(name: str = "World") -> str:
+            """The simplest possible Ember function."""
+            return f"Hello, {name}! Welcome to Ember."
         
-        # Minimal specification - using dict for simplicity
-        class HelloSpec(Specification):
-            pass  # Uses default dict input/output
+        # Test it - it's just a function
+        result = greet()
+        print("\n✓ Basic function creation successful")
+        print_example_output("Function result", result)
         
-        # Simple operator with minimal boilerplate
-        class HelloOperator(Operator):
-            specification = HelloSpec()
-            
-            def forward(self, *, inputs):
-                # inputs is a dict, return a dict
-                name = inputs.get("name", "World")
-                return {"greeting": f"Hello, {name}! Welcome to Ember."}
+        # Make it fast with zero configuration
+        fast_greet = jit(greet)
+        result2 = fast_greet("Ember User")
+        print_example_output("JIT-optimized result", result2)
         
-        # Test the operator - clean kwargs style
-        op = HelloOperator()
-        result = op(name="World")
+        # Want an operator? Just use the decorator
+        @operators.op
+        def hello_operator(name: str = "World") -> dict:
+            """A simple operator that returns structured data."""
+            return {
+                "greeting": f"Hello, {name}!",
+                "timestamp": "2024-01-20",
+                "version": "ember-2.0"
+            }
         
-        print("\n✓ Basic operator creation successful")
-        print_example_output("Test result", result["greeting"])
-        
-        # Real-world scenario: when you have data as a dict
-        # (e.g., from JSON API, database, or another operator)
-        user_data = {"name": "Ember User", "unused_field": "ignored"}
-        result2 = op(inputs=user_data)
-        print_example_output("Dict input", result2["greeting"])
+        # Use it like a function
+        result3 = hello_operator("Developer")
+        print_example_output("Operator result", result3)
         
         print("\n🎉 Congratulations! Ember is installed and working correctly.")
+        print("\nNotice how simple the new API is:")
+        print("  - Functions are first-class citizens")
+        print("  - No complex base classes or specifications")
+        print("  - Optimization is just a decorator away")
         print("\nNext steps:")
         print("  - Run first_model_call.py to make your first LLM call")
         print("  - Explore the examples in numbered order")

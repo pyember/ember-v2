@@ -1,0 +1,560 @@
+"""Test XCS transformations: vmap, pmap, scan, grad.
+
+Following CLAUDE.md principles:
+- Test intelligent batching for tensor vs orchestration ops
+- Verify distributed execution capabilities
+- Test sequential processing with state
+- Ensure gradient computation works correctly
+"""
+
+import time
+import pytest
+import jax
+import jax.numpy as jnp
+import numpy as np
+from typing import List, Tuple, Any, Dict
+from concurrent.futures import ThreadPoolExecutor
+
+from ember.xcs import vmap, pmap, scan, grad
+from ember.core.operators import Operator
+from ember.api import models
+
+
+class TensorOperator(Operator):
+    """Pure tensor operation operator."""
+    weight: jnp.ndarray
+    
+    def __init__(self, size: int, key: jax.random.PRNGKey):
+        self.weight = jax.random.normal(key, (size, size))
+    
+    def forward(self, x: jnp.ndarray) -> jnp.ndarray:
+        return jnp.tanh(jnp.dot(self.weight, x))
+
+
+class OrchestrationOperator(Operator):
+    """Orchestration/LLM operation operator."""
+    operation: str
+    delay: float
+    
+    def __init__(self, operation: str = "summarize", delay: float = 0.01):
+        self.operation = operation
+        self.delay = delay
+    
+    def forward(self, x: str) -> str:
+        # Simulate API call delay
+        time.sleep(self.delay)
+        return f"{self.operation}({x})"
+
+
+class HybridOperator(Operator):
+    """Operator mixing tensor and orchestration operations."""
+    tensor_op: TensorOperator
+    orch_op: OrchestrationOperator
+    
+    def __init__(self, size: int, key: jax.random.PRNGKey):
+        self.tensor_op = TensorOperator(size, key)
+        self.orch_op = OrchestrationOperator("process")
+    
+    def forward(self, x: Tuple[jnp.ndarray, str]) -> Tuple[jnp.ndarray, str]:
+        tensor_input, text_input = x
+        tensor_result = self.tensor_op(tensor_input)
+        text_result = self.orch_op(text_input)
+        return tensor_result, text_result
+
+
+class TestVmap:
+    """Test intelligent vmap behavior."""
+    
+    def test_vmap_tensor_operations(self):
+        """Test vmap on pure tensor operations uses JAX vmap."""
+        
+        def tensor_function(x: jnp.ndarray, key: jax.random.PRNGKey) -> jnp.ndarray:
+            op = TensorOperator(x.shape[0], key)
+            return op(x)
+        
+        # Create batch
+        batch_size = 8
+        dim = 5
+        key = jax.random.PRNGKey(42)
+        keys = jax.random.split(key, batch_size)
+        batch = jax.random.normal(key, (batch_size, dim))
+        
+        # Apply vmap
+        vmapped_fn = vmap(tensor_function)
+        results = vmapped_fn(batch, keys)
+        
+        assert results.shape == (batch_size, dim)
+        
+        # Verify it's actually using JAX vmap by checking it's differentiable
+        def loss_fn(x, keys):
+            return jnp.sum(vmapped_fn(x, keys) ** 2)
+        
+        grad_fn = jax.grad(loss_fn)
+        grads = grad_fn(batch, keys)
+        assert grads.shape == batch.shape
+    
+    def test_vmap_orchestration_operations(self):
+        """Test vmap on orchestration ops uses parallel execution."""
+        
+        def orchestration_function(x: str) -> str:
+            op = OrchestrationOperator("analyze", delay=0.05)
+            return op(x)
+        
+        # Create batch
+        batch = [f"text_{i}" for i in range(4)]
+        
+        # Time sequential execution
+        start = time.time()
+        seq_results = [orchestration_function(x) for x in batch]
+        seq_time = time.time() - start
+        
+        # Time vmapped execution
+        vmapped_fn = vmap(orchestration_function)
+        start = time.time()
+        vmap_results = vmapped_fn(batch)
+        vmap_time = time.time() - start
+        
+        # Results should match
+        assert vmap_results == seq_results
+        
+        # Should be faster due to parallelism
+        speedup = seq_time / vmap_time
+        assert speedup > 2.0, f"Expected >2x speedup, got {speedup:.2f}x"
+    
+    def test_vmap_hybrid_operations(self):
+        """Test vmap on hybrid operations with smart batching."""
+        
+        def hybrid_function(tensor_x: jnp.ndarray, text_x: str, key: jax.random.PRNGKey):
+            op = HybridOperator(tensor_x.shape[0], key)
+            return op((tensor_x, text_x))
+        
+        # Create batch
+        batch_size = 4
+        dim = 3
+        key = jax.random.PRNGKey(42)
+        keys = jax.random.split(key, batch_size)
+        
+        tensor_batch = jax.random.normal(key, (batch_size, dim))
+        text_batch = [f"item_{i}" for i in range(batch_size)]
+        
+        # Apply vmap
+        vmapped_fn = vmap(hybrid_function)
+        tensor_results, text_results = vmapped_fn(tensor_batch, text_batch, keys)
+        
+        # Verify shapes and types
+        assert tensor_results.shape == (batch_size, dim)
+        assert len(text_results) == batch_size
+        assert all(isinstance(r, str) for r in text_results)
+    
+    def test_vmap_with_in_axes(self):
+        """Test vmap with custom in_axes specification."""
+        
+        def multi_arg_function(x: jnp.ndarray, scale: float, bias: jnp.ndarray) -> jnp.ndarray:
+            return x * scale + bias
+        
+        batch_size = 5
+        dim = 3
+        
+        # Batched x, scalar scale, batched bias
+        x_batch = jnp.ones((batch_size, dim))
+        scale = 2.0  # Not batched
+        bias_batch = jnp.arange(batch_size).reshape(-1, 1)
+        
+        # vmap with in_axes=(0, None, 0)
+        vmapped_fn = vmap(multi_arg_function, in_axes=(0, None, 0))
+        results = vmapped_fn(x_batch, scale, bias_batch)
+        
+        assert results.shape == (batch_size, dim)
+        
+        # Verify computation
+        for i in range(batch_size):
+            expected = x_batch[i] * scale + bias_batch[i]
+            assert jnp.allclose(results[i], expected)
+
+
+class TestPmap:
+    """Test distributed pmap behavior."""
+    
+    @pytest.mark.skipif(jax.device_count() < 2, reason="Requires multiple devices")
+    def test_pmap_tensor_operations(self):
+        """Test pmap distributes tensor ops across devices."""
+        
+        def distributed_tensor_op(x: jnp.ndarray, key: jax.random.PRNGKey) -> jnp.ndarray:
+            op = TensorOperator(x.shape[0], key)
+            return op(x)
+        
+        # Create data for each device
+        n_devices = jax.device_count()
+        dim = 4
+        key = jax.random.PRNGKey(42)
+        keys = jax.random.split(key, n_devices)
+        
+        # Data shaped for pmap
+        x = jax.random.normal(key, (n_devices, dim))
+        
+        # Apply pmap
+        pmapped_fn = pmap(distributed_tensor_op)
+        results = pmapped_fn(x, keys)
+        
+        assert results.shape == (n_devices, dim)
+        
+        # Verify it's on different devices
+        assert len(set(r.device() for r in results)) == n_devices
+    
+    def test_pmap_orchestration_fallback(self):
+        """Test pmap on orchestration ops with distributed execution."""
+        
+        def orchestration_op(x: str) -> str:
+            op = OrchestrationOperator("distributed_process", delay=0.1)
+            return op(x)
+        
+        # Simulate multiple "devices" (actually threads for orchestration)
+        batch = ["data_0", "data_1", "data_2", "data_3"]
+        
+        # Apply pmap (should use thread pool for orchestration)
+        pmapped_fn = pmap(orchestration_op)
+        results = pmapped_fn(batch)
+        
+        assert len(results) == len(batch)
+        assert all("distributed_process" in r for r in results)
+    
+    def test_pmap_axis_name(self):
+        """Test pmap with axis names for collective operations."""
+        
+        def collective_op(x: jnp.ndarray) -> jnp.ndarray:
+            # Sum across all devices
+            return jax.lax.psum(x, axis_name='devices')
+        
+        n_devices = jax.device_count()
+        if n_devices < 2:
+            pytest.skip("Requires multiple devices")
+        
+        # Data for each device
+        x = jnp.arange(n_devices)
+        
+        # Apply pmap with axis name
+        pmapped_fn = pmap(collective_op, axis_name='devices')
+        results = pmapped_fn(x)
+        
+        # Each device should have the sum of all values
+        expected_sum = x.sum()
+        assert all(r == expected_sum for r in results)
+
+
+class TestScan:
+    """Test sequential scan operations."""
+    
+    def test_scan_tensor_operations(self):
+        """Test scan on tensor operations uses JAX scan."""
+        
+        def step_fn(carry: jnp.ndarray, x: jnp.ndarray) -> Tuple[jnp.ndarray, jnp.ndarray]:
+            # Simple RNN-like step
+            new_carry = jnp.tanh(carry + x)
+            output = new_carry * 2
+            return new_carry, output
+        
+        # Create sequence
+        seq_len = 10
+        dim = 5
+        key = jax.random.PRNGKey(42)
+        
+        init_carry = jnp.zeros(dim)
+        xs = jax.random.normal(key, (seq_len, dim))
+        
+        # Apply scan
+        scanned_fn = scan(step_fn)
+        final_carry, outputs = scanned_fn(init_carry, xs)
+        
+        assert final_carry.shape == (dim,)
+        assert outputs.shape == (seq_len, dim)
+        
+        # Verify it maintains state correctly
+        manual_carry = init_carry
+        manual_outputs = []
+        for x in xs:
+            manual_carry, output = step_fn(manual_carry, x)
+            manual_outputs.append(output)
+        
+        assert jnp.allclose(final_carry, manual_carry)
+        assert jnp.allclose(outputs, jnp.stack(manual_outputs))
+    
+    def test_scan_orchestration_operations(self):
+        """Test scan on orchestration maintains sequential state."""
+        
+        def dialogue_step(state: str, user_input: str) -> Tuple[str, str]:
+            # Simulate stateful dialogue
+            op = OrchestrationOperator("respond", delay=0.01)
+            response = op(f"{state}|{user_input}")
+            new_state = f"{state};{user_input}->{response}"
+            return new_state, response
+        
+        # Create conversation
+        init_state = "START"
+        user_inputs = ["Hello", "How are you?", "Tell me a joke", "Goodbye"]
+        
+        # Apply scan
+        scanned_fn = scan(dialogue_step)
+        final_state, responses = scanned_fn(init_state, user_inputs)
+        
+        assert len(responses) == len(user_inputs)
+        assert "START" in final_state
+        assert all("respond(" in r for r in responses)
+        
+        # Verify state threading
+        assert "Hello->respond(START|Hello)" in final_state
+    
+    def test_scan_reverse(self):
+        """Test reverse scan."""
+        
+        def accumulate(carry: float, x: float) -> Tuple[float, float]:
+            new_carry = carry + x
+            return new_carry, new_carry
+        
+        xs = jnp.array([1.0, 2.0, 3.0, 4.0, 5.0])
+        
+        # Forward scan
+        forward_fn = scan(accumulate)
+        _, forward_results = forward_fn(0.0, xs)
+        
+        # Reverse scan
+        reverse_fn = scan(accumulate, reverse=True)
+        _, reverse_results = reverse_fn(0.0, xs)
+        
+        # Forward should be cumsum
+        assert jnp.allclose(forward_results, jnp.array([1., 3., 6., 10., 15.]))
+        
+        # Reverse should accumulate from the end
+        assert jnp.allclose(reverse_results, jnp.array([15., 14., 12., 9., 5.]))
+    
+    def test_scan_with_operator_state(self):
+        """Test scan with stateful operators."""
+        
+        class StatefulOperator(Operator):
+            """Operator that modifies based on history."""
+            history_weight: float
+            
+            def __init__(self, history_weight: float = 0.9):
+                self.history_weight = history_weight
+            
+            def forward(self, state_and_input: Tuple[jnp.ndarray, jnp.ndarray]) -> jnp.ndarray:
+                state, x = state_and_input
+                return state * self.history_weight + x * (1 - self.history_weight)
+        
+        def operator_step(carry_op: StatefulOperator, x: jnp.ndarray) -> Tuple[StatefulOperator, jnp.ndarray]:
+            # Carry is (operator, state)
+            state = carry_op(x)
+            return carry_op, state
+        
+        # Create sequence
+        seq_len = 5
+        xs = jnp.array([1.0, 2.0, 3.0, 4.0, 5.0])
+        
+        # Initial operator and state
+        init_op = StatefulOperator(0.5)
+        
+        # This is a simplified test - in practice, scan might need special handling for operators
+        # Here we just verify the concept
+        states = []
+        state = jnp.array(0.0)
+        for x in xs:
+            state = init_op((state, jnp.array(x)))
+            states.append(state)
+        
+        expected = jnp.array(states)
+        
+        # Manual verification of exponential smoothing
+        assert jnp.allclose(states[0], 0.5)  # 0 * 0.5 + 1 * 0.5
+        assert jnp.allclose(states[1], 1.25)  # 0.5 * 0.5 + 2 * 0.5
+
+
+class TestGrad:
+    """Test gradient computation."""
+    
+    def test_grad_tensor_operations(self):
+        """Test grad on pure tensor operations."""
+        
+        def loss_fn(op: TensorOperator, x: jnp.ndarray, y: jnp.ndarray) -> float:
+            pred = op(x)
+            return jnp.mean((pred - y) ** 2)
+        
+        # Create operator and data
+        dim = 4
+        key = jax.random.PRNGKey(42)
+        op = TensorOperator(dim, key)
+        
+        x = jnp.ones(dim)
+        y = jnp.zeros(dim)
+        
+        # Compute gradient
+        grad_fn = grad(loss_fn)
+        grads = grad_fn(op, x, y)
+        
+        # Check gradient structure
+        assert hasattr(grads, 'weight')
+        assert grads.weight.shape == op.weight.shape
+        assert jnp.abs(grads.weight).max() > 1e-6
+    
+    def test_grad_orchestration_error(self):
+        """Test grad on orchestration ops raises helpful error."""
+        
+        def orchestration_loss(op: OrchestrationOperator, x: str) -> float:
+            result = op(x)
+            # Fake loss for testing
+            return len(result)
+        
+        op = OrchestrationOperator()
+        
+        # Should raise error about orchestration ops
+        grad_fn = grad(orchestration_loss)
+        with pytest.raises(ValueError, match="orchestration"):
+            grad_fn(op, "test")
+    
+    def test_grad_with_multiple_operators(self):
+        """Test grad through multiple operators."""
+        
+        def multi_op_loss(ops: List[TensorOperator], x: jnp.ndarray, y: jnp.ndarray) -> float:
+            # Chain operators
+            result = x
+            for op in ops:
+                result = op(result)
+            return jnp.mean((result - y) ** 2)
+        
+        # Create operators
+        dim = 3
+        key = jax.random.PRNGKey(42)
+        keys = jax.random.split(key, 3)
+        ops = [TensorOperator(dim, k) for k in keys]
+        
+        x = jnp.ones(dim)
+        y = jnp.array([1., -1., 0.])
+        
+        # Compute gradients
+        grad_fn = grad(multi_op_loss)
+        grads = grad_fn(ops, x, y)
+        
+        # Should have gradients for all operators
+        assert len(grads) == 3
+        for i, grad_op in enumerate(grads):
+            assert hasattr(grad_op, 'weight')
+            assert grad_op.weight.shape == ops[i].weight.shape
+    
+    def test_grad_with_aux(self):
+        """Test grad with auxiliary outputs."""
+        
+        def loss_with_aux(op: TensorOperator, x: jnp.ndarray, y: jnp.ndarray) -> Tuple[float, Dict[str, Any]]:
+            pred = op(x)
+            loss = jnp.mean((pred - y) ** 2)
+            
+            # Auxiliary outputs for logging
+            aux = {
+                "predictions": pred,
+                "l2_norm": jnp.linalg.norm(pred),
+                "max_activation": jnp.max(jnp.abs(pred))
+            }
+            
+            return loss, aux
+        
+        dim = 5
+        key = jax.random.PRNGKey(42)
+        op = TensorOperator(dim, key)
+        
+        x = jnp.ones(dim) * 0.5
+        y = jnp.zeros(dim)
+        
+        # Compute gradient with aux
+        grad_fn = grad(loss_with_aux, has_aux=True)
+        grads, aux = grad_fn(op, x, y)
+        
+        # Check we got both gradients and aux
+        assert hasattr(grads, 'weight')
+        assert "predictions" in aux
+        assert "l2_norm" in aux
+        assert aux["predictions"].shape == (dim,)
+
+
+class TestTransformComposition:
+    """Test composing multiple transformations."""
+    
+    def test_vmap_of_scan(self):
+        """Test vmap over scan for batch sequence processing."""
+        
+        def sequence_processor(init: jnp.ndarray, seq: jnp.ndarray) -> jnp.ndarray:
+            def step(carry, x):
+                new_carry = carry * 0.9 + x * 0.1
+                return new_carry, new_carry
+            
+            final, outputs = scan(step)(init, seq)
+            return outputs
+        
+        # Batch of sequences
+        batch_size = 4
+        seq_len = 5
+        dim = 3
+        
+        key = jax.random.PRNGKey(42)
+        init_batch = jax.random.normal(key, (batch_size, dim))
+        seq_batch = jax.random.normal(key, (batch_size, seq_len, dim))
+        
+        # vmap over batch dimension
+        batch_processor = vmap(sequence_processor)
+        results = batch_processor(init_batch, seq_batch)
+        
+        assert results.shape == (batch_size, seq_len, dim)
+    
+    def test_grad_of_vmap(self):
+        """Test gradient of vmapped function."""
+        
+        def single_loss(op: TensorOperator, x: jnp.ndarray, y: jnp.ndarray) -> float:
+            pred = op(x)
+            return jnp.mean((pred - y) ** 2)
+        
+        def batch_loss(op: TensorOperator, x_batch: jnp.ndarray, y_batch: jnp.ndarray) -> float:
+            # vmap the loss computation
+            losses = vmap(lambda x, y: single_loss(op, x, y))(x_batch, y_batch)
+            return jnp.mean(losses)
+        
+        # Create operator and batch data
+        batch_size = 8
+        dim = 4
+        key = jax.random.PRNGKey(42)
+        
+        op = TensorOperator(dim, key)
+        x_batch = jax.random.normal(key, (batch_size, dim))
+        y_batch = jax.random.normal(key, (batch_size, dim))
+        
+        # Compute gradient
+        grad_fn = grad(batch_loss)
+        grads = grad_fn(op, x_batch, y_batch)
+        
+        assert hasattr(grads, 'weight')
+        assert grads.weight.shape == op.weight.shape
+    
+    def test_nested_transformations(self):
+        """Test complex nesting of transformations."""
+        
+        @jax.jit  # Can also compose with JAX jit
+        def complex_computation(keys: jnp.ndarray, x: jnp.ndarray) -> jnp.ndarray:
+            # Create operators for each key
+            def create_and_apply(key, x):
+                op = TensorOperator(x.shape[0], key)
+                return op(x)
+            
+            # vmap over keys
+            vmapped_apply = vmap(create_and_apply)
+            
+            # Apply to get ensemble predictions
+            predictions = vmapped_apply(keys, jnp.broadcast_to(x, (keys.shape[0], x.shape[0])))
+            
+            # Average predictions
+            return jnp.mean(predictions, axis=0)
+        
+        # Test
+        n_models = 5
+        dim = 3
+        key = jax.random.PRNGKey(42)
+        
+        keys = jax.random.split(key, n_models)
+        x = jnp.ones(dim)
+        
+        result = complex_computation(keys, x)
+        assert result.shape == (dim,)

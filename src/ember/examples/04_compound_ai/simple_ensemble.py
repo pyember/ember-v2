@@ -1,240 +1,295 @@
-"""Simple Ensemble - Coordinate multiple AI agents.
+"""Simple Ensemble - Coordinate multiple AI agents with the new API.
 
-Build an ensemble system that consults multiple experts in parallel
-and uses voting to reach consensus.
+Difficulty: Intermediate
+Time: ~5 minutes
+
+Learning Objectives:
+- Build ensemble systems with simple functions
+- Use the ensemble() helper function
+- Implement custom voting strategies
+- Optimize with @jit and parallel processing
 
 Example:
-    >>> ensemble = EnsemblePipeline(experts=[expert1, expert2, expert3])
-    >>> result = ensemble(question="How to learn programming?")
-    >>> print(f"{result['selected_expert']}: {result['consensus']}")
+    >>> from ember.api import operators, models
+    >>> 
+    >>> # Define expert functions
+    >>> def expert1(question): return models("gpt-4", f"Answer: {question}")
+    >>> def expert2(question): return models("claude-3", f"Answer: {question}")
+    >>> 
+    >>> # Create ensemble
+    >>> ensemble_fn = operators.ensemble([expert1, expert2])
+    >>> result = ensemble_fn("How to learn programming?")
 """
 
 import sys
 from pathlib import Path
-from typing import List
+from typing import List, Dict, Any
 import random
-import concurrent.futures
+import time
 
 sys.path.append(str(Path(__file__).parent.parent))
 
 from _shared.example_utils import print_section_header, print_example_output, timer
-from ember.api import operators
+from ember.api import operators, models
+from ember.api.xcs import jit, vmap
 
 
 def main():
-    """Build your first ensemble system."""
+    """Build ensemble systems with Ember's simple API."""
     print_section_header("Simple Ensemble System")
     
-    # Part 1: Create Expert Operators
-    print("🎯 Building an Ensemble System\n")
-    print("We'll create multiple 'experts' that analyze questions.\n")
+    # Part 1: Create Expert Functions
+    print("Part 1: Expert Functions (No Classes!)")
+    print("=" * 50 + "\n")
     
-    class ExpertOperator(operators.Operator):
-        """Simulates an expert providing an answer."""
+    # Simple expert functions - just Python!
+    def detailed_expert(question: str) -> dict:
+        """Expert that gives detailed answers."""
+        # Simulate expert response
+        answer = f"Let me provide a comprehensive analysis of '{question}'..."
+        confidence = 0.85 + random.uniform(-0.1, 0.1)
         
-        specification = operators.Specification()
+        return {
+            "expert": "Dr. Detail",
+            "answer": answer,
+            "confidence": min(confidence, 1.0),
+            "style": "detailed"
+        }
+    
+    def concise_expert(question: str) -> dict:
+        """Expert that gives concise answers."""
+        answer = f"Short answer: It depends on the context of '{question}'."
+        confidence = 0.90 + random.uniform(-0.1, 0.1)
         
-        def __init__(self, *, name: str, style: str = "neutral"):
-            self.name = name
-            self.style = style
+        return {
+            "expert": "Prof. Precise",
+            "answer": answer,
+            "confidence": min(confidence, 1.0),
+            "style": "concise"
+        }
+    
+    def practical_expert(question: str) -> dict:
+        """Expert that gives practical answers."""
+        answer = f"In practice, '{question}' usually means..."
+        confidence = 0.80 + random.uniform(-0.1, 0.1)
         
-        def forward(self, *, inputs):
-            question = inputs.get("question", "")
-            
-            # Simulate different expert responses based on style
-            if self.style == "detailed":
-                answer = f"Let me provide a comprehensive analysis of '{question}'..."
-                confidence = 0.85
-            elif self.style == "concise":
-                answer = f"Short answer: It depends on the context of '{question}'."
-                confidence = 0.90
-            elif self.style == "academic":
-                answer = f"Research suggests multiple perspectives on '{question}'..."
-                confidence = 0.75
-            elif self.style == "practical":
-                answer = f"In practice, '{question}' usually means..."
-                confidence = 0.80
-            else:  # neutral
-                answer = f"Regarding '{question}', I would say..."
-                confidence = 0.70
-            
-            # Add some randomness
-            confidence *= random.uniform(0.9, 1.1)
-            
-            return {
-                "expert": self.name,
-                "answer": answer,
-                "confidence": min(confidence, 1.0),
-                "style": self.style
-            }
+        return {
+            "expert": "Practical Pat",
+            "answer": answer,
+            "confidence": min(confidence, 1.0),
+            "style": "practical"
+        }
     
-    # Create diverse experts
-    experts = [
-        ExpertOperator(name="Dr. Detail", style="detailed"),
-        ExpertOperator(name="Prof. Precise", style="concise"),
-        ExpertOperator(name="Scholar Sam", style="academic"),
-        ExpertOperator(name="Practical Pat", style="practical"),
-        ExpertOperator(name="Neutral Nancy", style="neutral")]
-    
-    # Part 2: Sequential Execution
-    print("="*50)
-    print("Part 1: Sequential Expert Consultation")
-    print("="*50 + "\n")
-    
+    # Test individual experts
     question = "What is the best way to learn programming?"
     
-    with timer("Sequential execution"):
-        sequential_results = []
+    print("Individual Expert Responses:")
+    experts = [detailed_expert, concise_expert, practical_expert]
+    
+    for expert in experts:
+        result = expert(question)
+        print(f"  {result['expert']}: {result['confidence']:.2f} confidence")
+    
+    # Part 2: Manual Ensemble
+    print("\n" + "=" * 50)
+    print("Part 2: Manual Ensemble Pattern")
+    print("=" * 50 + "\n")
+    
+    def manual_ensemble(question: str) -> dict:
+        """Simple ensemble that consults all experts."""
+        # Get all expert opinions
+        results = []
         for expert in experts:
-            result = expert(question=question)
-            sequential_results.append(result)
-            print(f"  {result['expert']}: {result['confidence']:.2f} confidence")
-    
-    # Part 3: Parallel Execution
-    print("\n" + "="*50)
-    print("Part 2: Parallel Expert Consultation")
-    print("="*50 + "\n")
-    
-    def consult_expert(expert, question):
-        """Helper function for parallel execution."""
-        return expert(question=question)
-    
-    with timer("Parallel execution"):
-        with concurrent.futures.ThreadPoolExecutor(max_workers=len(experts)) as executor:
-            # Submit all expert consultations
-            futures = [
-                executor.submit(consult_expert, expert, question)
-                for expert in experts
-            ]
-            
-            # Gather results
-            parallel_results = [future.result() for future in futures]
+            results.append(expert(question))
         
-        for result in parallel_results:
-            print(f"  {result['expert']}: {result['confidence']:.2f} confidence")
-    
-    # Part 4: Simple Voting System
-    print("\n" + "="*50)
-    print("Part 3: Building Consensus with Voting")
-    print("="*50 + "\n")
-    
-    class VotingOperator(operators.Operator):
-        """Aggregates expert opinions through voting."""
+        # Simple voting: highest confidence wins
+        best = max(results, key=lambda x: x["confidence"])
         
-        specification = operators.Specification()
+        # Calculate consensus metrics
+        avg_confidence = sum(r["confidence"] for r in results) / len(results)
         
-        def forward(self, *, inputs):
-            expert_results = inputs.get("results", [])
-            
-            if not expert_results:
-                return {
-                    "consensus": "No expert opinions available",
-                    "confidence": 0.0,
-                    "method": "none"
-                }
-            
-            # Simple voting: highest confidence wins
-            best_expert = max(expert_results, key=lambda x: x["confidence"])
-            
-            # Calculate agreement level
-            avg_confidence = sum(r["confidence"] for r in expert_results) / len(expert_results)
-            confidence_variance = sum(
-                (r["confidence"] - avg_confidence) ** 2 for r in expert_results
-            ) / len(expert_results)
-            
-            # Low variance means high agreement
-            agreement = "high" if confidence_variance < 0.01 else "moderate" if confidence_variance < 0.05 else "low"
-            
-            return {
-                "consensus": best_expert["answer"],
-                "selected_expert": best_expert["expert"],
-                "confidence": best_expert["confidence"],
-                "average_confidence": avg_confidence,
-                "agreement_level": agreement,
-                "total_experts": len(expert_results)
-            }
+        return {
+            "question": question,
+            "answer": best["answer"],
+            "selected_expert": best["expert"],
+            "confidence": best["confidence"],
+            "avg_confidence": avg_confidence,
+            "num_experts": len(results)
+        }
     
-    # Apply voting
-    voter = VotingOperator()
-    consensus = voter(results=parallel_results)
+    with timer("Manual ensemble"):
+        result = manual_ensemble(question)
     
-    print("Voting Results:")
-    print_example_output("Selected Expert", consensus["selected_expert"])
-    print_example_output("Confidence", f"{consensus['confidence']:.2%}")
-    print_example_output("Average Confidence", f"{consensus['average_confidence']:.2%}")
-    print_example_output("Agreement Level", consensus["agreement_level"])
+    print("Manual Ensemble Result:")
+    print_example_output("Selected Expert", result["selected_expert"])
+    print_example_output("Confidence", f"{result['confidence']:.2%}")
+    print_example_output("Avg Confidence", f"{result['avg_confidence']:.2%}")
     
-    # Part 5: Complete Ensemble Pipeline
-    print("\n" + "="*50)
-    print("Part 4: Complete Ensemble Pipeline")
-    print("="*50 + "\n")
+    # Part 3: Using operators.ensemble()
+    print("\n" + "=" * 50)
+    print("Part 3: Using operators.ensemble()")
+    print("=" * 50 + "\n")
     
-    class EnsemblePipeline(operators.Operator):
-        """Complete ensemble system with parallel execution and voting."""
+    # Create ensemble with the helper function
+    ensemble_fn = operators.ensemble(experts)
+    
+    with timer("Built-in ensemble"):
+        # Returns list of results
+        results = ensemble_fn(question)
+    
+    print("Built-in Ensemble Results:")
+    for i, result in enumerate(results):
+        print(f"  {i+1}. {result['expert']}: {result['confidence']:.2f}")
+    
+    # Part 4: Custom Aggregation
+    print("\n" + "=" * 50)
+    print("Part 4: Custom Aggregation Strategies")
+    print("=" * 50 + "\n")
+    
+    def weighted_vote(results: List[dict]) -> dict:
+        """Aggregate results using weighted voting."""
+        if not results:
+            return {"answer": "No experts available", "confidence": 0.0}
         
-        specification = operators.Specification()
+        # Weight answers by confidence
+        total_weight = sum(r["confidence"] for r in results)
         
-        def __init__(self, experts: List[operators.Operator]):
-            self.experts = experts
-            self.voter = VotingOperator()
+        # For demo, just return highest confidence
+        best = max(results, key=lambda x: x["confidence"])
         
-        def forward(self, *, inputs):
-            question = inputs.get("question", "")
-            
-            # Parallel consultation
-            with concurrent.futures.ThreadPoolExecutor(max_workers=len(self.experts)) as executor:
-                futures = [
-                    executor.submit(lambda e: e(question=question), expert)
-                    for expert in self.experts
-                ]
-                results = [future.result() for future in futures]
-            
-            # Build consensus
-            consensus = self.voter(results=results)
-            
-            # Return comprehensive result
-            return {
-                "question": question,
-                "consensus": consensus["consensus"],
-                "confidence": consensus["confidence"],
-                "selected_expert": consensus["selected_expert"],
-                "details": {
-                    "agreement": consensus["agreement_level"],
-                    "expert_count": consensus["total_experts"],
-                    "all_results": results
-                }
-            }
+        # Calculate agreement score
+        confidences = [r["confidence"] for r in results]
+        variance = sum((c - sum(confidences)/len(confidences))**2 for c in confidences) / len(confidences)
+        agreement = 1.0 - min(variance * 10, 1.0)  # Scale variance to 0-1
+        
+        return {
+            "answer": best["answer"],
+            "expert": best["expert"],
+            "confidence": best["confidence"],
+            "agreement": agreement,
+            "method": "weighted_vote"
+        }
     
-    # Create and test the pipeline
-    ensemble = EnsemblePipeline(experts)
+    # Create ensemble with custom aggregator
+    def ensemble_with_voting(question: str) -> dict:
+        """Ensemble that uses custom voting."""
+        # Get all results
+        results = ensemble_fn(question)
+        
+        # Apply custom aggregation
+        return weighted_vote(results)
     
-    test_questions = [
+    result = ensemble_with_voting(question)
+    print("Custom Aggregation Result:")
+    print_example_output("Method", result["method"])
+    print_example_output("Expert", result["expert"])
+    print_example_output("Agreement", f"{result['agreement']:.2%}")
+    
+    # Part 5: Optimized Ensemble with JIT
+    print("\n" + "=" * 50)
+    print("Part 5: Optimized Ensemble with @jit")
+    print("=" * 50 + "\n")
+    
+    # JIT-compile individual experts
+    fast_detailed = jit(detailed_expert)
+    fast_concise = jit(concise_expert)
+    fast_practical = jit(practical_expert)
+    
+    @jit
+    def fast_ensemble(question: str) -> dict:
+        """JIT-optimized ensemble."""
+        # Consult all experts
+        results = [
+            fast_detailed(question),
+            fast_concise(question),
+            fast_practical(question)
+        ]
+        
+        # Find best result
+        best = max(results, key=lambda x: x["confidence"])
+        
+        return {
+            "answer": best["answer"],
+            "expert": best["expert"],
+            "confidence": best["confidence"]
+        }
+    
+    # Compare performance
+    print("Performance Comparison:")
+    
+    # Regular ensemble
+    start = time.time()
+    for _ in range(10):
+        manual_ensemble(question)
+    regular_time = time.time() - start
+    
+    # JIT ensemble
+    start = time.time()
+    for _ in range(10):
+        fast_ensemble(question)
+    jit_time = time.time() - start
+    
+    print_example_output("Regular ensemble (10 calls)", f"{regular_time:.4f}s")
+    print_example_output("JIT ensemble (10 calls)", f"{jit_time:.4f}s")
+    print_example_output("Speedup", f"{regular_time/jit_time:.1f}x")
+    
+    # Part 6: Batch Processing Multiple Questions
+    print("\n" + "=" * 50)
+    print("Part 6: Batch Processing with vmap")
+    print("=" * 50 + "\n")
+    
+    questions = [
         "What is the best way to learn programming?",
         "How do I debug complex systems?",
-        "What makes a good software architect?"
+        "What makes a good software architect?",
+        "How to design scalable systems?",
+        "What are best practices for code review?"
     ]
     
-    print("Ensemble Pipeline Results:\n")
-    for q in test_questions:
-        with timer(f"Processing '{q[:30]}...'"):
-            result = ensemble(question=q)
-        
-        print(f"\nQ: {q}")
-        print(f"A: {result['consensus']}")
-        print(f"   Expert: {result['selected_expert']} ({result['confidence']:.2%} confidence)")
-        print(f"   Agreement: {result['details']['agreement']} among {result['details']['expert_count']} experts")
+    # Batch process with vmap
+    batch_ensemble = vmap(fast_ensemble)
     
-    # Part 6: Show the benefits
-    print("\n" + "="*50)
+    with timer("Batch processing 5 questions"):
+        batch_results = batch_ensemble(questions)
+    
+    print("\nBatch Results:")
+    for i, (q, r) in enumerate(zip(questions, batch_results)):
+        print(f"{i+1}. Q: {q[:40]}...")
+        print(f"   A: {r['expert']} ({r['confidence']:.2%})")
+    
+    # Part 7: Real-World Pattern with Models
+    print("\n" + "=" * 50)
+    print("Part 7: Real-World Pattern")
+    print("=" * 50 + "\n")
+    
+    print("In practice, you would use real models:")
+    print("\n```python")
+    print("def gpt4_expert(question: str) -> dict:")
+    print("    response = models('gpt-4', f'Answer concisely: {question}')")
+    print("    return {'answer': response.text, 'model': 'gpt-4'}")
+    print("")
+    print("def claude_expert(question: str) -> dict:")
+    print("    response = models('claude-3', f'Answer concisely: {question}')")
+    print("    return {'answer': response.text, 'model': 'claude-3'}")
+    print("")
+    print("# Create multi-model ensemble")
+    print("ensemble = operators.ensemble([gpt4_expert, claude_expert])")
+    print("```")
+    
+    # Summary
+    print("\n" + "=" * 50)
     print("✅ Key Takeaways")
-    print("="*50)
-    print("\n1. Ensemble systems combine multiple operators/models")
-    print("2. Parallel execution improves performance")
-    print("3. Voting and consensus improve reliability")
-    print("4. Operators compose naturally into pipelines")
-    print("5. Simple patterns scale to complex systems")
+    print("=" * 50)
     
-    print("\nNext: Learn about data processing in '05_data_processing/'")
+    print("\n1. Ensembles are just functions consulting other functions")
+    print("2. No complex base classes or specifications needed")
+    print("3. Use operators.ensemble() for parallel execution")
+    print("4. Add custom aggregation as simple functions")
+    print("5. Optimize with @jit for repeated calls")
+    print("6. Process batches with vmap()")
+    print("7. Same patterns work with real models")
+    
+    print("\nNext: Explore judge synthesis patterns!")
     
     return 0
 

@@ -116,9 +116,7 @@ print(f"Found {len(science_questions)} chemistry reaction questions")
 ## 6. Evaluating Model Performance
 
 ```python
-from ember.api import datasets
-from ember.core.utils.eval.pipeline import EvaluationPipeline
-from ember.core.utils.eval.evaluators import MultipleChoiceEvaluator
+from ember.api import datasets, evaluate
 from ember.api.models import ModelBuilder
 
 # Load a dataset
@@ -127,22 +125,16 @@ mmlu_data = datasets("mmlu", config={"subset": "high_school_biology", "split": "
 # Initialize model
 model = ModelBuilder().temperature(0.0).build("openai:gpt-4o")
 
-# Create evaluator
-evaluator = MultipleChoiceEvaluator()
-
-# Set up and run evaluation pipeline
-eval_pipeline = EvaluationPipeline(
-    dataset=mmlu_data.entries,
-    evaluators=[evaluator],
-    model=model
+# Run evaluation with built-in evaluator
+results = await evaluate(
+    model=model,
+    dataset=mmlu_data,
+    task_type="multiple_choice"
 )
 
-# Run evaluation
-results = eval_pipeline.evaluate()
-
 # Print results
-print(f"Accuracy: {results.metrics['accuracy']:.2f}")
-print(f"Per-category breakdown: {results.metrics.get('category_accuracy', {})}")
+print(f"Accuracy: {results.accuracy:.2f}")
+print(f"Per-category breakdown: {results.category_breakdown}")
 ```
 
 ## 7. Working with Evaluation Results
