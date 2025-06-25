@@ -156,7 +156,7 @@ class TestModelRegistry:
                     with pytest.raises(ModelProviderError) as exc_info:
                         registry.get_model("gpt-4")
                     
-                    assert "No API key available" in str(exc_info.value)
+                    assert "No API key found" in str(exc_info.value)
                     assert "OPENAI_API_KEY" in str(exc_info.value)
     
     @patch('os.getenv')

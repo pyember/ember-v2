@@ -6,13 +6,14 @@ dependency injection. Single source of truth for runtime configuration.
 
 from __future__ import annotations
 
+import contextvars
 import copy
 import os
 import sys
 import tempfile
 import threading
 from pathlib import Path
-from typing import Any, Dict, Optional, TYPE_CHECKING
+from typing import Any, Dict, Optional, TYPE_CHECKING, cast
 
 import yaml
 
@@ -23,6 +24,7 @@ from ember.core.utils.logging import get_logger
 if TYPE_CHECKING:
     from ember.models.registry import ModelRegistry
     from ember.core.utils.data.registry import DataRegistry
+    from ember._internal.config_types import EmberConfig
 
 logger = get_logger(__name__)
 
@@ -30,16 +32,36 @@ logger = get_logger(__name__)
 class EmberContext:
     """Central context for configuration and dependency management.
     
-    Thread-safe container for configuration, credentials, and registries.
-    Supports context isolation for testing.
+    Provides thread-safe and async-safe access to configuration, credentials,
+    and registries with support for context isolation and inheritance. 
+    Implements lazy initialization for efficient resource usage.
     
-    Example:
-        ctx = EmberContext()
-        api_key = ctx.get_credential("openai", "OPENAI_API_KEY")
+    Attributes:
+        _thread_local: Thread-local storage for synchronous context isolation.
+        _context_var: ContextVar for async-safe context propagation.
+    
+    Examples:
+        Basic usage:
+            >>> ctx = EmberContext()
+            >>> api_key = ctx.get_credential("openai", "OPENAI_API_KEY")
+        
+        Child context with overrides:
+            >>> with ctx.create_child(models={"default": "gpt-4"}) as child:
+            ...     model = child.get_model()  # Uses gpt-4
+            
+        Async usage:
+            >>> async def process():
+            ...     ctx = EmberContext.current()
+            ...     # Context propagates across async boundaries
     """
     
-    # Thread-local storage for context isolation
+    # Thread-local storage for synchronous context isolation
     _thread_local = threading.local()
+    
+    # ContextVar for async-safe context propagation
+    _context_var: contextvars.ContextVar[Optional['EmberContext']] = contextvars.ContextVar(
+        'ember_context', default=None
+    )
     
     def __init__(
         self,
@@ -47,17 +69,24 @@ class EmberContext:
         parent: Optional[EmberContext] = None,
         isolated: bool = False
     ):
-        """Initialize context.
+        """Initialize EmberContext.
         
         Args:
-            config_path: Optional path to configuration file.
-            parent: Parent context for inheritance.
-            isolated: Whether to isolate from global context.
+            config_path: Path to configuration file. If None, loads from
+                default location (~/.ember/config.yaml).
+            parent: Parent context to inherit configuration from. Child
+                contexts receive a deep copy of parent configuration.
+            isolated: If True, context is not set as thread-local default.
+                Useful for testing and temporary contexts.
+                
+        Raises:
+            OSError: If config_path is provided but cannot be read.
         """
-        self._config = {}
+        self._config: Dict[str, Any] = {}
         self._parent = parent
         self._isolated = isolated
         self._lock = threading.RLock()
+        self._config_file = self.get_config_path()
         
         # Core components - lazily initialized
         self._credential_manager: Optional[CredentialManager] = None
@@ -67,29 +96,45 @@ class EmberContext:
         # Load configuration
         if config_path:
             self._config = load_config(str(config_path))
+            self._config_file = config_path
         elif parent:
             # Inherit parent config (deep copy for isolation)
             self._config = copy.deepcopy(parent._config)
+            self._config_file = parent._config_file
         else:
             # Try to load from default location
             self._config = self._load_default_config()
             
-        # Set as thread-local context if not isolated
+        # Set as current context if not isolated
         if not isolated and not parent:
             EmberContext._thread_local.context = self
+            EmberContext._context_var.set(self)
             
             # Check for migration on first context creation
             self._check_migration()
     
     @classmethod
     def current(cls) -> EmberContext:
-        """Get current thread's context.
+        """Get or create the current context (thread-safe and async-safe).
         
         Returns:
-            Thread-local EmberContext instance.
+            Current EmberContext instance. Creates one if it doesn't exist.
+            
+        Note:
+            In async contexts, uses ContextVar for proper context propagation.
+            In sync contexts, falls back to thread-local storage.
+            This ensures proper isolation in both threading and async scenarios.
         """
+        # Try ContextVar first (works in both sync and async)
+        ctx = cls._context_var.get()
+        if ctx is not None:
+            return ctx
+            
+        # Fall back to thread-local for pure threading scenarios
         if not hasattr(cls._thread_local, 'context'):
-            cls._thread_local.context = cls()
+            ctx = cls()
+            cls._thread_local.context = ctx
+            cls._context_var.set(ctx)
         return cls._thread_local.context
     
     @property
@@ -102,8 +147,15 @@ class EmberContext:
         if self._credential_manager is None:
             with self._lock:
                 if self._credential_manager is None:
-                    self._credential_manager = CredentialManager()
+                    # Pass config directory to credential manager
+                    config_dir = self._config_file.parent if self._config_file else None
+                    self._credential_manager = CredentialManager(config_dir)
         return self._credential_manager
+    
+    @property
+    def _credentials(self) -> CredentialManager:
+        """Alias for credential_manager for backward compatibility."""
+        return self.credential_manager
     
     @property
     def model_registry(self) -> ModelRegistry:
@@ -155,15 +207,26 @@ class EmberContext:
         return provider_config.get("api_key")
     
     def get_config(self, key: str, default: Any = None) -> Any:
-        """Get configuration value.
+        """Get configuration value using dot notation.
         
         Args:
-            key: Dot-notation key (e.g., "models.temperature").
-            default: Default if not found.
+            key: Configuration key using dot notation for nested access
+                (e.g., "models.temperature", "providers.openai.base_url").
+            default: Value to return if key is not found. Defaults to None.
             
         Returns:
-            Configuration value or default.
+            The configuration value at the specified key, or default if not found.
+            
+        Examples:
+            >>> ctx.get_config("models.default")
+            'gpt-3.5-turbo'
+            >>> ctx.get_config("missing.key", "fallback")
+            'fallback'
         """
+        # Handle edge cases
+        if not key or not isinstance(key, str):
+            return None
+            
         parts = key.split(".")
         value = self._config
         
@@ -176,19 +239,37 @@ class EmberContext:
         return value
     
     def set_config(self, key: str, value: Any) -> None:
-        """Set configuration value.
+        """Set configuration value using dot notation.
         
         Args:
-            key: Dot-notation key.
+            key: Dot-notation key (e.g., "models.temperature").
             value: Value to set.
+            
+        Raises:
+            ValueError: If key is invalid or empty.
+            TypeError: If key is not a string.
         """
+        # Input validation
+        if not isinstance(key, str):
+            raise TypeError(f"Configuration key must be a string, got {type(key).__name__}")
+        
+        if not key or not key.strip():
+            raise ValueError("Configuration key cannot be empty")
+        
+        # Basic key validation
+        parts = key.split(".")
+        if not all(parts):
+            raise ValueError(f"Invalid configuration key: '{key}'")
+        
         with self._lock:
-            parts = key.split(".")
             config = self._config
             
             # Navigate to parent dict
             for part in parts[:-1]:
                 if part not in config:
+                    config[part] = {}
+                elif not isinstance(config[part], dict):
+                    # Replace non-dict values with dict to allow nesting
                     config[part] = {}
                 config = config[part]
                 
@@ -223,16 +304,48 @@ class EmberContext:
         
         Returns:
             Configuration dictionary with sensitive values filtered.
+            
+        Note:
+            In future versions, this will filter out sensitive values
+            like API keys before returning. For now, returns complete config.
         """
-        # For now, return all config
-        # In future, could filter API keys and secrets
+        if TYPE_CHECKING:
+            from ember._internal.config_types import EmberConfig
+            return cast(EmberConfig, self._config.copy())
         return self._config.copy()
     
     def reload(self) -> None:
         """Reload configuration from disk."""
         with self._lock:
-            new_config = self._load_default_config()
-            self._config = new_config
+            if self._config_file and self._config_file.exists():
+                try:
+                    with open(self._config_file) as f:
+                        self._config = yaml.safe_load(f) or {}
+                except Exception as e:
+                    logger.warning(f"Failed to reload config: {e}")
+                    self._config = {}
+            else:
+                new_config = self._load_default_config()
+                self._config = new_config
+    
+    def save(self) -> None:
+        """Save configuration to disk."""
+        with self._lock:
+            if self._config_file:
+                # Ensure directory exists
+                self._config_file.parent.mkdir(parents=True, exist_ok=True)
+                
+                # Save with atomic write
+                temp_file = self._config_file.with_suffix('.tmp')
+                try:
+                    with open(temp_file, 'w') as f:
+                        yaml.dump(self._config, f, default_flow_style=False)
+                    temp_file.replace(self._config_file)
+                except Exception as e:
+                    logger.error(f"Failed to save config: {e}")
+                    if temp_file.exists():
+                        temp_file.unlink()
+                    raise
     
     def load_dataset(self, name: str, **kwargs) -> Any:
         """Load a dataset through the registry.
@@ -259,24 +372,41 @@ class EmberContext:
         
         # Apply overrides
         for key, value in config_overrides.items():
-            child.set_config(key, value)
+            # Handle nested dict updates
+            if isinstance(value, dict):
+                for k, v in value.items():
+                    child.set_config(f"{key}.{k}", v)
+            else:
+                child.set_config(key, value)
             
         return child
     
     def __enter__(self) -> EmberContext:
-        """Context manager entry."""
-        if not self._isolated:
-            self._previous = getattr(EmberContext._thread_local, 'context', None)
-            EmberContext._thread_local.context = self
+        """Context manager entry - sets this as current context."""
+        # Always save and set context, even for isolated contexts
+        # This allows with_context to work properly
+        self._previous_thread = getattr(EmberContext._thread_local, 'context', None)
+        self._previous_async = EmberContext._context_var.get()
+        
+        # Set this as current
+        EmberContext._thread_local.context = self
+        self._token = EmberContext._context_var.set(self)
         return self
     
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
-        """Context manager exit."""
-        if not self._isolated:
-            if self._previous is not None:
-                EmberContext._thread_local.context = self._previous
+        """Context manager exit - restores previous context."""
+        # Always restore previous context
+        # Restore thread-local
+        if hasattr(self, '_previous_thread'):
+            if self._previous_thread is not None:
+                EmberContext._thread_local.context = self._previous_thread
             else:
-                delattr(EmberContext._thread_local, 'context')
+                if hasattr(EmberContext._thread_local, 'context'):
+                    delattr(EmberContext._thread_local, 'context')
+        
+        # Restore context var
+        if hasattr(self, '_token'):
+            EmberContext._context_var.reset(self._token)
     
     @staticmethod
     def get_config_path() -> Path:
@@ -290,7 +420,11 @@ class EmberContext:
         """
         env_path = os.environ.get('EMBER_CONFIG_PATH')
         if env_path:
-            return Path(env_path)
+            path = Path(env_path)
+            # If it's a directory, append config.yaml
+            if path.is_dir() or not path.suffix:
+                return path / "config.yaml"
+            return path
         return Path.home() / ".ember" / "config.yaml"
     
     def _load_default_config(self) -> Dict[str, Any]:
@@ -308,31 +442,6 @@ class EmberContext:
                 logger.warning(f"Failed to load config from {config_file}: {e}")
         return {}
     
-    def save(self) -> None:
-        """Save configuration to disk atomically."""
-        config_file = self.get_config_path()
-        config_file.parent.mkdir(exist_ok=True)
-        
-        # Use process-wide lock for thread safety
-        with self._lock:
-            # Write to temp file first
-            with tempfile.NamedTemporaryFile(
-                mode='w',
-                dir=config_file.parent,
-                delete=False,
-                suffix='.tmp',
-                prefix='.ember_config_'
-            ) as tmp:
-                yaml.dump(self._config, tmp, default_flow_style=False)
-                tmp_path = Path(tmp.name)
-            
-            # Atomic rename (works on all platforms)
-            if sys.platform == 'win32':
-                # Windows requires target to not exist
-                if config_file.exists():
-                    config_file.unlink()
-            
-            tmp_path.replace(config_file)
     
     def _check_migration(self) -> None:
         """Check and run migration if needed."""

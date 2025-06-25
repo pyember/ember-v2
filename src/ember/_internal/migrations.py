@@ -20,10 +20,17 @@ def _create_backup(file_path: Path) -> Path:
     """Create timestamped backup of file.
     
     Args:
-        file_path: File to backup
+        file_path: Path to file that needs backing up.
         
     Returns:
-        Path to backup file
+        Path to the created backup file with timestamp suffix.
+        
+    Raises:
+        OSError: If backup creation fails due to permissions or disk space.
+        
+    Note:
+        Backup filename format: original.ext.bak.YYYYMMDD_HHMMSS
+        For files without extension: original.bak.YYYYMMDD_HHMMSS
     """
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     # For files without extension, just add .bak.timestamp
@@ -36,10 +43,19 @@ def _create_backup(file_path: Path) -> Path:
 
 
 def migrate_credentials() -> bool:
-    """Migrate credentials from old format to context system.
+    """Migrate credentials from legacy format to context system.
+    
+    Checks for credentials in the old location (~/.ember/credentials) and
+    migrates them to the new context-aware system. Creates timestamped
+    backups and uses a marker file to ensure idempotency.
     
     Returns:
-        True if migration performed, False if nothing to migrate
+        True if migration was performed, False if nothing to migrate or
+        already migrated.
+        
+    Note:
+        Migration is idempotent - safe to run multiple times.
+        Original files are backed up, not deleted until migration succeeds.
     """
     old_credentials = Path.home() / '.ember' / 'credentials'
     

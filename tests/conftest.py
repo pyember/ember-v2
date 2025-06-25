@@ -26,6 +26,44 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "integration: marks tests as integration tests")
 
 
+# Core test fixtures
+@pytest.fixture
+def tmp_ctx(tmp_path, monkeypatch):
+    """Isolated EmberContext with temporary home directory.
+    
+    Provides complete isolation from user's real ~/.ember directory.
+    All tests using this fixture are hermetic and parallelizable.
+    """
+    from ember._internal.context import EmberContext
+    
+    # Create fake home
+    home = tmp_path / "home"
+    home.mkdir()
+    monkeypatch.setattr(Path, "home", lambda: home)
+    
+    # Clear any existing context
+    if hasattr(EmberContext._thread_local, 'context'):
+        delattr(EmberContext._thread_local, 'context')
+    EmberContext._context_var.set(None)
+    
+    # Create fresh context
+    ctx = EmberContext.current()
+    yield ctx
+    
+    # Cleanup
+    if hasattr(EmberContext._thread_local, 'context'):
+        delattr(EmberContext._thread_local, 'context')
+    EmberContext._context_var.set(None)
+
+
+@pytest.fixture
+def mock_cli_args(monkeypatch):
+    """Mock sys.argv for CLI testing without subprocess."""
+    def _mock_args(*args):
+        monkeypatch.setattr(sys, "argv", ["ember"] + list(args))
+    return _mock_args
+
+
 # Model API fixtures
 @pytest.fixture
 def mock_model_response():

@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 import pytest
 
-from ember._internal.context import EmberContext
+from ember.context import EmberContext
 from ember._internal.migrations import migrate_credentials, migrate_config
 
 

@@ -92,25 +92,25 @@ def initialize_ember(
         Initialized model registry.
     """
     # Import modules where needed to avoid circular dependencies
-    from ember._internal.config.manager import create_config_manager
-    from ember.models import ModelRegistry
+    from ember._internal.context import EmberContext
     from ember.utils.logging import configure_logging
+    from pathlib import Path
 
     # 0. Configure logging first
     configure_logging(verbose=verbose_logging)
 
-    # 1. Create the configuration manager with the provided config path
-    config_manager = create_config_manager(config_path=config_path)
+    # 1. Create context with configuration
+    ctx = EmberContext(
+        config_path=Path(config_path) if config_path else None
+    )
 
     # 2. Apply API keys if provided (highest precedence)
     if api_keys:
         for provider, api_key in api_keys.items():
-            config_manager.set_provider_api_key(provider, api_key)
+            ctx.credential_manager.save_api_key(provider, api_key)
 
-    # 3. Initialize the model registry - simplified version
-    registry = ModelRegistry()
-
-    # Context is initialized lazily via current_context()
+    # 3. Get registry from context (will create if needed)
+    registry = ctx.model_registry
 
     # Return the registry
     return registry
@@ -133,20 +133,18 @@ def init(
         >>> response = service("gpt-4", "Explain quantum computing")
     """
     from ember.api.models import ModelService, UsageService
-    from ember._internal.config.manager import create_config_manager
-    # from ember._internal.registry.model.initialization import initialize_registry  # Deprecated
+    from ember._internal.context import EmberContext
 
-    # Initialize configuration if needed
-    config_manager = None
+    # Create context with configuration
+    ctx = EmberContext()
+    
+    # Apply configuration overrides
     if isinstance(config, dict):
-        config_manager = create_config_manager()
         for key, value in config.items():
-            config_manager.set(key, value)
-    elif config is not None and hasattr(config, "set") and hasattr(config, "get"):
-        config_manager = config
+            ctx.set_config(key, value)
 
-    # Initialize the registry directly
-    registry = ModelRegistry()
+    # Get registry from context
+    registry = ctx.model_registry
 
     # Create usage service if tracking is enabled
     usage_service = UsageService() if usage_tracking else None
@@ -161,6 +159,7 @@ def init(
     # Add service attributes to the wrapper
     service_wrapper.model_service = service
     service_wrapper.registry = registry
+    service_wrapper.context = ctx
     if usage_service:
         service_wrapper.usage_service = usage_service
 

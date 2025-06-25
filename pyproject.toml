@@ -181,6 +181,9 @@ repository = "https://github.com/pyember/ember"
 documentation = "https://docs.pyember.org"
 homepage = "https://pyember.org"
 
+[project.scripts]
+ember = "ember.cli.main:main"
+
 [project.entry-points."ember.dataset_preppers"]
 truthful_qa = "ember.core.utils.data.datasets_registry.truthful_qa:TruthfulQAPrepper"
 short_answer = "ember.core.utils.data.datasets_registry.short_answer:ShortAnswerPrepper"

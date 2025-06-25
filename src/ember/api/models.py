@@ -1,10 +1,7 @@
-"""Simplified Models API with direct initialization.
+"""Models API for language model interactions.
 
-This module provides a streamlined interface for language model interactions,
-using direct initialization instead of complex dependency injection.
-
-Following Google Python Style Guide:
-    https://google.github.io/styleguide/pyguide.html
+Provides direct function-based access to language models without requiring
+client initialization. Simply import and call.
 """
 
 from __future__ import annotations
@@ -15,6 +12,12 @@ from typing import Union, Optional, Any, Dict, List, TYPE_CHECKING
 
 from ember.models import ModelRegistry
 from ember.models.schemas import ChatResponse
+from ember.models.catalog import (
+    list_available_models, 
+    get_model_info,
+    get_providers,
+    Models
+)
 from ember._internal.exceptions import (
     ModelError,
     ModelNotFoundError,
@@ -25,23 +28,16 @@ logger = logging.getLogger(__name__)
 
 
 class Response:
-    """Response object for model outputs.
-    
-    Provides clean access to generated text and metadata from language model
-    responses. This is one of Ember's key innovations - a simple, consistent
-    interface regardless of provider.
+    """Response from a language model.
     
     Attributes:
-        text: The generated text content.
-        usage: Token usage statistics with automatic cost calculation.
-        model_id: Identifier of the model that generated the response.
+        text: Generated text content.
+        usage: Token usage and cost statistics.
+        model_id: Model that generated the response.
         
-    Examples:
-        >>> response = models("gpt-4", "What is 2+2?")
-        >>> print(response.text)
-        The answer is 4.
-        
-        >>> print(response.usage)
+    Example:
+        response = models("gpt-4", "What is 2+2?")
+        print(response.text)  # "The answer is 4."
         {'prompt_tokens': 10, 'completion_tokens': 5, 
          'total_tokens': 15, 'cost': 0.0006}
     """
@@ -127,21 +123,14 @@ class Response:
 
 
 class ModelBinding:
-    """Reusable model configuration with preset parameters.
+    """Reusable model configuration.
     
-    This is a unique Ember innovation that improves performance by validating
-    parameters once and reusing the configuration for multiple calls.
+    Binds a model with preset parameters for efficient reuse.
     
-    Examples:
-        >>> # Create a binding with preset temperature
-        >>> creative_gpt4 = models.instance("gpt-4", temperature=0.9)
-        >>> 
-        >>> # Use it multiple times efficiently
-        >>> story1 = creative_gpt4("Write a story about a dragon")
-        >>> story2 = creative_gpt4("Write a story about a robot")
-        >>> 
-        >>> # Override parameters when needed
-        >>> serious = creative_gpt4("Explain quantum physics", temperature=0.1)
+    Example:
+        creative = models.instance("gpt-4", temperature=0.9)
+        story1 = creative("Write about dragons")
+        story2 = creative("Write about robots")
     """
     
     def __init__(self, model_id: str, registry: ModelRegistry, **params):
@@ -198,82 +187,45 @@ class ModelBinding:
 
 
 class ModelsAPI:
-    """Simplified interface for language model interactions.
+    """Main interface for language models.
     
-    This is the main entry point for using language models in Ember.
-    It provides a clean, direct interface without requiring client
-    initialization - a key differentiator from other libraries.
+    Direct function-based API without client initialization.
     
-    Examples:
-        >>> from ember.api import models
-        >>> 
-        >>> # Direct invocation - the simplest way
-        >>> response = models("gpt-4", "Hello world")
-        >>> print(response.text)
-        >>> 
-        >>> # With parameters
-        >>> response = models("gpt-4", "Be creative", temperature=0.9)
-        >>> 
-        >>> # Reusable binding for efficiency
-        >>> gpt4 = models.instance("gpt-4", temperature=0.7)
-        >>> response = gpt4("First prompt")
+    Example:
+        from ember.api import models
+        
+        # Direct call
+        response = models("gpt-4", "Hello world")
+        
+        # With parameters
+        response = models("gpt-4", "Be creative", temperature=0.9)
     """
     
     def __init__(self):
-        """Initialize ModelsAPI with direct registry creation."""
-        # Create registry directly - no complex context management
-        metrics = None
-        if os.getenv("EMBER_METRICS_ENABLED", "").lower() == "true":
-            metrics = self._create_metrics()
+        """Initialize ModelsAPI with context-aware registry."""
+        from ember._internal.context import EmberContext
         
-        self._registry = ModelRegistry(metrics=metrics)
-    
-    def _create_metrics(self) -> Dict[str, Any]:
-        """Create metrics collectors if enabled.
+        # Get or create context
+        self._context = EmberContext.current()
         
-        Returns:
-            Dictionary of metric collectors.
-        """
-        # Simplified metrics - could integrate with Prometheus later
-        return {
-            "invocation_duration": None,  # Placeholder
-            "model_invocations": None,    # Placeholder
-        }
+        # Get registry from context (lazy initialization)
+        self._registry = self._context.model_registry
     
     def __call__(self, model: str, prompt: str, **params) -> Response:
-        """Invoke a language model directly.
-        
-        This is the primary interface - just call models() with a model
-        name and prompt. No client initialization required.
+        """Call a model.
         
         Args:
-            model: Model identifier (e.g., "gpt-4", "claude-3", "openai/gpt-4").
-            prompt: The prompt to send to the model.
-            **params: Optional parameters like temperature, max_tokens, etc.
-                     Special parameter 'providers' for provider preferences.
+            model: Model ID (e.g., "gpt-4", "claude-3-opus").
+            prompt: Text prompt.
+            **params: Optional parameters (temperature, max_tokens, etc.).
             
         Returns:
-            Response object with generated text and metadata.
+            Response with text and usage.
             
         Raises:
-            ModelNotFoundError: Model doesn't exist or provider unavailable.
-            ModelProviderError: Missing or invalid API key.
-            ProviderAPIError: Provider-specific errors (including rate limits).
-            
-        Examples:
-            >>> # Simple usage
-            >>> response = models("gpt-4", "Hello world")
-            >>> 
-            >>> # With parameters
-            >>> response = models("gpt-4", "Be creative", 
-            ...                  temperature=0.9, max_tokens=100)
-            >>> 
-            >>> # With explicit provider
-            >>> response = models("openai/gpt-4", "Hello")
-            >>> 
-            >>> # With provider preferences (advanced)
-            >>> response = models("gpt-4", "Hello", 
-            ...                  providers=["azure", "openai"])
+            ModelNotFoundError: Model not found.
+            ModelProviderError: Missing API key.
+            ProviderAPIError: API errors.
         """
         # Extract provider preferences if specified
         providers = params.pop("providers", None)
@@ -286,26 +238,18 @@ class ModelsAPI:
         return Response(raw_response)
     
     def instance(self, model: str, **params) -> ModelBinding:
-        """Create a reusable model binding with preset parameters.
-        
-        This is an Ember innovation - create a model configuration once
-        and reuse it efficiently for multiple calls.
+        """Create reusable model binding.
         
         Args:
-            model: Model identifier (e.g., "gpt-4", "claude-3").
-            **params: Default parameters for all calls (temperature, etc.).
+            model: Model ID.
+            **params: Default parameters.
             
         Returns:
-            ModelBinding that can be called multiple times.
+            Callable ModelBinding.
             
-        Examples:
-            >>> # Create specialized model configurations
-            >>> creative = models.instance("gpt-4", temperature=0.9)
-            >>> analytical = models.instance("gpt-4", temperature=0.1)
-            >>> 
-            >>> # Use them for different purposes
-            >>> story = creative("Write a story")
-            >>> analysis = analytical("Analyze this data: ...")
+        Example:
+            creative = models.instance("gpt-4", temperature=0.9)
+            story = creative("Write a story")
         """
         return ModelBinding(model, self._registry, **params)
     
@@ -313,14 +257,55 @@ class ModelsAPI:
         """List all available models.
         
         Returns:
-            List of model IDs that have been instantiated.
+            List of all available model IDs.
             
         Examples:
             >>> models_list = models.list()
             >>> print(models_list)
-            ['gpt-4', 'claude-3-opus']
+            ['gpt-4', 'gpt-4-turbo', 'claude-3-opus', ...]
         """
-        return self._registry.list_models()
+        return list_available_models()
+    
+    def discover(self, provider: str = None) -> Dict[str, Dict[str, Any]]:
+        """Discover available models with detailed information.
+        
+        Args:
+            provider: Optional provider filter (e.g., "openai", "anthropic")
+            
+        Returns:
+            Dictionary mapping model IDs to their information.
+            
+        Examples:
+            >>> # Show all models
+            >>> info = models.discover()
+            >>> for model_id, details in info.items():
+            ...     print(f"{model_id}: {details['description']}")
+            
+            >>> # Show only OpenAI models
+            >>> openai_models = models.discover("openai")
+        """
+        model_ids = list_available_models(provider)
+        return {
+            model_id: {
+                "provider": get_model_info(model_id).provider,
+                "description": get_model_info(model_id).description,
+                "context_window": get_model_info(model_id).context_window,
+            }
+            for model_id in model_ids
+        }
+    
+    def providers(self) -> List[str]:
+        """List all available providers.
+        
+        Returns:
+            List of provider names.
+            
+        Examples:
+            >>> providers = models.providers()
+            >>> print(providers)
+            ['openai', 'anthropic', 'google']
+        """
+        return sorted(get_providers())
     
     def __repr__(self) -> str:
         """Return string representation for debugging."""
@@ -353,6 +338,8 @@ def models(model: str, prompt: str, **params) -> Response:
     return _global_models_api(model, prompt, **params)
 
 
-# Expose the instance method for creating bindings
+# Expose the instance methods for creating bindings
 models.instance = _global_models_api.instance
 models.list = _global_models_api.list
+models.discover = _global_models_api.discover
+models.providers = _global_models_api.providers

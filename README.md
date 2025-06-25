@@ -1,408 +1,386 @@
-<p align="center">
-  <img src="docs/assets/logo_ember_icon@2x.png" alt="Ember Logo" width="150"/>
-</p>
-<p align="center">
-  <img src="docs/assets/ember_workmark.svg" alt="Ember" width="350"/>
-</p>
+# Ember
 
-<p align="center">
-<strong>Contributors</strong>
-</p>
-
-<p align="center">
-This repository is in collaboration with the following early users, contributors, and reviewers:
-</p>
-
-<p align="center">
-Jared Quincy Davis<sup>F,S</sup>, Marquita Ellis<sup>I</sup>, Diana Arroyo<sup>I</sup>, Pravein Govindan Kannan<sup>I</sup>, Paul Castro<sup>I</sup>, Siddharth Sharma<sup>F,S</sup>, Lingjiao Chen<sup>MS</sup>, Omar Khattab<sup>D,MT</sup>, Alan Zhu<sup>B</sup>, Parth Asawa<sup>B</sup>, Connor Chow<sup>B</sup>, Jason Lee<sup>B</sup>, Jay Adityanag Tipirneni<sup>B</sup>, Chad Ferguson<sup>B</sup>, Kathleen Ge<sup>B</sup>, Kunal Agrawal<sup>B</sup>, Rishab Bhatia<sup>B</sup>, Rohan Penmatcha<sup>B</sup>, Sai Kolasani<sup>B</sup>, Théo Jaffrelot Inizan<sup>B</sup>, Deepak Narayanan<sup>N</sup>, Long Fei<sup>F</sup>, Aparajit Raghavan<sup>F</sup>, Eyal Cidon<sup>F</sup>, Jacob Schein<sup>F</sup>, Prasanth Somasundar<sup>F</sup>, Boris Hanin<sup>F,P</sup>, James Zou<sup>S</sup>, Alex Dimakis<sup>B</sup>, Joey Gonzalez<sup>B</sup>, Peter Bailis<sup>G,S</sup>, Ion Stoica<sup>A,B,D</sup>, Matei Zaharia<sup>D,B</sup>
-</p>
-
-<p align="center">
-<sup>F</sup> Foundry (MLFoundry), <sup>D</sup> Databricks, <sup>I</sup> IBM Research, <sup>S</sup> Stanford University, <sup>B</sup> UC Berkeley, <sup>MT</sup> MIT, <sup>N</sup> NVIDIA, <sup>MS</sup> Microsoft, <sup>A</sup> Anyscale, <sup>G</sup> Google, <sup>P</sup> Princeton
-</p>
-
-# <span style="color:#0366d6;">Ember</span>: A Compositional Framework for Compound AI Systems
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-
-## Ember in a Nutshell
-
-Aspirationally, Ember is to Networks of Networks (NONs) Compound AI Systems development what PyTorch 
-and XLA are to Neural Networks (NN) development. It's a compositional framework with both eager 
-execution affordances and graph execution optimization capabilities. It enables users to compose 
-complex NONs, and supports automatic parallelization and optimization of these. 
-
-
-Ember's vision is to enable development of **compound AI systems composed of, one day, millions-billions of inference calls** and beyond. Simple constructs--like **best-of-N graphs**, **verifier-prover structures**, and **ensembles with “voting-based” aggregation**--work surprisingly well in many regimes. 
-
-```python
-# With Ember's "compact notation" it is one line to build a simple parallel system with 101 GPT-4o instances synthesized by Claude
-system = non.build_graph(["101:E:gpt-4o:0.7", "1:J:claude-3-5-sonnet:0.0"])  # Automatically parallelized
-result = system(query="What's the most effective climate change solution?")
-```
-
-This led us to believe that there is a rich architecture space for constructing and optimizing what we call “networks of networks” graphs, or **NONs**. This is analogous to how neural network architecture research uncovered many emergent properties of systems composed of simple artificial neurons. It would be frictionful to conduct NN research if we had to implement architectures from scratch via for-loops or implement bespoke libraries for vectorization and efficient execution. Similarly, it can be challenging at present to compose NON architectures of many calls, despite the **rapidly falling cost-per-token of intelligence**.
-
-Ember's goal is to help unlock research and practice along this new frontier. 
-
-## Documentation & Examples
-
-- [Architecture Overview](ARCHITECTURE.md)
-- [Quick Start Guide](QUICKSTART.md)
-- [LLM Specifications](LLM_SPECIFICATIONS.md)
-- [Model Registry Guide](docs/quickstart/model_registry.md)
-- [Operators Guide](docs/quickstart/operators.md)
-- [NON Patterns](docs/quickstart/non.md)
-- [Data Processing](docs/quickstart/data.md)
-- [Configuration](docs/quickstart/configuration.md)
-- [Examples Directory](src/ember/examples)
-
-## Simple Example: Ensemble Reasoning with Automatic Parallelization
-
-```python
-class QueryInput(EmberModel):
-    query: str
-    
-class ConfidenceOutput(EmberModel):
-    answer: str
-    confidence: float
-
-class ReasonerSpec(Specification):
-    input_model = QueryInput
-    structured_output = ConfidenceOutput
-
-@jit # Autonomically optimize execution with JIT compilation (e.g. TopoSort with Parallel Dispatch)
-class EnsembleReasoner(Operator[QueryInput, ConfidenceOutput]):
-    specification = ReasonerSpec()
-    
-    def __init__(self, width: int = 3):
-        self.ensemble = non.UniformEnsemble(
-            num_units=width,
-            model_name="openai:gpt-4o",
-            temperature=0.7
-        )
-        
-        self.judge = non.JudgeSynthesis(
-            model_name="anthropic:claude-3-5-sonnet",
-        )
-    
-    def forward(self, *, inputs: QueryInput) -> ReasonedOutput:
-        # These operations are automatically parallelized by Ember's XCS system
-        ensemble_result = self.ensemble(query=inputs.query)
-        
-        synthesis = self.judge(
-            query=inputs.query,
-            responses=ensemble_result["responses"]
-        )
-        
-        return ConfidenceOutput(
-            answer=synthesis["final_answer"],
-            confidence=float(synthesis.get("confidence", 0.0))
-        )
-
-# Use it like any Python function
-compound_system = EnsembleReasoner()
-result = compound_system(query="What causes the northern lights?")
-print(f"Answer: {result.answer}")
-print(f"Confidence: {result.confidence:.2f}")
-
-# Alternatively, build the same pipeline with compact notation
-pipeline = non.build_graph(["3:E:gpt-4o:0.7", "1:J:claude-3-5-sonnet:0.2"])
-result = pipeline(query="What causes the northern lights?")
-```
-
-## Compact Notation
-
-Ember's compact notation allows expression of complex AI architectures in minimal code:
-
-```python
-# Compact notation: "count:type:model:temperature" - each component precisely specified
-
-# BASIC: Single-line systems with automatic parallelization
-basic = non.build_graph(["7:E:gpt-4o:0.7"])                             # 7-model ensemble
-voting = non.build_graph(["7:E:gpt-4o:0.7", "1:M"])                     # With majority voting
-judged = non.build_graph(["7:E:gpt-4o:0.7", "1:J:claude-3-5-sonnet:0.0"])   # With judge synthesis
-
-# STANDARD API: Equivalent to compact notation but with explicit objects
-standard_system = non.Sequential(operators=[
-    non.UniformEnsemble(num_units=7, model_name="gpt-4o", temperature=0.7),
-    non.JudgeSynthesis(model_name="claude-3-5-sonnet", temperature=0.0)
-])
-
-# ADVANCED: Reusable components for complex architectures
-components = {
-    # Define building blocks once, reuse everywhere
-    "reasoning": ["3:E:gpt-4o:0.7", "1:V:gpt-4o:0.0"],           # Verification pipeline
-    "research": ["3:E:claude-3-5-sonnet:0.5", "1:V:claude-3-5-sonnet:0.0"]  # Different models
-}
-
-# Build sophisticated multi-branch architecture in just 4 lines
-advanced = non.build_graph([
-    "$reasoning",                     # First branch: reasoning with verification
-    "$research",                      # Second branch: research with verification
-    "1:J:claude-3-5-opus:0.0"         # Final synthesis of both branches
-], components=components)             # Automatically optimized for parallel execution
-
-# HORIZONTAL SCALING: Systematically explore scaling behavior
-systems = {
-    # Scaling with MostCommon aggregation
-    "width_3_voting": non.build_graph(["3:E:gpt-4o:0.7", "1:M"]), 
-    "width_7_voting": non.build_graph(["7:E:gpt-4o:0.7", "1:M"]),
-    "width_11_voting": non.build_graph(["11:E:gpt-4o:0.7", "1:M"]),
-    
-    # Scaling with judge synthesis
-    "width_3_judge": non.build_graph(["3:E:gpt-4o:0.7", "1:J:claude-3-5-sonnet:0.0"]),
-    "width_7_judge": non.build_graph(["7:E:gpt-4o:0.7", "1:J:claude-3-5-sonnet:0.0"]),
-    "width_11_judge": non.build_graph(["11:E:gpt-4o:0.7", "1:J:claude-3-5-sonnet:0.0"]),
-}
-
-# Execute with full parallelism (XCS optimizes the execution graph automatically)
-query = "What's the most effective climate change solution?"
-results = {name: system(query=query) for name, system in systems.items()}
-```
-
-## Core Elements
-
-1. **Composable Operators with Rigorous Specification**: Build reliable compound AI systems from 
-   type-safe, reusable components with validated inputs and outputs
-2. **Automatic Parallelization**: Independent operations are automatically executed concurrently 
-   across a full computational graph
-3. **XCS Optimization Framework**: "Accelerated Compound Systems" Just-in-time tracing and execution optimization with multiple strategies (trace, structural, enhanced). XCS is inspired by XLA, but intended more for accelerating compound systems vs. linear algebra operations, tuned for models and dicts, vs for vectors and numerical computation.
-4. **Multi-Provider Support**: Unified API across OpenAI, Anthropic, Claude, Gemini, and more 
-   with standardized usage tracking
-5. **Transformation System**: Function transformations for vectorization (vmap), parallelization (pmap), and device sharding (mesh), with a composable interface for building complex transformations
-
-## XCS Architecture
-
-The Accelerated Compound Systems (XCS) module provides a computational graph-based system for building, optimizing, and executing complex operator pipelines:
-
-1. **Unified JIT System**: Multiple compilation strategies under a consistent interface:
-   - `trace`: Traditional execution tracing
-   - `structural`: Structure-based analysis
-   - `enhanced`: Improved parallelism detection and code analysis
-
-2. **Scheduler Framework**: Pluggable scheduler implementations for different execution patterns:
-   - `sequential`: Serial execution for debugging and determinism
-   - `parallel`: Thread-based parallel execution
-   - `wave`: Execution wave scheduling for optimal parallelism
-   - `topological`: Dependency-based execution ordering
-
-3. **Transform System**: High-level operations for data and computation transformations:
-   - `vmap`: Vectorized mapping for batch processing
-   - `pmap`: Parallel mapping across multiple workers
-   - `mesh`: Device mesh-based sharding for multi-device execution
-
-4. **Dependency Analysis**: Automatic extraction of dependencies between operations:
-   - Transitive closure calculation for complete dependency mapping
-   - Topological sorting with cycle detection
-   - Execution wave computation for parallel scheduling
+Build AI systems with the elegance of print("Hello World").
 
 ## Installation
 
-Ember uses [uv](https://github.com/astral-sh/uv) as its recommended package manager for significantly faster installations and dependency resolution.
-
 ```bash
-# First, install uv if you don't have it
-curl -LsSf https://astral.sh/uv/install.sh | sh  # macOS/Linux
-# or 
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"  # Windows
-# or
-pip install uv  # Any platform
-
-# Quick install using uv (recommended)
-uv pip install ember-ai
-
-# Run examples directly with uv (no activation needed)
-uv run python -c "import ember; print(ember.__version__)"
-
-# Install from source for development
-git clone https://github.com/pyember/ember.git
-cd ember
-uv pip install -e ".[dev]"
-
-# Traditional pip installation (alternative, slower)
 pip install ember-ai
 ```
 
-For detailed installation instructions, troubleshooting, and environment management, see our [Installation Guide](INSTALLATION_GUIDE.md).
+## Quick Setup
 
-## Model Registry & Provider Integration
+Run our interactive setup wizard for the best experience:
 
-Access models from any provider through a unified interface:
-
-```python
-from ember import initialize_ember
-from ember.api.models import ModelEnum
-
-# Initialize with multiple providers
-service = initialize_ember(usage_tracking=True)
-
-# Access models from different providers with the same API
-response = service(ModelEnum.gpt_4o, "What is quantum computing?")
-print(response.data)
-
-# Track usage across providers
-usage = service.usage_service.get_total_usage()
-print(f"Total cost: ${usage.cost:.4f}")
+```bash
+npx @ember-ai/setup
 ```
 
-## NON Patterns & Ensembling
+This will:
+- Help you choose an AI provider
+- Configure your API keys securely  
+- Test your connection
+- Create a working example
 
-Build compound AI system architectures using the Network of Networks (NON) pattern with pre-built components:
+## Getting Started
 
-```python
-from ember.api import non
+### 1. Set up API Keys
 
-# Standard API: Create a verification pipeline of ensemble→judge→verifier
-pipeline = non.Sequential(operators=[
-    # 1. Ensemble of 5 model instances running in parallel
-    non.UniformEnsemble(
-        num_units=5, 
-        model_name="openai:gpt-4o-mini",
-        temperature=0.7
-    ),
-    
-    # 2. Judge to synthesize the ensemble responses
-    non.JudgeSynthesis(
-        model_name="anthropic:claude-3-5-sonnet",
-        temperature=0.2
-    ),
-    
-    # 3. Verifier for quality control and fact-checking
-    non.Verifier(
-        model_name="anthropic:claude-3-5-haiku",
-        temperature=0.0
-    )
-])
+Ember requires API keys for the LLM providers you want to use. Set at least one:
 
-# Alternatively, create the same pipeline with compact notation
-pipeline = non.build_graph([
-    "5:E:gpt-4o-mini:0.7",        # Ensemble with 5 instances
-    "1:J:claude-3-5-sonnet:0.2",  # Judge synthesis
-    "1:V:claude-3-5-haiku:0.0"    # Verification
-])
+```bash
+# For OpenAI (GPT-4, GPT-3.5)
+export OPENAI_API_KEY="sk-..."
 
-# Build advanced architectures like NestedNetwork from example_architectures.py
-# Define reusable SubNetwork component
-components = {
-    "sub": ["2:E:gpt-4o:0.0", "1:V:gpt-4o:0.0"]  # Ensemble → Verifier
-}
+# For Anthropic (Claude models)
+export ANTHROPIC_API_KEY="sk-ant-..."
 
-# Create a NestedNetwork with identical structure to the OOP implementation
-nested = non.build_graph([
-    "$sub",                # First SubNetwork branch
-    "$sub",                # Second SubNetwork branch
-    "1:J:gpt-4o:0.0"       # Judge to synthesize results
-], components=components)
-
-# Extend with custom operator types
-custom_registry = non.OpRegistry.create_standard_registry()
-custom_registry.register(
-    "CE",  # Custom ensemble type
-    lambda count, model, temp: non.Sequential(operators=[
-        non.UniformEnsemble(num_units=count, model_name=model, temperature=temp),
-        non.MostCommon()  # Auto-aggregation 
-    ])
-)
-
-# Use custom operators
-advanced = non.build_graph(["3:CE:gpt-4o:0.7"], type_registry=custom_registry)
-
-# Execute with a single call
-result = pipeline(query="What causes tsunamis?")
+# For Google (Gemini models)
+export GOOGLE_API_KEY="..."
 ```
 
-## Graph Optimization & Execution
-
-Ember's XCS system provides JAX/XLA-inspired tracing, transformation, and automatic parallelization:
+### 2. Verify Setup
 
 ```python
-from ember.xcs import jit, execution_options, vmap, pmap, compose, explain_jit_selection
-from ember.api.operators import Operator
+from ember.api import models
 
-# Basic JIT compilation with automatic strategy selection
-@jit
-class SimplePipeline(Operator):
-    # ... operator implementation ...
+# Discover available models
+print(models.list())  # Shows all available models
+print(models.providers())  # Shows available providers
 
-# JIT with explicit mode selection
-@jit(mode="enhanced")
-class ComplexPipeline(Operator):
-    def __init__(self):
-        self.op1 = SubOperator1()
-        self.op2 = SubOperator2()
-        self.op3 = SubOperator3()
-    
-    def forward(self, *, inputs):
-        # These operations will be automatically parallelized
-        result1 = self.op1(inputs=inputs)
-        result2 = self.op2(inputs=inputs)
-        
-        # Combine the parallel results
-        combined = self.op3(inputs={"r1": result1, "r2": result2})
-        return combined
+# Get detailed model information
+info = models.discover()
+for model_id, details in info.items():
+    print(f"{model_id}: {details['description']} (context: {details['context_window']})")
 
-# Configure execution parameters
-with execution_options(scheduler="wave", max_workers=4):
-    result = pipeline(query="Complex question...") 
-
-# Get explanation for JIT strategy selection
-explanation = explain_jit_selection(pipeline)
-print(f"JIT strategy: {explanation['strategy']}")
-print(f"Rationale: {explanation['rationale']}")
-
-# Vectorized mapping for batch processing
-batch_processor = vmap(my_operator)
-batch_results = batch_processor(inputs={"data": [item1, item2, item3]})
-
-# Parallel execution across multiple workers
-parallel_processor = pmap(my_operator, num_workers=4)
-parallel_results = parallel_processor(inputs=complex_data)
-
-# Compose transformations (vectorization + parallelism)
-pipeline = compose(vmap(batch_size=32), pmap(num_workers=4))(my_operator)
+# This will work if you have OPENAI_API_KEY set
+response = models("gpt-4", "Hello, world!")
+print(response)
 ```
 
-## Data Handling & Evaluation
+If API keys are missing, you'll get a clear error message:
+```
+ModelProviderError: No API key available for model gpt-4. 
+Please set via OPENAI_API_KEY environment variable.
+```
 
-Ember provides a comprehensive data processing and evaluation framework with pre-built datasets and metrics:
+If you use an unknown model name, you'll see available options:
+```
+ModelNotFoundError: Cannot determine provider for model 'claude-3'. 
+Available models: claude-2.1, claude-3-haiku, claude-3-opus, claude-3-sonnet, 
+gemini-pro, gemini-pro-vision, gpt-3.5-turbo, gpt-3.5-turbo-16k, gpt-4, 
+gpt-4-turbo, gpt-4o, gpt-4o-mini, ...
+```
+
+### 3. Choose Your Style: Strings or Constants
 
 ```python
-from ember.api.data import DatasetBuilder
-from ember.api.eval import EvaluationPipeline, Evaluator
+from ember.api import models, Models
 
-# Load a dataset with the builder pattern
-dataset = (DatasetBuilder()
-    .from_registry("mmlu")  # Use a registered dataset
-    .subset("physics")      # Select a specific subset
-    .split("test")          # Choose the test split
-    .sample(100)            # Random sample of 100 items
-    .transform(              # Apply transformations
-        lambda x: {"query": f"Question: {x['question']}"} 
-    )
-    .build())
+# Option 1: Direct strings (simple, works everywhere)
+response = models("gpt-4", "Hello, world!")
+response = models("claude-3-opus", "Write a haiku")
 
-# Create a comprehensive evaluation pipeline
-eval_pipeline = EvaluationPipeline([
-    # Standard metrics
-    Evaluator.from_registry("accuracy"),
-    Evaluator.from_registry("response_quality"),
-    
-    # Custom evaluation metrics
-    Evaluator.from_function(
-        lambda prediction, reference: {
-            "factual_accuracy": score_factual_content(prediction, reference)
-        }
-    )
-])
+# Option 2: Constants for IDE autocomplete and typo prevention
+response = models(Models.GPT_4, "Hello, world!")
+response = models(Models.CLAUDE_3_OPUS, "Write a haiku")
 
-# Evaluate a model or operator
-results = eval_pipeline.evaluate(my_model, dataset)
-print(f"Accuracy: {results['accuracy']:.2f}")
-print(f"Response Quality: {results['response_quality']:.2f}")
-print(f"Factual Accuracy: {results['factual_accuracy']:.2f}")
+# Both are exactly equivalent - Models.GPT_4 == "gpt-4"
 ```
+
+## Quick Start
+
+```python
+from ember import models
+
+# Direct LLM calls - no setup required
+response = models("gpt-4", "Explain quantum computing in one sentence")
+print(response)
+```
+
+### Available Models
+
+Common model identifiers:
+- **OpenAI**: `gpt-4`, `gpt-4-turbo`, `gpt-4o`, `gpt-3.5-turbo`
+- **Anthropic**: `claude-3-opus`, `claude-3-sonnet`, `claude-3-haiku`, `claude-2.1`
+- **Google**: `gemini-pro`, `gemini-ultra`
+
+Models are automatically routed to the correct provider based on their name.
+
+## Core Concepts
+
+Ember provides four primitives that compose into powerful AI systems:
+
+### 1. Models - Direct LLM Access
+
+```python
+from ember import models
+
+# Simple invocation with string model names
+response = models("claude-3-opus", "Write a haiku about programming")
+
+# Reusable configuration
+assistant = models.instance("gpt-4", temperature=0.7, system="You are helpful")
+response = assistant("How do I center a div?")
+
+# Alternative: Use constants for autocomplete
+from ember import Models
+response = models(Models.CLAUDE_3_OPUS, "Write a haiku")
+```
+
+### 2. Operators - Composable AI Building Blocks
+
+```python
+from ember import operators
+
+# Transform any function into an AI operator
+@operators.op
+def summarize(text: str) -> str:
+    return models("gpt-4", f"Summarize in one sentence: {text}")
+
+@operators.op
+def translate(text: str, language: str = "Spanish") -> str:
+    return models("gpt-4", f"Translate to {language}: {text}")
+
+# Compose operators naturally
+pipeline = summarize >> translate
+result = pipeline("Long technical article...")
+```
+
+### 3. Data - Streaming-First Data Pipeline
+
+```python
+from ember.api import data
+
+# Stream data efficiently
+for example in data.stream("mmlu"):
+    answer = models("gpt-4", example["question"])
+    print(f"Q: {example['question']}")
+    print(f"A: {answer}")
+
+# Chain transformations
+results = (data.stream("gsm8k")
+    .filter(lambda x: x["difficulty"] > 7)
+    .transform(preprocess)
+    .batch(32))
+```
+
+### 4. XCS - Zero-Config Optimization
+
+```python
+from ember import xcs
+
+# Automatic JIT compilation
+@xcs.jit
+def process_batch(items):
+    return [models("gpt-4", item) for item in items]
+
+# Automatic parallelization
+fast_process = xcs.vmap(process_batch)
+results = fast_process(large_dataset)  # Runs in parallel
+```
+
+## Real-World Examples
+
+### Building a Code Reviewer
+
+```python
+from ember import models, operators
+
+@operators.op
+def review_code(code: str) -> dict:
+    """AI-powered code review"""
+    prompt = f"""Review this code for:
+    1. Bugs and errors
+    2. Performance issues
+    3. Best practices
+    
+    Code:
+    {code}
+    """
+    
+    review = models("claude-3", prompt)
+    
+    # Extract structured feedback
+    return {
+        "summary": models("gpt-4", f"Summarize in one line: {review}"),
+        "issues": review,
+        "severity": models("gpt-4", f"Rate severity 1-10: {review}")
+    }
+
+# Use directly
+feedback = review_code("""
+def fibonacci(n):
+    if n <= 1:
+        return n
+    return fibonacci(n-1) + fibonacci(n-2)
+""")
+```
+
+### Parallel Document Processing
+
+```python
+from ember import models, xcs, data
+
+# Define processing pipeline
+@xcs.jit
+def analyze_document(doc: dict) -> dict:
+    # Extract key information
+    summary = models("gpt-4", f"Summarize: {doc['content']}")
+    entities = models("gpt-4", f"Extract entities: {doc['content']}")
+    sentiment = models("gpt-4", f"Analyze sentiment: {doc['content']}")
+    
+    return {
+        "id": doc["id"],
+        "summary": summary,
+        "entities": entities,
+        "sentiment": sentiment
+    }
+
+# Process documents in parallel
+documents = data.stream("research_papers").first(1000)
+results = xcs.vmap(analyze_document)(documents)
+
+# Results computed optimally with automatic parallelization
+```
+
+### Multi-Model Ensemble
+
+```python
+from ember import models, operators
+
+@operators.op
+def consensus_answer(question: str) -> str:
+    """Get consensus from multiple models"""
+    # Query different models
+    gpt4_answer = models("gpt-4", question)
+    claude_answer = models("claude-3-opus", question) 
+    gemini_answer = models("gemini-pro", question)
+    
+    # Synthesize consensus
+    synthesis_prompt = f"""
+    Question: {question}
+    
+    Model answers:
+    - GPT-4: {gpt4_answer}
+    - Claude: {claude_answer}
+    - Gemini: {gemini_answer}
+    
+    Synthesize the best answer combining insights from all models.
+    """
+    
+    return models("gpt-4", synthesis_prompt)
+
+# Use for critical decisions
+answer = consensus_answer("What's the best approach to distributed systems?")
+```
+
+## Advanced Features
+
+### Type-Safe Operators
+
+```python
+from ember import Operator
+from pydantic import BaseModel
+
+class CodeInput(BaseModel):
+    language: str
+    code: str
+
+class CodeOutput(BaseModel):
+    is_valid: bool
+    errors: list[str]
+    suggestions: list[str]
+
+class CodeValidator(Operator):
+    input_spec = CodeInput
+    output_spec = CodeOutput
+    
+    def call(self, input: CodeInput) -> CodeOutput:
+        prompt = f"Validate this {input.language} code: {input.code}"
+        result = models("gpt-4", prompt)
+        # Automatic validation against output_spec
+        return CodeOutput(...)
+```
+
+### Custom Data Loaders
+
+```python
+from ember.api import data
+
+# Register custom dataset
+@data.register("my-dataset")
+def load_my_data():
+    with open("data.jsonl") as f:
+        for line in f:
+            yield json.loads(line)
+
+# Use like built-in datasets
+for item in data.stream("my-dataset"):
+    process(item)
+```
+
+### Performance Profiling
+
+```python
+from ember import xcs
+
+# Automatic profiling
+with xcs.profile() as prof:
+    results = expensive_operation()
+
+print(prof.report())
+# Shows execution time, parallelism achieved, bottlenecks
+```
+
+## Design Principles
+
+1. **Simple by Default** - Basic usage requires no configuration
+2. **Progressive Disclosure** - Complexity available when needed
+3. **Composition Over Configuration** - Build complex from simple
+4. **Performance Without Sacrifice** - Fast by default, no manual tuning
+
+## Architecture
+
+Ember uses a registry-based architecture with four main components:
+
+- **Model Registry** - Manages LLM providers and connections
+- **Operator System** - Composable computation units with JAX integration
+- **Data Pipeline** - Streaming-first data loading and transformation
+- **XCS Engine** - Automatic optimization and parallelization
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed design documentation.
+
+## Development
+
+```bash
+# Install development dependencies
+pip install -e ".[dev]"
+
+# Run tests
+pytest
+
+# Type checking
+mypy src/
+
+# Benchmarks
+python -m benchmarks.suite
+```
+
+## Contributing
+
+We welcome contributions that align with Ember's philosophy of simplicity and power. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## License
 
-Ember is released under the [MIT License](LICENSE).
+MIT License. See [LICENSE](LICENSE) for details.
+
+## Acknowledgments
+
+Ember is inspired by the engineering excellence of:
+- JAX's functional transformations
+- PyTorch's intuitive API
+- Langchain's comprehensive features (but simpler)
+- The Unix philosophy of composable tools
+
+Built with principles from leaders who shaped modern computing.

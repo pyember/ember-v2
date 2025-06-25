@@ -99,13 +99,15 @@ class ModelRegistry:
         _metrics: Optional metrics collectors for monitoring.
     """
     
-    def __init__(self, metrics: Optional[Dict[str, Any]] = None) -> None:
+    def __init__(self, metrics: Optional[Dict[str, Any]] = None, context: Optional[Any] = None) -> None:
         """Initialize the model registry.
         
         Args:
             metrics: Optional dictionary of metric collectors. Keys should be
                 metric names (e.g., 'invocation_duration', 'model_invocations').
                 Values should be collector objects with appropriate methods.
+            context: Optional EmberContext for dependency injection. If provided,
+                will use context for configuration and credentials.
                 
         Example:
             >>> # With Prometheus metrics
@@ -115,12 +117,18 @@ class ModelRegistry:
             ...     'invocation_duration': Histogram('model_duration', 'Call duration')
             ... }
             >>> registry = ModelRegistry(metrics=metrics)
+            
+            >>> # With context injection
+            >>> from ember._internal.context import EmberContext
+            >>> ctx = EmberContext()
+            >>> registry = ModelRegistry(context=ctx)
         """
         self._models: Dict[str, BaseProvider] = {}
         self._lock = threading.Lock()
         self._usage_records: Dict[str, List[UsageStats]] = {}
         self._metrics = metrics or {}
         self._logger = logger
+        self._context = context
     
     def get_model(self, model_id: str) -> BaseProvider:
         """Get or create a model provider instance.
@@ -197,9 +205,12 @@ class ModelRegistry:
         provider_name, model_name = resolve_model_id(model_id)
         
         if provider_name == "unknown":
+            from ember.models.catalog import list_available_models
+            available = list_available_models()
             raise ModelNotFoundError(
-                f"Cannot determine provider for model '{model_id}'",
-                context={"model_id": model_id}
+                f"Cannot determine provider for model '{model_id}'. "
+                f"Available models: {', '.join(sorted(available))}",
+                context={"model_id": model_id, "available_models": available}
             )
         
         # Get provider implementation class
@@ -215,11 +226,18 @@ class ModelRegistry:
         api_key = self._get_api_key(provider_name)
         if not api_key:
             env_var = f"{provider_name.upper()}_API_KEY"
-            raise ModelProviderError(
-                f"No API key available for model {model_id}. "
-                f"Please set via {env_var} environment variable.",
-                context={"model_id": model_id, "provider": provider_name}
-            )
+            
+            # Try interactive setup if in TTY
+            from ember.core.setup_launcher import launch_setup_if_needed
+            api_key = launch_setup_if_needed(provider_name, env_var, model_id)
+            
+            if not api_key:
+                # User didn't provide key or not in interactive mode
+                from ember.core.setup_launcher import format_non_interactive_error
+                raise ModelProviderError(
+                    format_non_interactive_error(provider_name, env_var, model_id),
+                    context={"model_id": model_id, "provider": provider_name}
+                )
         
         # Instantiate provider
         try:
@@ -464,9 +482,10 @@ class ModelRegistry:
             return total
     
     def _get_api_key(self, provider: str) -> Optional[str]:
-        """Get API key for a provider from environment.
+        """Get API key for a provider.
         
-        Checks multiple possible environment variable names in order of precedence.
+        Uses context if available, otherwise falls back to direct environment
+        and credential file checks.
         
         Args:
             provider: Provider name (e.g., "openai", "anthropic").
@@ -474,6 +493,12 @@ class ModelRegistry:
         Returns:
             API key string or None if not found.
         """
+        # Use context if available (dependency injection)
+        if self._context:
+            env_var = f"{provider.upper()}_API_KEY"
+            return self._context.get_credential(provider, env_var)
+        
+        # Fall back to direct checks if no context
         # Build list of possible environment variable names
         env_vars = [
             f"{provider.upper()}_API_KEY",  # Standard format
@@ -493,6 +518,16 @@ class ModelRegistry:
             value = os.getenv(var)
             if value:
                 return value
+        
+        # Check credentials file (like AWS CLI, gcloud, etc.)
+        try:
+            from ember.core.credentials import get_api_key
+            api_key = get_api_key(provider, f"{provider.upper()}_API_KEY")
+            if api_key:
+                return api_key
+        except ImportError:
+            # Credentials module not available
+            pass
         
         return None
     

@@ -144,6 +144,8 @@ class OpenAIProvider(BaseProvider):
         Returns:
             API key or None if not found.
         """
+        # This method is only called if no key was provided to __init__
+        # The registry handles credential lookup through context/credentials
         return os.getenv("OPENAI_API_KEY") or os.getenv("EMBER_OPENAI_API_KEY")
     
     def validate_model(self, model: str) -> bool:

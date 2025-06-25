@@ -32,6 +32,7 @@ Examples:
 # Import module namespaces
 import ember.api.eval as eval  # Evaluation module
 from ember.api.models import models  # Import the singleton instance, not the module
+from ember.models.catalog import Models  # Model constants for autocomplete
 # TODO: Fix non.py to use new operators_v2 system
 # import ember.api.non as non  # Network of Networks patterns
 import ember.api.operators as operators  # Operator system
@@ -97,6 +98,7 @@ def model(model_id: str, **params):
 __all__ = [
     # Main facade objects
     "models",  # Model access (models.openai.gpt4o, etc.)
+    "Models",  # Model constants for autocomplete
     "model",   # Convenience function for creating model bindings
     "op",      # Decorator for function-style operators
     "data",  # Data access (data("mmlu"), data.builder(), etc.)
