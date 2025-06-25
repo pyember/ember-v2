@@ -1,14 +1,17 @@
 import React from 'react';
 import {Box, Text} from 'ink';
+import {LogoDisplay} from '../LogoDisplay.js';
 import {Provider, PROVIDERS} from '../../types.js';
 
 interface Props {
   provider: Provider;
   onComplete: () => void;
+  configuredProviders?: Set<Provider>;
 }
 
-export const Success: React.FC<Props> = ({provider, onComplete}) => {
+export const Success: React.FC<Props> = ({provider, onComplete, configuredProviders}) => {
   const providerInfo = PROVIDERS[provider];
+  const isMultiSetup = configuredProviders && configuredProviders.size > 1;
 
   React.useEffect(() => {
     const timer = setTimeout(onComplete, 5000);
@@ -19,23 +22,38 @@ export const Success: React.FC<Props> = ({provider, onComplete}) => {
     <Box flexDirection="column">
       <Box marginBottom={2}>
         <Text color="green" bold>
-          ✨ Setup complete!
+          Setup Complete
         </Text>
       </Box>
 
       <Box flexDirection="column" gap={1}>
-        <Box>
-          <Text color="green">✓</Text>
-          <Text> API key configured for {providerInfo.name}</Text>
-        </Box>
+        {isMultiSetup ? (
+          <Box flexDirection="column">
+            <Box marginBottom={1}>
+              <Text color="green">[OK]</Text>
+              <Text> Configured {configuredProviders?.size} providers:</Text>
+            </Box>
+            {Array.from(configuredProviders || []).map(p => (
+              <Box key={p} paddingLeft={2} gap={1}>
+                <LogoDisplay provider={p} variant="symbol" />
+                <Text>{PROVIDERS[p].name}</Text>
+              </Box>
+            ))}
+          </Box>
+        ) : (
+          <Box>
+            <Text color="green">[OK]</Text>
+            <Text> API key configured for {providerInfo.name}</Text>
+          </Box>
+        )}
         
         <Box>
-          <Text color="green">✓</Text>
+          <Text color="green">[OK]</Text>
           <Text> Example created: hello_ember.py</Text>
         </Box>
         
         <Box>
-          <Text color="green">✓</Text>
+          <Text color="green">[OK]</Text>
           <Text> Configuration saved to ~/.ember/config.json</Text>
         </Box>
       </Box>
@@ -60,7 +78,7 @@ export const Success: React.FC<Props> = ({provider, onComplete}) => {
 
       <Box marginTop={3}>
         <Text dimColor italic>
-          Happy building! 🚀
+          Ready to build.
         </Text>
       </Box>
     </Box>

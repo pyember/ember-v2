@@ -31,8 +31,8 @@ const {waitUntilExit} = render(<SetupWizard
   skipWelcome={context === 'missing-key'}
 />);
 
-waitUntilExit().then((exitCode) => {
-  process.exit(exitCode || 0);
+waitUntilExit().then(() => {
+  process.exit(0);
 }).catch(() => {
   process.exit(1);
 });

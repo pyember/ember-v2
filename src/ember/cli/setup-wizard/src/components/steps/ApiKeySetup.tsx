@@ -1,17 +1,25 @@
 import React, {useState, useEffect} from 'react';
 import {Box, Text, useInput} from 'ink';
 import TextInput from 'ink-text-input';
-import Link from 'ink-link';
+import {Link} from '../Link.js';
 import {Provider, PROVIDERS} from '../../types.js';
 import clipboardy from 'clipboardy';
 
 interface Props {
   provider: Provider;
   onSubmit: (apiKey: string) => void;
+  onSkip?: () => void;
+  onCancel?: () => void;
+  onPrevious?: () => void;
+  onNext?: () => void;
+  onBack?: () => void;
   error?: string;
+  isFirstProvider?: boolean;
+  isLastProvider?: boolean;
+  setupMode?: 'single' | 'all';
 }
 
-export const ApiKeySetup: React.FC<Props> = ({provider, onSubmit, error}) => {
+export const ApiKeySetup: React.FC<Props> = ({provider, onSubmit, onSkip, onCancel, onPrevious, onNext, onBack, error, isFirstProvider, isLastProvider, setupMode}) => {
   const [apiKey, setApiKey] = useState('');
   const [showKey, setShowKey] = useState(false);
   const [clipboardStatus, setClipboardStatus] = useState('');
@@ -25,6 +33,21 @@ export const ApiKeySetup: React.FC<Props> = ({provider, onSubmit, error}) => {
     } else if (input === 'p' || input === 'P') {
       // Paste from clipboard
       handleClipboardPaste();
+    } else if (key.escape) {
+      // Cancel setup
+      onCancel?.();
+    } else if ((input === 'b' || input === 'B') && setupMode === 'single') {
+      // Go back to provider selection (only in single provider mode)
+      onBack?.();
+    } else if ((input === 's' || input === 'S') && setupMode === 'all') {
+      // Skip this provider (only in multi-provider mode)
+      onSkip?.();
+    } else if (key.leftArrow && !isFirstProvider && setupMode === 'all') {
+      // Go to previous provider (only in multi-provider mode)
+      onPrevious?.();
+    } else if (key.rightArrow && !isLastProvider && setupMode === 'all') {
+      // Go to next provider (only in multi-provider mode)
+      onNext?.();
     }
   });
 
@@ -73,7 +96,7 @@ export const ApiKeySetup: React.FC<Props> = ({provider, onSubmit, error}) => {
 
       {error && (
         <Box marginBottom={1}>
-          <Text color="red">❌ {error}</Text>
+          <Text color="red">Error: {error}</Text>
         </Box>
       )}
 
@@ -109,9 +132,39 @@ export const ApiKeySetup: React.FC<Props> = ({provider, onSubmit, error}) => {
           <Text dimColor>P</Text>
           <Text dimColor> - Paste from clipboard</Text>
         </Box>
+        {setupMode === 'single' && (
+          <Box>
+            <Text dimColor>B</Text>
+            <Text dimColor> - Back to provider selection</Text>
+          </Box>
+        )}
+        {setupMode === 'all' && (
+          <>
+            <Box>
+              <Text dimColor>S</Text>
+              <Text dimColor> - Skip this provider</Text>
+            </Box>
+            {!isFirstProvider && (
+              <Box>
+                <Text dimColor>←</Text>
+                <Text dimColor> - Previous provider</Text>
+              </Box>
+            )}
+            {!isLastProvider && (
+              <Box>
+                <Text dimColor>→</Text>
+                <Text dimColor> - Next provider</Text>
+              </Box>
+            )}
+          </>
+        )}
         <Box>
           <Text dimColor>Enter</Text>
-          <Text dimColor> - Continue</Text>
+          <Text dimColor> - {setupMode === 'single' ? 'Save and finish' : 'Continue'}</Text>
+        </Box>
+        <Box>
+          <Text dimColor>ESC</Text>
+          <Text dimColor> - Cancel setup</Text>
         </Box>
       </Box>
 

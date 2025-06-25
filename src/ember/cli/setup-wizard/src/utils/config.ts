@@ -142,3 +142,30 @@ export async function checkCredentialsSecurity(): Promise<boolean> {
     return true; // File doesn't exist yet
   }
 }
+
+/**
+ * Get list of configured providers.
+ */
+export async function getConfiguredProviders(): Promise<Set<string>> {
+  const configured = new Set<string>();
+  
+  // Check credentials file
+  try {
+    const data = await fs.readFile(CREDENTIALS_FILE, 'utf-8');
+    const credentials: Credentials = JSON.parse(data);
+    Object.keys(credentials).forEach(provider => {
+      if (credentials[provider]?.api_key) {
+        configured.add(provider);
+      }
+    });
+  } catch {
+    // No credentials file
+  }
+  
+  // Also check environment variables
+  if (process.env.OPENAI_API_KEY) configured.add('openai');
+  if (process.env.ANTHROPIC_API_KEY) configured.add('anthropic');
+  if (process.env.GOOGLE_API_KEY) configured.add('google');
+  
+  return configured;
+}

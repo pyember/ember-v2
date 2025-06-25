@@ -9,14 +9,19 @@ export interface ProviderInfo {
   envVar: string;
   testModel: string;
   icon: string;
+  color?: string; // Terminal color for the logo
 }
 
 export interface SetupState {
-  step: 'welcome' | 'provider' | 'apiKey' | 'test' | 'success';
+  step: 'welcome' | 'setupMode' | 'provider' | 'apiKey' | 'test' | 'success';
   provider: Provider | null;
   apiKey: string;
   testResult: {success: boolean; message: string} | null;
   exampleFile: string | null;
+  // Multi-provider setup support
+  setupMode?: 'single' | 'all';
+  configuredProviders?: Set<Provider>;
+  remainingProviders?: Provider[];
 }
 
 export const PROVIDERS: Record<Provider, ProviderInfo> = {
@@ -25,29 +30,32 @@ export const PROVIDERS: Record<Provider, ProviderInfo> = {
     name: 'OpenAI',
     models: ['GPT-4', 'GPT-3.5'],
     description: 'Most popular, great for general use',
-    keyUrl: 'https://platform.openai.com/api-keys',
+    keyUrl: 'https://platform.openai.com/settings/organization/api-keys',
     envVar: 'OPENAI_API_KEY',
     testModel: 'gpt-3.5-turbo',
-    icon: '🚀',
+    icon: '◯',
+    color: 'green',
   },
   anthropic: {
     id: 'anthropic',
     name: 'Anthropic',
     models: ['Claude 3 Opus', 'Claude 3 Sonnet'],
     description: 'Best for complex reasoning',
-    keyUrl: 'https://console.anthropic.com/api-keys',
+    keyUrl: 'https://console.anthropic.com/settings/keys',
     envVar: 'ANTHROPIC_API_KEY',
     testModel: 'claude-3-haiku',
-    icon: '🧠',
+    icon: '△',
+    color: 'yellow',
   },
   google: {
     id: 'google',
     name: 'Google',
     models: ['Gemini Pro', 'Gemini Vision'],
     description: 'Multimodal capabilities',
-    keyUrl: 'https://makersuite.google.com/app/apikey',
+    keyUrl: 'https://aistudio.google.com/apikey',
     envVar: 'GOOGLE_API_KEY',
     testModel: 'gemini-pro',
-    icon: '✨',
+    icon: 'G',
+    color: 'blue',
   },
 };
