@@ -119,11 +119,21 @@ def main():
         This demonstrates the key innovation: mixing static (models)
         and dynamic (JAX arrays) seamlessly.
         """
+
+        routes: Dict[str, str] = eqx.field(static=True)
+        embedding_dim: int = eqx.field(static=True)
+        routing_weights: jnp.ndarray = eqx.field(static=True)
+        temperature: jnp.ndarray = eqx.field(static=True)
+        models: Dict[str, Any] = eqx.field(static=True)
         
         def __init__(self, routes: Dict[str, str], embedding_dim: int = 8):
             # Static parameters (automatically detected)
-            self.routes = routes  # Route names to model names
-            self.embedding_dim = embedding_dim
+            object.__setattr__(self, "routes", routes)
+            object.__setattr__(self, "embedding_dim", embedding_dim)
+            object.__setattr__(self, "models", {
+                name: f"Model[{model_name}]"
+                for name, model_name in routes.items()
+            })
             
             # Dynamic parameters (JAX arrays are automatically learnable)
             self.routing_weights = jax.random.normal(
@@ -131,12 +141,6 @@ def main():
                 (len(routes), embedding_dim)
             )
             self.temperature = jnp.array(1.0)
-            
-            # Model bindings are static (not learnable)
-            self.models = {
-                name: f"Model[{model_name}]"  # Would be models.instance(model_name)
-                for name, model_name in routes.items()
-            }
         
         def compute_scores(self, query_embedding: jnp.ndarray) -> jnp.ndarray:
             """Compute routing scores (differentiable)."""
