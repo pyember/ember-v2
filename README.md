@@ -13,21 +13,28 @@ pip install ember-ai
 Run our interactive setup wizard for the best experience:
 
 ```bash
+ember setup
+```
+
+Or use npx if you haven't installed Ember yet:
+
+```bash
 npx @ember-ai/setup
 ```
 
 This will:
-- Help you choose an AI provider
+- Help you choose an AI provider (OpenAI, Anthropic, or Google)
 - Configure your API keys securely  
 - Test your connection
-- Create a working example
+- Save configuration to ~/.ember/config.yaml
 
 ## Getting Started
 
 ### 1. Set up API Keys
 
-Ember requires API keys for the LLM providers you want to use. Set at least one:
+Ember can store API keys in multiple ways:
 
+**Option 1: Environment Variables**
 ```bash
 # For OpenAI (GPT-4, GPT-3.5)
 export OPENAI_API_KEY="sk-..."
@@ -37,6 +44,25 @@ export ANTHROPIC_API_KEY="sk-ant-..."
 
 # For Google (Gemini models)
 export GOOGLE_API_KEY="..."
+```
+
+**Option 2: Configuration File** (Recommended)
+```bash
+# Run setup for each provider
+ember setup  # Interactive wizard
+
+# Or configure manually
+ember configure set credentials.openai_api_key "sk-..."
+ember configure set credentials.anthropic_api_key "sk-ant-..."
+ember configure set credentials.google_api_key "..."
+```
+
+**Option 3: Runtime Context**
+```python
+from ember.context import with_context
+
+with with_context(credentials={"openai_api_key": "sk-..."}):
+    response = models("gpt-4", "Hello!")
 ```
 
 ### 2. Verify Setup
@@ -273,6 +299,69 @@ def consensus_answer(question: str) -> str:
 
 # Use for critical decisions
 answer = consensus_answer("What's the best approach to distributed systems?")
+```
+
+## Command Line Interface
+
+Ember provides a comprehensive CLI for setup, configuration, and testing:
+
+### Setup and Configuration
+
+```bash
+# Interactive setup wizard (recommended for first-time setup)
+ember setup
+
+# Test your API connection
+ember test
+ember test --model claude-3-opus
+
+# List available models and providers
+ember models                    # List all models
+ember models --provider openai  # Filter by provider
+ember models --providers        # List providers only
+
+# Configuration management
+ember configure get models.default              # Get a config value
+ember configure set models.default "gpt-4"     # Set a config value
+ember configure list                            # Show all configuration
+ember configure show credentials               # Show specific section
+ember configure migrate                        # Migrate old config files
+
+# Version information
+ember version
+```
+
+### Advanced Configuration
+
+The context system supports multiple configuration sources with priority:
+
+1. **Runtime context** (highest priority)
+2. **Environment variables** 
+3. **Configuration file** (~/.ember/config.yaml)
+4. **Defaults** (lowest priority)
+
+```python
+from ember.context import create_context, with_context
+
+# Create isolated contexts for different use cases
+dev_context = create_context(
+    models={"default": "gpt-3.5-turbo", "temperature": 0.0},
+    credentials={"openai_api_key": "dev-key"}
+)
+
+prod_context = create_context(
+    models={"default": "gpt-4", "temperature": 0.7},
+    credentials={"openai_api_key": "prod-key"}
+)
+
+# Use different contexts in different parts of your app
+with dev_context:
+    # All calls here use dev settings
+    test_response = models(None, "Test prompt")
+
+with prod_context:
+    # All calls here use production settings  
+    prod_response = models(None, "Production prompt")
 ```
 
 ## Advanced Features

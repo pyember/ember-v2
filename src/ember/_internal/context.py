@@ -15,16 +15,15 @@ import threading
 from pathlib import Path
 from typing import Any, Dict, Optional, TYPE_CHECKING, cast
 
-import yaml
-
+from ember._internal.config_types import EmberConfig
+from ember.core.config.compatibility_adapter import CompatibilityAdapter
+from ember.core.config.loader import load_config, save_config
 from ember.core.credentials import CredentialManager
-from ember.core.config.loader import load_config
 from ember.core.utils.logging import get_logger
 
 if TYPE_CHECKING:
-    from ember.models.registry import ModelRegistry
     from ember.core.utils.data.registry import DataRegistry
-    from ember._internal.config_types import EmberConfig
+    from ember.models.registry import ModelRegistry
 
 logger = get_logger(__name__)
 
@@ -277,14 +276,28 @@ class EmberContext:
             config[parts[-1]] = value
     
     def get_model(self, model_id: Optional[str] = None, **kwargs) -> Any:
-        """Get model instance.
+        """Get configured AI model instance.
+        
+        Retrieves a model from the registry with proper provider configuration.
+        Falls back to default model if none specified.
         
         Args:
-            model_id: Model identifier or None for default.
-            **kwargs: Model configuration.
+            model_id: Model identifier (e.g., "gpt-4", "claude-3"). 
+                If None, uses models.default from configuration.
+            **kwargs: Additional model configuration options:
+                - temperature: Sampling temperature (0.0-2.0)
+                - max_tokens: Maximum response length
+                - Other provider-specific parameters
             
         Returns:
-            Model instance.
+            Configured model instance ready for use.
+            
+        Raises:
+            ValueError: If model_id is not found in registry.
+            
+        Examples:
+            >>> model = ctx.get_model()  # Uses default
+            >>> model = ctx.get_model("gpt-4", temperature=0.7)
         """
         if model_id is None:
             model_id = self.get_config("models.default", "gpt-3.5-turbo")
@@ -292,10 +305,14 @@ class EmberContext:
         return self.model_registry.get_model(model_id, **kwargs)
     
     def list_models(self) -> list[str]:
-        """List available models.
+        """List all available AI models from configured providers.
         
         Returns:
-            List of available model identifiers.
+            List[str]: Sorted list of model identifiers available for use.
+                Includes models from all configured providers.
+                
+        Note:
+            Only includes models from providers with valid API keys.
         """
         return self.model_registry.list_available()
     
@@ -315,12 +332,24 @@ class EmberContext:
         return self._config.copy()
     
     def reload(self) -> None:
-        """Reload configuration from disk."""
+        """Reload configuration from disk.
+        
+        Re-reads the configuration file and applies any compatibility
+        adaptations needed. Thread-safe operation that preserves context
+        if reload fails.
+        
+        Note:
+            - Environment variables are re-resolved during reload
+            - Compatibility adapter is applied for external formats
+            - Failures log warnings but don't raise exceptions
+        """
         with self._lock:
             if self._config_file and self._config_file.exists():
                 try:
-                    with open(self._config_file) as f:
-                        self._config = yaml.safe_load(f) or {}
+                    # Load with env var resolution
+                    config = load_config(self._config_file)
+                    # Apply compatibility adapter if needed
+                    self._config = CompatibilityAdapter.adapt_config(config)
                 except Exception as e:
                     logger.warning(f"Failed to reload config: {e}")
                     self._config = {}
@@ -329,44 +358,78 @@ class EmberContext:
                 self._config = new_config
     
     def save(self) -> None:
-        """Save configuration to disk."""
+        """Save current configuration to disk.
+        
+        Atomically writes configuration to the config file path. Creates
+        parent directories if needed. Thread-safe operation.
+        
+        Raises:
+            OSError: If unable to create directories or write file.
+            Exception: Re-raises any save errors after logging.
+        """
         with self._lock:
             if self._config_file:
                 # Ensure directory exists
                 self._config_file.parent.mkdir(parents=True, exist_ok=True)
                 
-                # Save with atomic write
-                temp_file = self._config_file.with_suffix('.tmp')
+                # Save in appropriate format
                 try:
-                    with open(temp_file, 'w') as f:
-                        yaml.dump(self._config, f, default_flow_style=False)
-                    temp_file.replace(self._config_file)
+                    save_config(self._config, self._config_file)
                 except Exception as e:
                     logger.error(f"Failed to save config: {e}")
-                    if temp_file.exists():
-                        temp_file.unlink()
                     raise
     
     def load_dataset(self, name: str, **kwargs) -> Any:
-        """Load a dataset through the registry.
+        """Load a dataset through the data registry.
         
         Args:
-            name: Dataset name
-            **kwargs: Dataset configuration
+            name: Dataset identifier (e.g., "mnist", "cifar10", custom names).
+            **kwargs: Dataset-specific configuration options:
+                - split: Train/test/validation split
+                - batch_size: Batch size for loading
+                - shuffle: Whether to shuffle data
+                - Other dataset-specific parameters
             
         Returns:
-            Dataset instance.
+            Dataset instance compatible with the framework.
+            
+        Raises:
+            ValueError: If dataset name is not found in registry.
+            
+        Examples:
+            >>> train_data = ctx.load_dataset("mnist", split="train")
+            >>> test_data = ctx.load_dataset("mnist", split="test", batch_size=32)
         """
         return self.data_registry.load(name, **kwargs)
     
     def create_child(self, **config_overrides) -> EmberContext:
-        """Create child context with config overrides.
+        """Create isolated child context with configuration overrides.
+        
+        Child contexts inherit parent configuration but can override specific
+        values without affecting the parent. Useful for temporary configuration
+        changes or testing.
         
         Args:
-            **config_overrides: Configuration overrides.
+            **config_overrides: Configuration key-value pairs to override.
+                Supports nested dictionaries for deep configuration.
             
         Returns:
-            New child context.
+            EmberContext: New child context with applied overrides.
+            
+        Examples:
+            >>> # Override single value
+            >>> child = ctx.create_child(models={"default": "gpt-4"})
+            
+            >>> # Override nested configuration
+            >>> child = ctx.create_child(
+            ...     providers={"openai": {"temperature": 0.5}},
+            ...     models={"timeout": 60}
+            ... )
+            
+            >>> # Use in context manager
+            >>> with ctx.create_child(debug=True) as debug_ctx:
+            ...     # Debug mode only within this block
+            ...     pass
         """
         child = EmberContext(parent=self, isolated=True)
         
@@ -436,8 +499,10 @@ class EmberContext:
         config_file = self.get_config_path()
         if config_file.exists():
             try:
-                with open(config_file) as f:
-                    return yaml.safe_load(f) or {}
+                # Load with env var resolution
+                config = load_config(config_file)
+                # Apply compatibility adapter if needed
+                return CompatibilityAdapter.adapt_config(config)
             except Exception as e:
                 logger.warning(f"Failed to load config from {config_file}: {e}")
         return {}

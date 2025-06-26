@@ -169,3 +169,43 @@ export async function getConfiguredProviders(): Promise<Set<string>> {
   
   return configured;
 }
+
+/**
+ * Check if a provider has valid credentials configured.
+ * Returns configuration status and masked API key preview.
+ */
+export async function checkCredentials(provider: string): Promise<{configured: boolean; keyPreview?: string}> {
+  const envVarMap: Record<string, string> = {
+    openai: 'OPENAI_API_KEY',
+    anthropic: 'ANTHROPIC_API_KEY',
+    google: 'GOOGLE_API_KEY'
+  };
+  
+  // Check environment variable first (highest priority)
+  const envVar = envVarMap[provider];
+  const envKey = process.env[envVar];
+  if (envKey && envKey.length > 4) {
+    return {
+      configured: true,
+      keyPreview: `...${envKey.slice(-4)}`
+    };
+  }
+  
+  // Check credentials file
+  try {
+    const data = await fs.readFile(CREDENTIALS_FILE, 'utf-8');
+    const credentials: Credentials = JSON.parse(data);
+    const apiKey = credentials[provider]?.api_key;
+    
+    if (apiKey && apiKey.length > 4) {
+      return {
+        configured: true,
+        keyPreview: `...${apiKey.slice(-4)}`
+      };
+    }
+  } catch {
+    // No credentials file or parse error
+  }
+  
+  return {configured: false};
+}

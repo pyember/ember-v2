@@ -4,8 +4,8 @@ Learn how to effectively manage context, configuration, and state across
 your AI application components using Ember's context system.
 
 Example:
-    >>> from ember._internal.context import EmberContext
-    >>> ctx = EmberContext()
+    >>> from ember.context import get_context
+    >>> ctx = get_context()
     >>> ctx.get_model("gpt-4")
 """
 
@@ -22,13 +22,13 @@ def example_basic_context():
     """Show basic context usage."""
     print("\n=== Basic Context Management ===\n")
     
-    from ember._internal.context import EmberContext
+    from ember.context import get_context, create_context
     
-    # Create a context
-    ctx = EmberContext()
+    # Get current context (creates if needed)
+    ctx = get_context()
     
-    print("Creating an EmberContext:")
-    print("  ctx = EmberContext()")
+    print("Getting current context:")
+    print("  ctx = get_context()")
     print("  Thread-safe: Yes")
     print("  Isolated: Yes")
     print("  Auto-configures from environment\n")
@@ -44,8 +44,7 @@ def example_configuration_context():
     """Demonstrate configuration management."""
     print("\n\n=== Configuration in Context ===\n")
     
-    from ember._internal.context import EmberContext
-    from ember._internal.config import ConfigManager
+    from ember.context import get_context, create_context
     
     # Create context with custom config
     config = {
@@ -65,8 +64,8 @@ def example_configuration_context():
     print("      'cache': {'enabled': True, 'ttl': 3600}")
     print("  }")
     
-    # Context automatically manages configuration
-    ctx = EmberContext()
+    # Create context with custom configuration
+    ctx = create_context(**config)
     
     print("\nContext manages configuration:")
     print("  • Validates configuration schema")
@@ -128,7 +127,7 @@ def example_context_isolation():
     """Show context isolation and thread safety."""
     print("\n\n=== Context Isolation ===\n")
     
-    from ember._internal.context import EmberContext
+    from ember.context import create_context
     import threading
     
     print("Context isolation ensures:")
@@ -139,9 +138,9 @@ def example_context_isolation():
     
     # Demonstrate isolation
     print("Example: Multiple contexts")
-    print("  ctx1 = EmberContext()  # Production")
-    print("  ctx2 = EmberContext()  # Testing")
-    print("  ctx3 = EmberContext()  # Development\n")
+    print("  ctx1 = create_context()  # Production")
+    print("  ctx2 = create_context()  # Testing")
+    print("  ctx3 = create_context()  # Development\n")
     
     print("Each context maintains:")
     print("  • Separate model instances")
@@ -177,7 +176,7 @@ def example_context_sharing():
     print("        self.model = self.ctx.get_model()\n")
     
     print("# Create shared context")
-    print("ctx = EmberContext()")
+    print("ctx = get_context()")
     print()
     print("# Initialize services with same context")
     print("classifier = TextClassifier(ctx)")
@@ -199,7 +198,7 @@ def example_context_lifecycle():
     print()
     
     print("1. Creation:")
-    print("   ctx = EmberContext()")
+    print("   ctx = get_context()")
     print("   → Initializes registries")
     print("   → Loads configuration")
     print("   → Sets up metrics\n")
@@ -217,7 +216,7 @@ def example_context_lifecycle():
     print("   → Clears caches\n")
     
     print("Context manager pattern:")
-    print("  with EmberContext() as ctx:")
+    print("  with create_context() as ctx:")
     print("      model = ctx.get_model()")
     print("      # Automatic cleanup on exit")
 
@@ -227,8 +226,8 @@ def example_advanced_patterns():
     print("\n\n=== Advanced Context Patterns ===\n")
     
     print("1. Context Inheritance:")
-    print("   base_ctx = EmberContext(config=base_config)")
-    print("   dev_ctx = EmberContext(parent=base_ctx, config=dev_overrides)")
+    print("   base_ctx = create_context(**base_config)")
+    print("   dev_ctx = create_context(parent=base_ctx, **dev_overrides)")
     print("   → Child inherits parent configuration\n")
     
     print("2. Context Decorators:")
@@ -238,8 +237,8 @@ def example_advanced_patterns():
     print("       return model.process(data)\n")
     
     print("3. Global Context:")
-    print("   from ember._internal.context import get_global_context")
-    print("   ctx = get_global_context()")
+    print("   from ember.context import get_context")
+    print("   ctx = get_context()")
     print("   → Singleton for simple scripts\n")
     
     print("4. Testing Context:")

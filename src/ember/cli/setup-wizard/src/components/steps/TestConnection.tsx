@@ -102,24 +102,45 @@ async function createExampleFile(provider: Provider): Promise<void> {
   // Store model constant name in provider info for consistency
   const modelConstant = providerInfo.testModel.toUpperCase().replace(/[.-]/g, '_');
   
-  const example = `"""Your first Ember program!"""
-from ember.api import models, Models
+  const example = `#!/usr/bin/env python3
+"""First Ember program - demonstrates clean API design."""
 
-# Direct API call
-response = models("${providerInfo.testModel}", "Hello! Tell me something interesting.")
-print(response)
+from ember.api import models
 
-# Using model constants for autocomplete
-response = models(Models.${modelConstant}, "What can you help me with?")
-print(response)
+def main():
+    """Simple demonstration of Ember's unified API."""
+    model = "${providerInfo.testModel}"
+    
+    # Example 1: Direct question
+    print(f"Model: {model}")
+    print(f"Q: What is the capital of France?")
+    response = models(model, "What is the capital of France?")
+    print(f"A: {response}\\n")
+    
+    # Example 2: Creative task
+    print(f"Q: Write a haiku about programming")
+    response = models(model, "Write a haiku about programming")
+    print(f"A: {response}\\n")
+    
+    # Example 3: Conversational assistant
+    print("Creating assistant for conversation...")
+    assistant = models.instance(model, temperature=0.7)
+    
+    print(f"Q: Tell me a programming joke")
+    response = assistant("Tell me a programming joke")
+    print(f"A: {response}\\n")
+    
+    print(f"Q: Why is it funny?")
+    response = assistant("Why is it funny?")
+    print(f"A: {response}")
 
-# Create a reusable assistant
-assistant = models.instance("${providerInfo.testModel}", temperature=0.7)
-print(assistant("Tell me a joke"))
-print(assistant("Now explain why it's funny"))
+if __name__ == "__main__":
+    main()
 `;
 
   await fs.writeFile(filename, example);
+  // Make the file executable
+  await fs.chmod(filename, 0o755);
 }
 
 async function saveConfiguration(provider: Provider, envVar: string, apiKey: string): Promise<void> {

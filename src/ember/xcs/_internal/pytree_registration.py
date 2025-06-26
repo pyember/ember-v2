@@ -53,15 +53,33 @@ class StaticWrapper:
     """Wrapper for non-pytree objects to make them JAX-compatible."""
     
     def __init__(self, value):
+        """Initialize StaticWrapper with a value.
+        
+        Args:
+            value: The non-pytree object to wrap.
+        """
         self.value = value
     
     def tree_flatten(self):
-        """Flatten to empty dynamic part, value as static."""
+        """Flatten the wrapper for JAX pytree operations.
+        
+        Returns:
+            Tuple of (leaves, treedef) where leaves is an empty list
+            and treedef contains the static value.
+        """
         return [], self.value
     
     @classmethod
     def tree_unflatten(cls, static, dynamic):
-        """Reconstruct from static data."""
+        """Reconstruct StaticWrapper from flattened representation.
+        
+        Args:
+            static: The static value stored during flattening.
+            dynamic: The dynamic leaves (empty for StaticWrapper).
+            
+        Returns:
+            New StaticWrapper instance containing the static value.
+        """
         return cls(static)
 
 

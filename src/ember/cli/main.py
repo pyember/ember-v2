@@ -1,4 +1,20 @@
-"""Ember CLI main entry point."""
+"""Ember CLI main entry point.
+
+This module provides the command-line interface for Ember AI, supporting
+configuration management, model discovery, API testing, and interactive setup.
+
+The CLI follows a subcommand pattern similar to git, with commands like:
+    ember setup
+    ember configure get <key>
+    ember models --provider openai
+    ember test --model gpt-4
+
+Exit codes follow standard Unix conventions:
+    0: Success
+    1: General error
+    2: Incorrect usage
+    130: Interrupted (SIGINT)
+"""
 
 import sys
 import argparse
@@ -8,10 +24,26 @@ from pathlib import Path
 
 from ember._internal.context import EmberContext
 from ember.cli.commands.configure import cmd_configure
+from ember.cli.commands.config_import import cmd_import
 
 
 def cmd_setup(args):
-    """Run interactive setup wizard."""
+    """Run interactive setup wizard for provider configuration.
+    
+    Launches an interactive terminal UI to configure API keys for AI providers.
+    Attempts to run a local TypeScript/React setup wizard if available, 
+    falling back to an npm package if not found.
+    
+    Args:
+        args: Parsed command line arguments containing:
+            - context: EmberContext instance
+    
+    Returns:
+        int: Exit code (0 for success, 1 for error)
+        
+    Raises:
+        Never - all exceptions are caught and converted to exit codes
+    """
     ctx = args.context
     
     # Check if npx is available
@@ -27,7 +59,19 @@ def cmd_setup(args):
     
     # Launch the setup wizard
     try:
-        result = subprocess.run(['npx', '-y', '@ember-ai/setup'], env=env)
+        # Run the local setup wizard
+        setup_wizard_path = Path(__file__).parent / 'setup-wizard'
+        if setup_wizard_path.exists():
+            # Build and run the local setup wizard
+            build_result = subprocess.run(['npm', 'run', 'build'], cwd=setup_wizard_path, capture_output=True)
+            if build_result.returncode == 0:
+                result = subprocess.run(['npm', 'run', 'start'], cwd=setup_wizard_path, env=env)
+            else:
+                print("Error building setup wizard")
+                result = build_result
+        else:
+            # Fallback to npx (for future npm package)
+            result = subprocess.run(['npx', '-y', '@ember-ai/setup'], env=env)
         
         # Reload context after setup completes
         if result.returncode == 0:
@@ -45,7 +89,14 @@ def cmd_setup(args):
 
 
 def cmd_version(args):
-    """Show version."""
+    """Display Ember version information.
+    
+    Args:
+        args: Parsed command line arguments (unused)
+    
+    Returns:
+        int: Always returns 0 (success)
+    """
     try:
         import ember
         print(f"Ember {ember.__version__}")
@@ -55,7 +106,24 @@ def cmd_version(args):
 
 
 def cmd_models(args):
-    """List models or providers."""
+    """List available AI models and providers.
+    
+    Displays either a list of available providers or models based on arguments.
+    Models can be filtered by provider. Uses the models API catalog for discovery.
+    
+    Args:
+        args: Parsed command line arguments containing:
+            - providers (bool): If True, list providers instead of models
+            - provider (str, optional): Filter models by specific provider
+    
+    Returns:
+        int: Always returns 0 (success)
+        
+    Examples:
+        ember models                    # List all models
+        ember models --providers        # List all providers
+        ember models --provider openai  # List OpenAI models only
+    """
     # Still use the models API for discovery since it has the catalog
     from ember.api import models
     
@@ -81,7 +149,23 @@ def cmd_models(args):
 
 
 def cmd_test(args):
-    """Test model connection."""
+    """Test AI model API connection.
+    
+    Sends a simple test message to verify API connectivity and credentials.
+    Uses the default model from configuration if not specified.
+    
+    Args:
+        args: Parsed command line arguments containing:
+            - context: EmberContext instance
+            - model (str, optional): Specific model to test with
+    
+    Returns:
+        int: Exit code (0 for success, 1 for failure)
+        
+    Note:
+        The test sends "Say hello!" as a prompt and displays the response.
+        This validates both API credentials and model availability.
+    """
     ctx = args.context
     
     # Get default model from context if not specified
@@ -99,7 +183,25 @@ def cmd_test(args):
 
 
 def main():
-    """CLI entry point."""
+    """Main CLI entry point.
+    
+    Initializes the Ember context, parses command line arguments, and
+    dispatches to appropriate command handlers. Handles all exceptions
+    and converts them to appropriate exit codes.
+    
+    Returns:
+        int: Exit code for the shell
+            - 0: Success
+            - 1: General error
+            - 2: Incorrect usage (shows help)
+            - 130: Interrupted by user (Ctrl+C)
+            
+    Architecture Notes:
+        - Context is initialized early and shared with all commands
+        - Commands are organized as subcommands with dedicated parsers
+        - All exceptions are caught and converted to exit codes
+        - SystemExit is handled specially to preserve its exit code
+    """
     # Initialize context early for all commands
     ctx = EmberContext.current()
     
@@ -156,6 +258,17 @@ def main():
     
     # configure migrate
     migrate_parser = config_subparsers.add_parser('migrate', help='Migrate old configuration files')
+    
+    # configure import
+    import_parser = config_subparsers.add_parser('import', help='Import configuration from external tools')
+    import_parser.add_argument('--config-path', type=Path, 
+                                    help='Path to external config file to import')
+    import_parser.add_argument('--output-path', type=Path,
+                                    help='Output path for Ember config (default: ~/.ember/config.yaml)')
+    import_parser.add_argument('--no-backup', dest='backup', action='store_false', default=True,
+                                    help='Skip backup of existing config before importing')
+    import_parser.add_argument('--dry-run', action='store_true',
+                                    help='Show what would be imported without making changes')
     
     config_parser.set_defaults(func=cmd_configure)
     

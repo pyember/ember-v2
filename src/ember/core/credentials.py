@@ -11,6 +11,7 @@ by AWS CLI, gcloud, and other professional tools:
 
 import json
 import os
+import warnings
 from pathlib import Path
 from typing import Optional, Dict, Any
 
@@ -42,14 +43,31 @@ class CredentialManager:
     def get(self, provider: str) -> Optional[str]:
         """Get API key for provider from credentials file only.
         
+        This method is deprecated. Use get_api_key() for proper precedence handling.
+        Issues a deprecation warning when credentials file exists.
+        
         Args:
-            provider: Provider name (e.g., 'openai', 'anthropic')
+            provider: Provider name (e.g., 'openai', 'anthropic').
+                Case-sensitive identifier matching provider configuration.
             
         Returns:
-            API key if found in credentials file, None otherwise
+            Optional[str]: API key if found in credentials file, None otherwise.
+                Returns None on any error (permissions, invalid JSON, etc).
+                
+        Warnings:
+            DeprecationWarning: When ~/.ember/credentials exists, advising migration
+                to config.yaml or environment variables.
         """
         try:
             if self.credentials_file.exists():
+                # Issue deprecation warning
+                warnings.warn(
+                    "The ~/.ember/credentials file is deprecated. "
+                    "Please migrate your API keys to ~/.ember/config.yaml or use environment variables. "
+                    "Run 'ember config migrate' to automatically migrate your configuration.",
+                    DeprecationWarning,
+                    stacklevel=2
+                )
                 with open(self.credentials_file, 'r') as f:
                     credentials = json.load(f)
                     provider_creds = credentials.get(provider, {})
@@ -61,14 +79,26 @@ class CredentialManager:
         return None
     
     def get_api_key(self, provider: str, env_var: str) -> Optional[str]:
-        """Get API key with precedence: env var > credentials file.
+        """Get API key with proper precedence handling.
+        
+        Retrieves API key following security best practices with clear precedence:
+        1. Environment variable (highest priority)
+        2. Credentials file (legacy support)
         
         Args:
-            provider: Provider name (e.g., 'openai', 'anthropic')
-            env_var: Environment variable name
+            provider: Provider name (e.g., 'openai', 'anthropic').
+                Must match the provider key in configuration.
+            env_var: Environment variable name to check first
+                (e.g., 'OPENAI_API_KEY', 'ANTHROPIC_API_KEY').
             
         Returns:
-            API key if found, None otherwise
+            Optional[str]: API key if found via any method, None otherwise.
+                Environment variables override all other sources.
+                
+        Security Notes:
+            - Environment variables are preferred for production use
+            - Credentials file access errors are silently ignored
+            - No logging of actual API keys for security
         """
         # 1. Check environment variable (highest precedence)
         api_key = os.environ.get(env_var)
@@ -89,22 +119,37 @@ class CredentialManager:
         return None
         
     def store(self, provider: str, api_key: str) -> None:
-        """Store API key in credentials file.
+        """Store API key in credentials file (deprecated).
+        
+        This is a deprecated alias for save_api_key(). New code should use
+        environment variables or config.yaml for API key storage.
         
         Args:
-            provider: Provider name
-            api_key: API key to save
+            provider: Provider name (e.g., 'openai', 'anthropic').
+            api_key: API key to store securely.
+            
+        Security:
+            - Creates parent directory with proper permissions
+            - Uses atomic writes to prevent corruption
+            - Sets file permissions to 0600 (owner read/write only)
         """
         self.save_api_key(provider, api_key)
     
     def delete(self, provider: str) -> bool:
-        """Delete API key for a provider.
+        """Delete API key for a provider from credentials file.
+        
+        Removes the provider's credentials atomically. Safe to call even
+        if provider doesn't exist or credentials file is missing.
         
         Args:
-            provider: Provider name
+            provider: Provider name to remove (e.g., 'openai', 'anthropic').
             
         Returns:
-            True if deleted, False if not found
+            bool: True if provider was found and deleted, False otherwise.
+                Returns False on any error (missing file, invalid JSON, etc).
+                
+        Note:
+            Uses atomic write to ensure file consistency during deletion.
         """
         if not self.credentials_file.exists():
             return False
@@ -128,8 +173,15 @@ class CredentialManager:
     def list_providers(self) -> list[str]:
         """List all providers with stored credentials.
         
+        Reads the credentials file and returns provider names only.
+        Does not expose API keys for security.
+        
         Returns:
-            List of provider names
+            List[str]: Provider names with stored credentials, empty list if
+                no credentials file exists or on any error.
+                
+        Security:
+            Only returns provider names, never exposes actual API keys.
         """
         if not self.credentials_file.exists():
             return []
@@ -144,12 +196,29 @@ class CredentialManager:
     def save_api_key(self, provider: str, api_key: str) -> None:
         """Save API key to credentials file atomically with secure permissions.
         
+        Implements secure credential storage following industry best practices:
+        - Atomic writes to prevent corruption
+        - File permissions set to 0600 (owner-only access)
+        - Input validation to prevent common mistakes
+        - Timestamps for credential rotation tracking
+        
         Args:
-            provider: Provider name
-            api_key: API key to save
+            provider: Provider name (e.g., 'openai', 'anthropic').
+                Must be non-empty string.
+            api_key: API key to save. Will be stripped of whitespace.
+                Must be at least 5 characters after stripping.
             
         Raises:
-            ValueError: If provider or api_key is invalid
+            ValueError: If provider or api_key is invalid:
+                - Empty or non-string values
+                - API key too short (<5 chars)
+                - API key contains quotes or spaces
+            OSError: If unable to write credentials file.
+            
+        Security:
+            - Creates parent directory if needed
+            - Uses tempfile + atomic rename for consistency
+            - Sets restrictive permissions before rename
         """
         # Input validation
         if not provider or not isinstance(provider, str):
@@ -194,11 +263,24 @@ class CredentialManager:
     def _write_credentials(self, credentials: Dict[str, Any]) -> None:
         """Write credentials atomically with secure permissions.
         
+        Internal method implementing atomic write pattern:
+        1. Write to temporary file in same directory
+        2. Set secure permissions (0600)
+        3. Atomic rename to final location
+        
+        This ensures credentials are never partially written or corrupted.
+        
         Args:
-            credentials: Credentials dictionary to write.
+            credentials: Complete credentials dictionary to write.
+                Should contain provider keys with api_key and created_at.
             
         Raises:
-            OSError: If write fails.
+            OSError: If unable to create temp file, set permissions, or rename.
+            
+        Implementation Notes:
+            - Uses mkstemp for secure temp file creation
+            - Temp file in same directory ensures atomic rename
+            - Cleanup happens even on failure via finally block
         """
         import tempfile
         

@@ -64,6 +64,9 @@ export const Success: React.FC<Props> = ({provider, onComplete, configuredProvid
           <Box marginTop={1}>
             <Text color="cyan">$ python hello_ember.py</Text>
           </Box>
+          <Box>
+            <Text dimColor>(Created in current directory)</Text>
+          </Box>
         </Box>
       </Box>
 

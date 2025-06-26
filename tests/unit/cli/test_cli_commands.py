@@ -114,18 +114,20 @@ class TestSetup:
         
         with patch('shutil.which', return_value='/usr/bin/npx'):
             with patch('subprocess.run') as mock_run:
-                mock_run.return_value.returncode = 0
-                
-                assert cmd_setup(Mock(context=ctx)) == 0
-                
-                # Correct command
-                assert mock_run.call_args[0][0] == ['npx', '-y', '@ember-ai/setup']
-                
-                # Environment includes config path
-                assert 'EMBER_CONFIG_PATH' in mock_run.call_args[1]['env']
-                
-                # Reloaded context
-                ctx.reload.assert_called_once()
+                # Mock the path check to simulate no local wizard
+                with patch('pathlib.Path.exists', return_value=False):
+                    mock_run.return_value.returncode = 0
+                    
+                    assert cmd_setup(Mock(context=ctx)) == 0
+                    
+                    # Correct command when local wizard doesn't exist
+                    assert mock_run.call_args[0][0] == ['npx', '-y', '@ember-ai/setup']
+                    
+                    # Environment includes config path
+                    assert 'EMBER_CONFIG_PATH' in mock_run.call_args[1]['env']
+                    
+                    # Reloaded context
+                    ctx.reload.assert_called_once()
     
     def test_failure_no_reload(self):
         """Failed wizard doesn't reload context."""

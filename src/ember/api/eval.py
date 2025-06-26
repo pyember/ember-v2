@@ -4,66 +4,20 @@ This module provides tools for evaluating model outputs against reference answer
 and computing performance metrics. It supports both standard evaluators and custom
 evaluation functions.
 
-Standard Evaluators:
-    - "exact_match": Checks for exact match between prediction and reference
-      (case-insensitive)
-    - "accuracy": Alias for "exact_match"
-    - "numeric": Compares numeric values with customizable tolerance
-    - "regex": Extracts content using regex patterns and evaluates the extracted text
-
-Examples:
-    # List available evaluators in the registry
-    from ember.api import eval
-    available = eval.list_available_evaluators()
-    print(f"Available evaluators: {available}")
-
-    # Using standard evaluators from the registry
-    accuracy = eval.Evaluator.from_registry("exact_match")
-
-    # Evaluators with parameters
-    numeric = eval.Evaluator.from_registry("numeric", tolerance=0.01)
-    regex = eval.Evaluator.from_registry("regex", pattern=r"answer: (.*)")
-
-    # Creating a custom evaluator function
-    def custom_metric(prediction, reference):
-        return {
-            "is_correct": prediction.lower() == reference.lower(),
-            "char_count": len(prediction)
-        }
-
-    custom_eval = eval.Evaluator.from_function(custom_metric)
-
-    # Evaluating a model on a dataset
-    from ember.api import datasets, models
-
-    test_data = datasets("mmlu").subset("physics").split("test")
-    model = models.openai.gpt4o
-
-    pipeline = eval.EvaluationPipeline([accuracy, custom_eval])
-    results = pipeline.evaluate(model, test_data)
-
-    print(f"Accuracy: {results['is_correct']*100:.1f}%")
-    print(f"Average character count: {results['char_count']:.1f}")
-
-Custom Evaluator Implementation:
-    # Implementing a custom evaluator class directly
-    from ember.api.eval import IEvaluator, EvaluationResult
-
-    class WordCountEvaluator(IEvaluator):
-        def evaluate(self, system_output, correct_answer, **kwargs):
-            word_count = len(system_output.split())
-            is_correct = word_count >= kwargs.get("min_words", 5)
-            return EvaluationResult(
-                is_correct=is_correct,
-                score=min(1.0, word_count / 20),  # Normalize to 0-1
-                metadata={"word_count": word_count}
-            )
-
-    # Register custom evaluator in registry
-    eval.register_evaluator("word_count", WordCountEvaluator)
-
-    # Use registered custom evaluator
-    word_counter = eval.Evaluator.from_registry("word_count", min_words=10)
+Basic usage:
+    >>> from ember.api import evaluation
+    >>> 
+    >>> # Using standard evaluators
+    >>> accuracy = evaluation.Evaluator.from_registry("exact_match")
+    >>> numeric = evaluation.Evaluator.from_registry("numeric", tolerance=0.01)
+    >>> 
+    >>> # Creating custom evaluator
+    >>> def custom_metric(prediction, reference):
+    ...     return {
+    ...         "is_correct": prediction.lower() == reference.lower(),
+    ...         "char_count": len(prediction)
+    ...     }
+    >>> custom_eval = evaluation.Evaluator.from_function(custom_metric)
 """
 
 from typing import Any, Callable, Dict
@@ -71,36 +25,30 @@ from typing import Any, Callable, Dict
 from ember.utils.eval.base_evaluator import EvaluationResult, IEvaluator
 from ember.utils.eval.registry import EvaluatorRegistry
 
-# Initialize registry with standard evaluators
 _REGISTRY = EvaluatorRegistry()
+_INITIALIZED = False
 
 
-# Register standard evaluators
-def _init_registry():
+def _ensure_registry_initialized():
     """Initialize the evaluator registry with standard evaluators."""
+    global _INITIALIZED
+    if _INITIALIZED:
+        return
+        
     from ember.utils.eval.evaluators import (
         ExactMatchEvaluator,
         NumericToleranceEvaluator,
-        PartialRegexEvaluator)
+        PartialRegexEvaluator,
+    )
 
-    # Skip if already initialized
-    if hasattr(_REGISTRY, "_initialized"):
-        return
-
-    # Register basic evaluators with standard names
     _REGISTRY.register("exact_match", ExactMatchEvaluator)
     _REGISTRY.register("accuracy", ExactMatchEvaluator)  # Alias for exact_match
     _REGISTRY.register("numeric", lambda **kwargs: NumericToleranceEvaluator(**kwargs))
     _REGISTRY.register(
         "regex", lambda pattern, **kwargs: PartialRegexEvaluator(pattern=pattern)
     )
-
-    # Mark as initialized
-    _REGISTRY._initialized = True
-
-
-# Initialize the registry
-_init_registry()
+    
+    _INITIALIZED = True
 
 
 def list_available_evaluators() -> list[str]:
@@ -110,15 +58,11 @@ def list_available_evaluators() -> list[str]:
         List of evaluator names that can be used with Evaluator.from_registry()
 
     Example:
-        ```python
-        available = eval.list_available_evaluators()
-        print(f"Available evaluators: {available}")
-        ```
+        >>> available = list_available_evaluators()
+        >>> print(f"Available evaluators: {available}")
+        Available evaluators: ['accuracy', 'exact_match', 'numeric', 'regex']
     """
-    # Ensure registry is initialized
-    _init_registry()
-
-    # Get all keys from the registry's internal dictionary
+    _ensure_registry_initialized()
     return sorted(list(_REGISTRY._registry.keys()))
 
 
@@ -130,18 +74,12 @@ def register_evaluator(name: str, evaluator_factory: Callable[..., IEvaluator]) 
         evaluator_factory: Factory function or class that returns an IEvaluator instance
 
     Example:
-        ```python
-        class MyEvaluator(IEvaluator):
-            def evaluate(self, system_output, correct_answer, **kwargs):
-                return EvaluationResult(is_correct=True, score=1.0)
-
-        register_evaluator("my_evaluator", MyEvaluator)
-        ```
+        >>> class MyEvaluator(IEvaluator):
+        ...     def evaluate(self, system_output, correct_answer, **kwargs):
+        ...         return EvaluationResult(is_correct=True, score=1.0)
+        >>> register_evaluator("my_evaluator", MyEvaluator)
     """
-    # Ensure registry is initialized
-    _init_registry()
-
-    # Register the evaluator
+    _ensure_registry_initialized()
     _REGISTRY.register(name, evaluator_factory)
 
 
@@ -167,6 +105,7 @@ class Evaluator:
         Raises:
             KeyError: If no evaluator with the given name exists in the registry
         """
+        _ensure_registry_initialized()
         evaluator = _REGISTRY.create(name, **kwargs)
         return cls(evaluator=evaluator)
 

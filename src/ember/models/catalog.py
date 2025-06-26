@@ -64,16 +64,34 @@ MODEL_CATALOG: Dict[str, ModelInfo] = {
         description="Most capable Claude model",
         context_window=200000
     ),
+    "claude-3-opus-20240229": ModelInfo(
+        id="claude-3-opus-20240229",
+        provider="anthropic",
+        description="Most capable Claude model (versioned)",
+        context_window=200000
+    ),
     "claude-3-sonnet": ModelInfo(
         id="claude-3-sonnet", 
         provider="anthropic",
         description="Balanced Claude model",
         context_window=200000
     ),
+    "claude-3-5-sonnet-20241022": ModelInfo(
+        id="claude-3-5-sonnet-20241022",
+        provider="anthropic",
+        description="Latest Claude 3.5 Sonnet model",
+        context_window=200000
+    ),
     "claude-3-haiku": ModelInfo(
         id="claude-3-haiku",
         provider="anthropic", 
         description="Fast, efficient Claude model",
+        context_window=200000
+    ),
+    "claude-3-haiku-20240307": ModelInfo(
+        id="claude-3-haiku-20240307",
+        provider="anthropic",
+        description="Fast, efficient Claude model (versioned)",
         context_window=200000
     ),
     "claude-2.1": ModelInfo(

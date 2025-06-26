@@ -35,68 +35,118 @@ Ember follows three core principles:
 └──────────────────────────────────────────────────────────────┘
 ```
 
+### CLI System Integration
+
+The CLI provides comprehensive management capabilities:
+
+```bash
+# Interactive setup with provider selection
+ember setup  # Launches React-based wizard
+
+# Configuration management
+ember configure get KEY           # Get config value
+ember configure set KEY VALUE     # Set config value  
+ember configure list             # Show all config
+ember configure show SECTION     # Show section
+ember configure migrate          # Migrate old configs
+
+# Testing and discovery
+ember test [--model MODEL]       # Test connection
+ember models [--provider NAME]  # List models
+ember models --providers        # List providers
+```
+
+The setup wizard (`@ember-ai/setup`) features:
+- React/Ink-based interactive UI
+- Provider-specific API key validation
+- Automatic configuration file creation
+- Integration with EmberContext for credential storage
+
 ## Core Components
 
 ### 1. Context System
 
-Centralized configuration and credential management with support for isolation:
+Centralized configuration and credential management with thread-safe and async-safe isolation:
 
 ```python
 from ember.context import get_context, create_context, with_context
 
-# Get current context
-ctx = get_context()
-api_key = ctx.get_credential("openai", "OPENAI_API_KEY")
+# Automatic context management - creates if needed
+ctx = get_context()  # Gets or creates the current context
 
-# Create isolated child context
+# Multiple credential sources with priority ordering
+api_key = ctx.get_credential("openai", "OPENAI_API_KEY")
+# 1. Checks runtime context credentials
+# 2. Falls back to environment variables
+# 3. Falls back to ~/.ember/config.yaml
+# 4. Falls back to ~/.ember/credentials.yaml
+
+# Create isolated child context with deep config inheritance
 with create_context(models={"default": "gpt-4"}) as child_ctx:
     # All model calls in this block use gpt-4 by default
     response = models(None, "Hello")  # Uses gpt-4
     
 # Back to original context - uses original default model
 
-# Temporary context with overrides
+# Temporary context with overrides (no persistence)
 with with_context(models={"temperature": 0.9}):
     # High temperature for creative tasks
     response = models("gpt-4", "Write a poem")
+
+# Configuration management with dot notation
+ctx.get_config("models.default", "gpt-3.5-turbo")  # With default
+ctx.set_config("models.temperature", 0.7)  # Set value
 ```
 
 **Async Context Propagation:**
 
+The context system uses Python's `contextvars` for proper async isolation:
+
 ```python
 import asyncio
-from ember.context import create_context, get_context
+from ember.context import get_context, create_context
 
 async def process_with_model(text: str) -> str:
-    # Context automatically propagates to async functions
-    ctx = get_context()
+    # Context automatically propagates across async boundaries
+    ctx = get_context()  # Gets the correct context
     model = ctx.get_config("models.default")
-    print(f"Processing with {model}")
-    # Simulate async work
+    print(f"Task {asyncio.current_task().get_name()}: Using {model}")
+    
+    # Context remains isolated even with concurrent execution
     await asyncio.sleep(0.1)
-    return f"Processed: {text}"
+    return f"Processed '{text}' with {model}"
 
 async def main():
-    # Create different contexts for concurrent tasks
-    async with asyncio.TaskGroup() as tg:
-        # Task 1: Uses GPT-4
-        with create_context(models={"default": "gpt-4"}):
-            task1 = tg.create_task(process_with_model("Hello"))
-        
-        # Task 2: Uses Claude
-        with create_context(models={"default": "claude-3"}):
-            task2 = tg.create_task(process_with_model("World"))
+    # Each task gets its own isolated context
+    async def task_with_context(name: str, model: str, text: str):
+        with create_context(models={"default": model}):
+            return await process_with_model(text)
     
-    # Each task sees its own context
-    print(await task1)  # Processed with gpt-4
-    print(await task2)  # Processed with claude-3
+    # Run tasks concurrently with different contexts
+    results = await asyncio.gather(
+        task_with_context("task1", "gpt-4", "Hello"),
+        task_with_context("task2", "claude-3-opus", "World"),
+        task_with_context("task3", "gemini-pro", "Async"),
+    )
+    
+    for result in results:
+        print(result)
+    # Output:
+    # Task task-1: Using gpt-4
+    # Task task-2: Using claude-3-opus  
+    # Task task-3: Using gemini-pro
+    # Processed 'Hello' with gpt-4
+    # Processed 'World' with claude-3-opus
+    # Processed 'Async' with gemini-pro
 ```
 
 **Thread-Safe Context Usage:**
 
+The context system uses thread-local storage with proper locking:
+
 ```python
 import threading
-from ember.context import create_context, get_context
+from ember.context import get_context, create_context
 
 def worker(name: str, model: str):
     # Each thread gets isolated context
@@ -136,7 +186,41 @@ with with_context(models={"temperature": 0.9, "max_tokens": 2000}):
 response = models("gpt-4", "Summarize this document")  # Uses temperature=0.7
 ```
 
-### 2. Models API
+### 2. Credential Management
+
+The context system provides secure, hierarchical credential management:
+
+```python
+from ember.context import get_context
+
+ctx = get_context()
+
+# Credential lookup hierarchy (first found wins):
+# 1. Runtime context credentials
+# 2. Environment variables (OPENAI_API_KEY, etc.)
+# 3. Config file (~/.ember/config.yaml)
+# 4. Separate credentials file (~/.ember/credentials.yaml)
+
+# Get credential with fallback chain
+api_key = ctx.get_credential("openai", "OPENAI_API_KEY")
+
+# Set credentials at runtime (not persisted)
+with create_context(credentials={"openai_api_key": "sk-temp-key"}):
+    # This block uses the temporary key
+    response = models("gpt-4", "Hello")
+
+# Persist credentials securely
+ctx.set_config("credentials.openai_api_key", "sk-prod-key")
+ctx.save()  # Saves to ~/.ember/config.yaml with proper permissions
+```
+
+**Security Features:**
+- Credentials never logged or displayed in errors
+- Config files created with 0600 permissions (user-only read/write)
+- Support for credential rotation without code changes
+- Clear error messages that don't expose sensitive data
+
+### 3. Models API
 
 Direct LLM invocation without client initialization:
 

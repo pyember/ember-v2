@@ -243,9 +243,25 @@ class ModelRegistry:
         try:
             provider = provider_class(api_key=api_key)
             return provider
+        except ValueError as e:
+            # Handle missing API key error from BaseProvider
+            if "API key required" in str(e):
+                # Re-raise as ModelProviderError for better error handling
+                from ember.core.setup_launcher import format_non_interactive_error
+                raise ModelProviderError(
+                    format_non_interactive_error(provider_name, f"{provider_name.upper()}_API_KEY", model_id),
+                    context={"model_id": model_id, "provider": provider_name}
+                ) from e
+            else:
+                # Other ValueError, re-raise as ModelNotFoundError
+                raise ModelNotFoundError(
+                    f"Failed to instantiate provider for model {model_id}",
+                    context={"model_id": model_id, "provider": provider_name}
+                ) from e
         except Exception as e:
+            self._logger.error(f"Exception instantiating provider {provider_name} for model {model_id}: {type(e).__name__}: {str(e)}")
             raise ModelNotFoundError(
-                f"Failed to instantiate provider for model {model_id}",
+                f"Failed to instantiate provider for model {model_id}: {type(e).__name__}: {str(e)}",
                 context={"model_id": model_id, "provider": provider_name}
             ) from e
     

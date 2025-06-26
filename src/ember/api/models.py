@@ -2,27 +2,32 @@
 
 Provides direct function-based access to language models without requiring
 client initialization. Simply import and call.
+
+Basic usage:
+    >>> from ember.api import models
+    >>> response = models("gpt-4", "Hello world")
+    >>> print(response.text)
+    Hello! How can I help you today?
 """
 
 from __future__ import annotations
 
 import logging
-import os
-from typing import Union, Optional, Any, Dict, List, TYPE_CHECKING
+from typing import Any, Dict, List, Optional
 
-from ember.models import ModelRegistry
-from ember.models.schemas import ChatResponse
-from ember.models.catalog import (
-    list_available_models, 
-    get_model_info,
-    get_providers,
-    Models
-)
 from ember._internal.exceptions import (
     ModelError,
     ModelNotFoundError,
-    ProviderAPIError
+    ProviderAPIError,
 )
+from ember.models import ModelRegistry
+from ember.models.catalog import (
+    Models,
+    get_model_info,
+    get_providers,
+    list_available_models,
+)
+from ember.models.schemas import ChatResponse
 
 logger = logging.getLogger(__name__)
 
@@ -36,10 +41,11 @@ class Response:
         model_id: Model that generated the response.
         
     Example:
-        response = models("gpt-4", "What is 2+2?")
-        print(response.text)  # "The answer is 4."
-        {'prompt_tokens': 10, 'completion_tokens': 5, 
-         'total_tokens': 15, 'cost': 0.0006}
+        >>> response = models("gpt-4", "What is 2+2?")
+        >>> print(response.text)
+        The answer is 4.
+        >>> print(response.usage)
+        {'prompt_tokens': 10, 'completion_tokens': 5, 'total_tokens': 15, 'cost': 0.0006}
     """
     
     def __init__(self, raw_response: ChatResponse):
@@ -128,9 +134,9 @@ class ModelBinding:
     Binds a model with preset parameters for efficient reuse.
     
     Example:
-        creative = models.instance("gpt-4", temperature=0.9)
-        story1 = creative("Write about dragons")
-        story2 = creative("Write about robots")
+        >>> creative = models.instance("gpt-4", temperature=0.9)
+        >>> story1 = creative("Write about dragons")
+        >>> story2 = creative("Write about robots")
     """
     
     def __init__(self, model_id: str, registry: ModelRegistry, **params):
@@ -192,13 +198,13 @@ class ModelsAPI:
     Direct function-based API without client initialization.
     
     Example:
-        from ember.api import models
-        
-        # Direct call
-        response = models("gpt-4", "Hello world")
-        
-        # With parameters
-        response = models("gpt-4", "Be creative", temperature=0.9)
+        >>> from ember.api import models
+        >>> 
+        >>> # Direct call
+        >>> response = models("gpt-4", "Hello world")
+        >>> 
+        >>> # With parameters
+        >>> response = models("gpt-4", "Be creative", temperature=0.9)
     """
     
     def __init__(self):
@@ -227,13 +233,6 @@ class ModelsAPI:
             ModelProviderError: Missing API key.
             ProviderAPIError: API errors.
         """
-        # Extract provider preferences if specified
-        providers = params.pop("providers", None)
-        
-        # TODO: Implement provider preferences in registry
-        if providers:
-            logger.debug(f"Provider preferences specified: {providers}")
-        
         raw_response = self._registry.invoke_model(model, prompt, **params)
         return Response(raw_response)
     
@@ -248,8 +247,8 @@ class ModelsAPI:
             Callable ModelBinding.
             
         Example:
-            creative = models.instance("gpt-4", temperature=0.9)
-            story = creative("Write a story")
+            >>> creative = models.instance("gpt-4", temperature=0.9)
+            >>> story = creative("Write a story")
         """
         return ModelBinding(model, self._registry, **params)
     
@@ -316,7 +315,6 @@ class ModelsAPI:
 _global_models_api = ModelsAPI()
 
 
-# Module-level function for convenience
 def models(model: str, prompt: str, **params) -> Response:
     """Invoke a language model directly.
     
