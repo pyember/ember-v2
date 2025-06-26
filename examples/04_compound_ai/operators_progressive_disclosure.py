@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional
 import jax
 import jax.numpy as jnp
+import equinox as eqx
 
 sys.path.append(str(Path(__file__).parent.parent))
 
@@ -58,9 +59,10 @@ def main():
     
     class TextProcessor(operators.Operator):
         """Basic operator with initialization."""
+        style: str = eqx.field(static=True)
         
         def __init__(self, style: str = "formal"):
-            self.style = style
+            object.__setattr__(self, "style", style)
             # Could initialize model bindings here
             # self.model = models.instance("gpt-4", temperature=0.7)
         

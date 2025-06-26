@@ -61,9 +61,10 @@ class OpenAIProvider(BaseProvider):
         messages = [{"role": "user", "content": prompt}]
         
         # Add system message if provided via context
-        context = kwargs.pop("context", None)
-        if context:
-            messages.insert(0, {"role": "system", "content": context})
+        system_kwargs = ["context", "system"]
+        for key in system_kwargs:
+            if key in kwargs:
+                messages.insert(0, {"role": "system", "content": kwargs.pop(key)})
         
         # Extract known parameters
         params = {

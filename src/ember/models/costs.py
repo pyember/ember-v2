@@ -53,28 +53,28 @@ from typing import Dict, Any
 DEFAULT_MODEL_COSTS: Dict[str, Dict[str, float]] = {
     # OpenAI Models
     "gpt-4": {
-        "input": 30.0,
-        "output": 60.0,
+        "input": 0.003,
+        "output": 0.006,
         "context": 8192
     },
     "gpt-4-turbo": {
-        "input": 10.0,
-        "output": 30.0,
+        "input": 0.0015,
+        "output": 0.003,
         "context": 128000
     },
     "gpt-4o": {
-        "input": 5.0,
-        "output": 15.0,
+        "input": 0.0025,
+        "output": 0.00125,
         "context": 128000
     },
     "gpt-3.5-turbo": {
-        "input": 0.5,
-        "output": 1.5,
+        "input": 0.0008,
+        "output": 0.0004,
         "context": 16385
     },
     "gpt-3.5-turbo-16k": {
-        "input": 3.0,
-        "output": 4.0,
+        "input": 0.0003,
+        "output": 0.00015,
         "context": 16385
     },
     
