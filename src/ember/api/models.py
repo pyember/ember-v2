@@ -115,7 +115,7 @@ class Response:
         """
         if hasattr(self._raw, "model_id"):
             return self._raw.model_id
-        if hasattr(self._raw, "raw_output") and hasattr(self._raw.raw_output, "model"):
+        if hasattr(self._raw, "raw_output") and self._raw.raw_output is not None and hasattr(self._raw.raw_output, "model"):
             return self._raw.raw_output.model
         return None
     
@@ -265,7 +265,7 @@ class ModelsAPI:
         """
         return list_available_models()
     
-    def discover(self, provider: str = None) -> Dict[str, Dict[str, Any]]:
+    def discover(self, provider: Optional[str] = None) -> Dict[str, Dict[str, Any]]:
         """Discover available models with detailed information.
         
         Args:

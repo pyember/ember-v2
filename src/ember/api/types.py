@@ -42,12 +42,10 @@ def extract_value(response: Any, key: str, default: Any = None) -> Any:
         return getattr(response, key)
 
     # Try data dictionary if it exists
-    if (
-        hasattr(response, "data")
-        and isinstance(response.data, dict)
-        and key in response.data
-    ):
-        return response.data[key]
+    if hasattr(response, "data"):
+        data = getattr(response, "data")
+        if isinstance(data, dict) and key in data:
+            return data[key]
 
     # Try to see if it's a nested structure
     if isinstance(response, dict):

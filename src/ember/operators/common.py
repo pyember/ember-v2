@@ -13,8 +13,6 @@ import jax
 import jax.numpy as jnp
 
 from ember.operators.base import Operator
-from ember._internal.types import EmberModel
-
 
 class Ensemble(Operator):
     """Ensemble operator that combines multiple operators.
