@@ -4,7 +4,7 @@ This module provides the single source of truth for available models,
 enabling both runtime discovery and IDE autocomplete support.
 """
 
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Optional
 from dataclasses import dataclass
 
 
@@ -123,7 +123,7 @@ MODEL_CATALOG: Dict[str, ModelInfo] = {
 }
 
 
-def list_available_models(provider: str = None) -> List[str]:
+def list_available_models(provider: Optional[str] = None) -> List[str]:
     """List all available model IDs.
     
     Args:
