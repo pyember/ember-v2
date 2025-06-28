@@ -50,11 +50,11 @@ class Ensemble(Operator):
     """
     
     operators: List[Operator]
-    aggregator: Optional[Callable[[List[Any]], Any]]
+    aggregator: Optional[Callable[[List[Any], Any], Any]]
     
     def __init__(self, 
                  operators: List[Operator],
-                 aggregator: Optional[Callable[[List[Any]], Any]] = None):
+                 aggregator: Optional[Callable[[List[Any], Any], Any]] = None):
         """Initialize ensemble with operators and optional aggregator.
         
         Args:
@@ -65,19 +65,20 @@ class Ensemble(Operator):
         self.operators = operators
         self.aggregator = aggregator
     
-    def forward(self, input: Any) -> Any:
+    def forward(self, input: Any, original_prompt: Any) -> Any:
         """Run all operators and aggregate results.
         
         Args:
             input: Input to pass to all operators.
-            
+            original_prompt: Original prompt / question.
+
         Returns:
             List of results if no aggregator, otherwise aggregated result.
         """
-        results = [op(input) for op in self.operators]
+        results = [op(input, original_prompt) for op in self.operators]
         
         if self.aggregator:
-            return self.aggregator(results)
+            return self.aggregator(results, original_prompt)
         return results
 
 
@@ -106,18 +107,19 @@ class Chain(Operator):
         """
         self.operators = operators
     
-    def forward(self, input: Any) -> Any:
+    def forward(self, input: Any, original_prompt: Any) -> Any:
         """Pass input through all operators sequentially.
         
         Args:
             input: Initial input to the chain.
-            
+            original_prompt: Original prompt / question.
+
         Returns:
             Output from the final operator.
         """
         result = input
         for op in self.operators:
-            result = op(result)
+            result = op(result, original_prompt)
         return result
 
 
@@ -180,11 +182,12 @@ class Router(Operator):
         self.router_fn = router_fn
         self.default_route = default_route
     
-    def forward(self, input: Any) -> Any:
+    def forward(self, input: Any, original_prompt: Any) -> Any:
         """Route input to appropriate operator.
         
         Args:
             input: Input to route.
+            original_prompt: Original prompt / question.
             
         Returns:
             Result from the selected operator.
@@ -200,7 +203,7 @@ class Router(Operator):
             else:
                 raise KeyError(f"No operator for route '{route}'")
         
-        return self.routes[route](input)
+        return self.routes[route](input, original_prompt)
 
 
 class LearnableRouter(Operator):
@@ -291,13 +294,14 @@ class LearnableRouter(Operator):
         logits = embedding @ self.routing_weights
         return jax.nn.softmax(logits / self.temperature)
     
-    def forward(self, input: Any) -> Any:
+    def forward(self, input: Any, original_prompt: Any) -> Any:
         """Route input based on learned weights.
         
         Args:
             input: If embedding_fn is provided, this is the raw input to process.
                 If embedding_fn is None, expects input with 'data' and 'embedding' attributes.
-            
+            original_prompt: Original prompt / question.
+
         Returns:
             Result from the selected operator.
         """
@@ -324,7 +328,7 @@ class LearnableRouter(Operator):
         route_name = self.route_names[route_idx]
         
         # Route the data
-        return self.routes[route_name](data)
+        return self.routes[route_name](data, original_prompt)
 
 
 
@@ -371,12 +375,13 @@ class Retry(Operator):
         self.max_attempts = max_attempts
         self.should_retry = should_retry or (lambda e, n: n < max_attempts)
     
-    def forward(self, input: Any) -> Any:
+    def forward(self, input: Any, original_prompt: Any) -> Any:
         """Execute operator with retry logic.
         
         Args:
             input: Input to pass to wrapped operator.
-            
+            original_prompt: Original prompt / question.
+
         Returns:
             Result from successful execution.
             
@@ -387,7 +392,7 @@ class Retry(Operator):
         
         for attempt in range(self.max_attempts):
             try:
-                return self.operator(input)
+                return self.operator(input, original_prompt)
             except Exception as e:
                 last_error = e
                 if not self.should_retry(e, attempt + 1):
@@ -442,11 +447,12 @@ class Cache(Operator):
         self.cache = {}
         self.access_order = []
     
-    def forward(self, input: Any) -> Any:
+    def forward(self, input: Any, original_prompt: Any) -> Any:
         """Execute operator with caching.
         
         Args:
             input: Input to pass to wrapped operator.
+            original_prompt: Original prompt / question.
             
         Returns:
             Cached result if available, otherwise computed result.
@@ -461,7 +467,7 @@ class Cache(Operator):
             return self.cache[key]
         
         # Compute result
-        result = self.operator(input)
+        result = self.operator(input, original_prompt)
         
         # Add to cache
         self.cache[key] = result
