@@ -1,0 +1,77 @@
+{
+  "version": "1.0",
+  "example": "04_compound_ai/simple_ensemble.py",
+  "execution_mode": "simulated",
+  "sections": [
+    {
+      "header": "Part 1: Expert Functions (No Classes!)",
+      "output": ""
+    },
+    {
+      "header": "Individual Expert Responses:",
+      "output": "Dr. Detail: 0.91 confidence\n  Prof. Precise: 1.00 confidence\n  Practical Pat: 0.71 confidence"
+    },
+    {
+      "header": "Part 2: Manual Ensemble Pattern",
+      "output": ""
+    },
+    {
+      "header": "Starting: Manual ensemble",
+      "output": "Completed: Manual ensemble (took 0.00s)\nManual Ensemble Result:\n  Selected Expert: Prof. Precise\n  Confidence: 94.61%\n  Avg Confidence: 82.10%"
+    },
+    {
+      "header": "Part 3: Using operators.ensemble()",
+      "output": ""
+    },
+    {
+      "header": "Starting: Built-in ensemble",
+      "output": "Completed: Built-in ensemble (took 0.00s)\nBuilt-in Ensemble Results:\n  1. Dr. Detail: 0.77\n  2. Prof. Precise: 0.84\n  3. Practical Pat: 0.89"
+    },
+    {
+      "header": "Part 4: Custom Aggregation Strategies",
+      "output": ""
+    },
+    {
+      "header": "Custom Aggregation Result:",
+      "output": "Method: weighted_vote\n  Expert: Prof. Precise\n  Agreement: 85.80%"
+    },
+    {
+      "header": "Part 5: Optimized Ensemble with @jit",
+      "output": ""
+    },
+    {
+      "header": "Performance Comparison:",
+      "output": "Regular ensemble (10 calls): 0.0000s\n  JIT ensemble (10 calls): 0.0240s\n  Speedup: 0.0x"
+    },
+    {
+      "header": "Part 6: Batch Processing with vmap",
+      "output": ""
+    },
+    {
+      "header": "Starting: Batch processing 5 questions",
+      "output": "Completed: Batch processing 5 questions (took 0.00s)\n\nBatch Results:\n1. Q: What is the best way to learn programmin...\n   A: Prof. Precise (93.89%)\n2. Q: How do I debug complex systems?...\n   A: Prof. Precise (93.89%)\n3. Q: What makes a good software architect?...\n   A: Prof. Precise (93.89%)\n4. Q: How to design scalable systems?...\n   A: Prof. Precise (93.89%)\n5. Q: What are best practices for code review?...\n   A: Prof. Precise (93.89%)"
+    },
+    {
+      "header": "Part 7: Real-World Pattern",
+      "output": ""
+    },
+    {
+      "header": "In practice, you would use real models:",
+      "output": "```python\ndef gpt4_expert(question: str) -> dict:\n    response = models('gpt-4', f'Answer concisely: {question}')\n    return {'answer': response.text, 'model': 'gpt-4'}\n\ndef claude_expert(question: str) -> dict:\n    response = models('claude-3', f'Answer concisely: {question}')\n    return {'answer': response.text, 'model': 'claude-3'}\n\n# Create multi-model ensemble\nensemble = operators.ensemble(gpt4_expert, claude_expert)\n```"
+    },
+    {
+      "header": "\u2705 Key Takeaways",
+      "output": ""
+    },
+    {
+      "header": "1. Ensembles are just functions consulting other functions",
+      "output": "2. No complex base classes or specifications needed\n3. Use operators.ensemble() for parallel execution\n4. Add custom aggregation as simple functions\n5. Optimize with @jit for repeated calls\n6. Process batches with vmap()\n7. Same patterns work with real models\n\nNext: Explore judge synthesis patterns!"
+    }
+  ],
+  "total_time": 1.07,
+  "api_keys_required": [],
+  "metrics": {
+    "lines_of_code": 239,
+    "api_calls": 0
+  }
+}

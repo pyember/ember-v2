@@ -1,0 +1,59 @@
+{
+  "version": "1.0",
+  "example": "10_evaluation_suite/accuracy_evaluation.py",
+  "execution_mode": "simulated",
+  "sections": [
+    {
+      "header": "\ud83d\udcca Part 1: Creating Evaluation Datasets",
+      "output": "Created classification dataset: 10 cases\nDifficulty: {'easy': 5, 'medium': 3, 'hard': 2}\n\nCreated math dataset: 8 cases\nDifficulty: {'easy': 2, 'medium': 4, 'hard': 2}"
+    },
+    {
+      "header": "\ud83e\udd16 Part 2: Systems to Evaluate",
+      "output": ""
+    },
+    {
+      "header": "Testing sentiment classifier:",
+      "output": "Text: 'This product is amazing but has some issues.'\nPrediction: positive (confidence: 0.50)\n\nTesting math solver:\nQuestion: 'What is 15 + 27?'\nAnswer: None (method: guessed)"
+    },
+    {
+      "header": "\ud83d\udccf Part 3: Evaluation Metrics",
+      "output": ""
+    },
+    {
+      "header": "\ud83d\udd2c Part 4: Complete Evaluation Pipeline",
+      "output": ""
+    },
+    {
+      "header": "Running Classification Evaluation:",
+      "output": "Starting: Running predictions\nCompleted: Running predictions (took 0.00s)\n\nOverall Accuracy: 100.00%\nCorrect: 10/10\n\nPer-difficulty accuracy:\n  easy: 100.00%\n  medium: 100.00%\n  hard: 100.00%\n\nPer-class metrics:\n  positive: F1=1.00, Precision=1.00, Recall=1.00\n  negative: F1=1.00, Precision=1.00, Recall=1.00\n  neutral: F1=1.00, Precision=1.00, Recall=1.00"
+    },
+    {
+      "header": "Running Math Evaluation:",
+      "output": "Starting: Running predictions\nCompleted: Running predictions (took 0.00s)\n\nOverall Accuracy: 0.00%\nCorrect: 0/8\n\nPer-difficulty accuracy:\n  easy: 0.00%\n  medium: 0.00%\n  hard: 0.00%"
+    },
+    {
+      "header": "\u2696\ufe0f Part 5: System Comparison",
+      "output": ""
+    },
+    {
+      "header": "Starting: Running predictions",
+      "output": "Completed: Running predictions (took 0.00s)\nStarting: Running predictions\nCompleted: Running predictions (took 0.00s)\nSystem Comparison Results:\n\nRankings:\n1. rule_based: 100.00%\n2. random_baseline: 40.00%\n\nWinner: rule_based\nStatistically significant: Yes"
+    },
+    {
+      "header": "\u2705 Key Takeaways",
+      "output": ""
+    },
+    {
+      "header": "1. Always evaluate on representative test sets",
+      "output": "2. Use multiple metrics (accuracy, F1, precision, recall)\n3. Consider difficulty stratification\n4. Compare against baselines\n5. Check statistical significance\n6. Track performance over time\n7. Automate evaluation pipelines\n\nNext: Explore consistency_testing.py for reliability metrics!"
+    }
+  ],
+  "total_time": 0.6,
+  "api_keys_required": [
+    "OPENAI_API_KEY"
+  ],
+  "metrics": {
+    "lines_of_code": 364,
+    "api_calls": 0
+  }
+}

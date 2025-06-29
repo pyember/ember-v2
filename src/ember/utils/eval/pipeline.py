@@ -23,9 +23,7 @@ class PipelineEvaluator(IEvaluator[Any, Any]):
         self.transforms = transforms
         self.evaluator = evaluator
 
-    def evaluate(
-        self, system_output: Any, correct_answer: Any, **kwargs: Any
-    ) -> EvaluationResult:
+    def evaluate(self, system_output: Any, correct_answer: Any, **kwargs: Any) -> EvaluationResult:
         """Evaluates the system output after applying a sequence of transformations.
 
         Args:
@@ -70,16 +68,15 @@ def summarize_batch(results: List[EvaluationResult]) -> BatchEvaluationSummary:
     count = len(results)
     mean_score = total_score / count if count else 0.0
     accuracy = sum(1 for r in results if r.is_correct) / count if count else 0.0
-    return BatchEvaluationSummary(
-        results=results, mean_score=mean_score, accuracy=accuracy
-    )
+    return BatchEvaluationSummary(results=results, mean_score=mean_score, accuracy=accuracy)
 
 
 def evaluate_batch(
     evaluator: IEvaluator[Any, Any],
     system_outputs: List[Any],
     correct_answers: List[Any],
-    **kwargs: Any) -> List[EvaluationResult]:
+    **kwargs: Any,
+) -> List[EvaluationResult]:
     """Evaluates a batch of system outputs against their corresponding correct answers.
 
     Args:
@@ -110,7 +107,8 @@ def evaluate_batch_with_summary(
     evaluator: IEvaluator[Any, Any],
     system_outputs: List[Any],
     correct_answers: List[Any],
-    **kwargs: Any) -> BatchEvaluationSummary:
+    **kwargs: Any,
+) -> BatchEvaluationSummary:
     """Evaluates a batch of samples and returns an aggregated summary.
 
     Args:
@@ -126,5 +124,6 @@ def evaluate_batch_with_summary(
         evaluator=evaluator,
         system_outputs=system_outputs,
         correct_answers=correct_answers,
-        **kwargs)
+        **kwargs,
+    )
     return summarize_batch(results)

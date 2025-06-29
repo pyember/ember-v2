@@ -1,0 +1,143 @@
+
+==================================================
+  JAX-XCS Integration
+==================================================
+
+Part 1: Static vs Dynamic Detection
+==================================================
+
+Ember's automatic detection rules:
+  • JAX arrays (jnp.ndarray) → Dynamic (learnable)
+  • Everything else → Static (not learnable)
+  • No decorators needed - it just works!
+
+Mixed operator results:
+  Dynamic score: 1.90
+  Static action: accept
+  Static model: gpt-4
+
+==================================================
+Part 2: Gradients Through Mixed Operations
+==================================================
+
+Gradient computation:
+  Input: [0.1 0.2 0.3]
+  Target: 5.0
+  Weight gradients: [-0.62 -1.24 -1.86]
+  Bias gradient: -6.199999809265137
+
+Note: Static parameters (config, model) don't get gradients!
+
+==================================================
+Part 3: Real-World Example - Learned Prompt Router
+==================================================
+
+Learned routing results:
+
+'Explain the theory of relativity...'
+  → coding (100.0%)
+  Model: gpt-4-turbo
+
+'Write a haiku about mountains...'
+  → coding (100.0%)
+  Model: gpt-4-turbo
+
+'Debug this Python code: def f(x): return...'
+  → coding (100.0%)
+  Model: gpt-4-turbo
+
+'What is 2+2?...'
+  → coding (100.0%)
+  Model: gpt-4-turbo
+
+==================================================
+Part 4: Training via Gradients
+==================================================
+
+Training demonstration:
+  Training prompt: Write elegant Python code
+  Target route: coding
+  Embedding gradients shape: (4, 16)
+  Projection gradients shape: (16, 16)
+
+Complete optimization example with optax:
+```python
+import optax
+
+# Initialize optimizer
+optimizer = optax.adam(learning_rate=0.01)
+opt_state = optimizer.init(router)
+
+# Training loop
+for epoch in range(100):
+    # Compute loss and gradients
+    loss_val = routing_loss(params, prompt, target_idx)
+    grads = grad_fn(params, prompt, target_idx)
+    
+    # Update parameters with optax
+    updates, opt_state = optimizer.update(grads, opt_state)
+    
+    # Apply updates to router using update_params
+    router = router.update_params(
+        route_embeddings=router.route_embeddings + updates[0],
+        projection=router.projection + updates[1]
+    )
+```
+
+✓ Running actual optimization example:
+  Step 0: loss = -0.0000
+  Step 1: loss = -0.0000
+  Step 2: loss = -0.0000
+
+==================================================
+Part 5: XCS JIT with Mixed Operations
+==================================================
+
+JIT-compiled batch processing:
+  'Explain the theory of relativi...' → score: 5.14
+  'Write a haiku about mountains...' → score: 5.14
+
+==================================================
+✅ JAX-XCS Integration Summary
+==================================================
+
+🔑 Key Principles:
+  1. JAX arrays are automatically learnable
+  2. Everything else is automatically static
+  3. Gradients flow only through JAX operations
+  4. Static operations (models, tools) work seamlessly
+  5. XCS JIT handles mixed static/dynamic efficiently
+
+💡 Practical Benefits:
+  • No manual static/dynamic annotations
+  • Models and tools integrate naturally
+  • Full differentiability where needed
+  • Optimal performance via XCS
+  • Clean separation of concerns
+
+🎯 Use Cases:
+  • Learned routing between models
+  • Prompt optimization with model feedback
+  • Hybrid symbolic-neural systems
+  • Differentiable programming with LLMs
+  • Neural architecture search over operators
+
+📚 Example Pattern:
+```python
+class HybridOperator(operators.Operator):
+    def __init__(self):
+        # Learnable parameters
+        self.weights = jnp.array([...])
+        
+        # Static components
+        self.model = models.instance('gpt-4')
+        self.tool = MyTool()
+    
+    def forward(self, x):
+        # Mix learnable and static freely
+        score = jnp.dot(self.weights, x)
+        if score > threshold:
+            return self.model(prompt)
+        else:
+            return self.tool.process(x)
+```

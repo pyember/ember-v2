@@ -1,0 +1,37 @@
+{
+  "version": "1.0",
+  "example": "03_simplified_apis/simplified_workflows.py",
+  "execution_mode": "simulated",
+  "sections": [
+    {
+      "header": "\ud83d\udd27 Running in simulated mode (no API keys detected)",
+      "output": ""
+    },
+    {
+      "header": "To run this example with real API calls, set one of:",
+      "output": "export OPENAI_API_KEY='your-key-here'\n  export ANTHROPIC_API_KEY='your-key-here'\n  export GOOGLE_API_KEY='your-key-here'\n\nSimulated output will demonstrate the expected behavior."
+    },
+    {
+      "header": "Message: 'Check out this amazing offer! Click here now!!!...'",
+      "output": "Safe: False\nDetails: {\n  \"toxicity\": {\n    \"toxic\": false,\n    \"reason\": \"No harmful content detected\"\n  },\n  \"spam\": {\n    \"spam\": true,\n    \"confidence\": 0.9\n  },\n  \"pii\": {\n    \"has_pii\": false,\n    \"details\": \"No personal information found\"\n  }\n}\n\nMessage: 'Thanks for the helpful response to my question....'\nSafe: True\nDetails: {\n  \"toxicity\": {\n    \"toxic\": false,\n    \"reason\": \"Polite and constructive message\"\n  },\n  \"spam\": {\n    \"spam\": false,\n    \"confidence\": 0.1\n  },\n  \"pii\": {\n    \"has_pii\": false,\n    \"details\": \"No personal information found\"\n  }\n}\n\nMessage: 'My email is john@example.com and phone is 555-1234...'\nSafe: False\nDetails: {\n  \"toxicity\": {\n    \"toxic\": false,\n    \"reason\": \"No harmful content\"\n  },\n  \"spam\": {\n    \"spam\": false,\n    \"confidence\": 0.2\n  },\n  \"pii\": {\n    \"has_pii\": true,\n    \"details\": \"Found email: john@example.com, phone: 555-1234\"\n  }\n}"
+    },
+    {
+      "header": "Q: What is 2+2?",
+      "output": "A: 4\nDifficulty: easy\nTopic: math\nExplanation: 2+2 equals 4 because adding two groups of two items gives you four items total.\n\nQ: Who wrote Romeo and Juliet?\nA: Shakespeare\nDifficulty: medium\nTopic: history\nExplanation: William Shakespeare wrote Romeo and Juliet in the early part of his career, around 1594-1596.\n\nQ: What is the speed of light?\nA: 299,792,458 m/s\nDifficulty: hard\nTopic: science\nExplanation: The speed of light in vacuum is exactly 299,792,458 meters per second, a fundamental constant in physics."
+    },
+    {
+      "header": "Task: What is the capital of France?",
+      "output": "Prediction: The capital of France is Paris.\nScores: {\n  \"clarity\": 1.0,\n  \"completeness\": 0.9,\n  \"correctness\": 1.0\n}\nAccuracy: 1.00\nOverall: 0.98\n\nTask: Explain photosynthesis\nPrediction: Photosynthesis is the process by which plants convert sunlight into energy.\nScores: {\n  \"clarity\": 0.9,\n  \"completeness\": 0.7,\n  \"correctness\": 0.9\n}\nOverall: 0.83"
+    },
+    {
+      "header": "Q: How tall is the Eiffel Tower?",
+      "output": "Context: The Eiffel Tower is 330 meters tall and located...\nA: The Eiffel Tower is 330 meters tall.\n\nQ: What is the longest river?\nContext: The Amazon River is approximately 6,400 kilometer...\nA: The Amazon River is the longest river at approximately 6,400 kilometers.\n\nQ: Which monument was a gift from France?\nContext: The Statue of Liberty was a gift from France to t...\nA: The Statue of Liberty was a gift from France to the United States.\n\n\n\u2728 Key takeaway: Complex workflows are just composed functions!"
+    }
+  ],
+  "total_time": 0.86,
+  "api_keys_required": [],
+  "metrics": {
+    "lines_of_code": 387,
+    "api_calls": 0
+  }
+}

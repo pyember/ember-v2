@@ -1,0 +1,41 @@
+{
+  "version": "1.0",
+  "example": "03_simplified_apis/model_binding_patterns.py",
+  "execution_mode": "simulated",
+  "sections": [
+    {
+      "header": "\ud83d\udd27 Running in simulated mode (no API keys detected)",
+      "output": ""
+    },
+    {
+      "header": "To run this example with real API calls, set one of:",
+      "output": "export OPENAI_API_KEY='your-key-here'\n\nSimulated output will demonstrate the expected behavior."
+    },
+    {
+      "header": "Part 1: Basic ModelBinding",
+      "output": ""
+    },
+    {
+      "header": "Direct calls (inefficient for repeated use):",
+      "output": "Direct approach (validates parameters each time):\n  Q: What is Python?\n  A: [Simulated response about Python]\n  Q: What is machine learning?\n  A: [Simulated response about learning]\n  Q: What is cloud computing?\n  A: [Simulated response about computing]\n  Time: 0.000s (simulated)\n\nBinding approach (validates once, reuses config):\n  Creating model binding...\n  Using binding for all questions...\n  Q: What is Python?\n  A: [Simulated response about Python]\n  Q: What is machine learning?\n  A: [Simulated response about learning]\n  Q: What is cloud computing?\n  A: [Simulated response about computing]\n  Time: 0.000s (simulated)\n  \ud83d\udca1 Binding is more efficient for repeated calls!\n\n\nPart 2: Configuration Patterns"
+    },
+    {
+      "header": "Different temperature settings:",
+      "output": "Factual (T=0.1): The capital of France is Paris.\n  Balanced (T=0.7): Paris is the capital of France, known for the Eiffel Tower.\n  Creative (T=1.0): Paris, the City of Light, serves as France's vibrant capital!\n\n\nPart 3: Advanced Patterns"
+    },
+    {
+      "header": "Specialized bindings for different tasks:",
+      "output": "- Classifier: Optimized for classification (low temperature)\n  - Generator: Optimized for creative text (high temperature)\n  - Analyzer: Balanced for analysis tasks\n\nBatch processing with vmap:\n  Processing 3 items in parallel...\n  \u2713 All items processed simultaneously!"
+    },
+    {
+      "header": "\u2705 Key Takeaways:",
+      "output": "1. Use model.instance() for repeated calls\n  2. Configure once, use many times\n  3. Batch with vmap for parallel processing\n  4. JIT compilation works with bindings"
+    }
+  ],
+  "total_time": 0.76,
+  "api_keys_required": [],
+  "metrics": {
+    "lines_of_code": 266,
+    "api_calls": 0
+  }
+}

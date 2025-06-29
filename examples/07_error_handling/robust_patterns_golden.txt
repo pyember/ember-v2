@@ -1,0 +1,130 @@
+
+==================================================
+  Robust Error Handling Patterns
+==================================================
+
+
+============================================================
+🔧 Running in simulated mode (no API keys detected)
+============================================================
+
+To run this example with real API calls, set one of:
+  export OPENAI_API_KEY='your-key-here'
+  export ANTHROPIC_API_KEY='your-key-here'
+  export GOOGLE_API_KEY='your-key-here'
+
+Simulated output will demonstrate the expected behavior.
+============================================================
+
+==================================================
+Example 1: Basic Error Handling
+==================================================
+
+Testing error handling:
+
+Input: 'I love this product!'
+✅ Result: positive
+
+Input: ''
+❌ Error: Invalid input: text must be a non-empty string
+
+Input: None
+❌ Error: Invalid input: text must be a non-empty string
+
+Input: 'This is okay I guess'
+✅ Result: neutral
+
+==================================================
+Example 2: Retry Mechanism
+==================================================
+
+Testing retry mechanism:
+  Attempt 1 failed: Network timeout
+  Retrying in 1.0s...
+✅ Success after 2 attempts: Bonjour le monde
+
+==================================================
+Example 3: Fallback Strategies
+==================================================
+
+Trying primary model: gpt-4
+Primary model failed: Simulated primary model failure
+Falling back to: gpt-3.5-turbo
+
+Result: Buenos días
+Model used: gpt-3.5-turbo
+Fallback used: True
+
+==================================================
+Example 4: Input Validation
+==================================================
+
+Testing input validation:
+
+Test 1: {'text': 'Hello world', 'language': 'English'}
+✅ Success
+   Result: {'analysis': 'This English text contains common words and standard grammar.', 'text_length': 11, 'language': 'english'}
+
+Test 2: {'text': '', 'language': 'Spanish'}
+❌ Failed
+   Errors: ["Field 'text' cannot be empty"]
+
+Test 3: {'language': 'French'}
+❌ Failed
+   Errors: ['Missing required field: text']
+
+Test 4: {'text': 123, 'language': 'German'}
+❌ Failed
+   Errors: ["Field 'text' must be a string"]
+
+Test 5: {'text': 'Bonjour', 'language': 'Klingon'}
+❌ Failed
+   Errors: ['Unsupported language: Klingon']
+
+==================================================
+Example 5: Circuit Breaker Pattern
+==================================================
+
+Testing circuit breaker:
+❌ Request 1: Service temporarily unavailable
+✅ Request 2: Processed: Request 2
+❌ Request 3: Service temporarily unavailable
+  Circuit breaker: OPENED after 2 failures
+❌ Request 4: Service temporarily unavailable
+❌ Request 5: Circuit breaker is OPEN - service unavailable
+❌ Request 6: Circuit breaker is OPEN - service unavailable
+
+==================================================
+Example 6: Error Aggregation and Reporting
+==================================================
+
+Processing items:
+  ✅ Processed: Item_0
+  ✅ Processed: Item_0
+  ✅ Processed: Item_0
+  ✅ Processed: Item_0
+  ✅ Processed: Item_0
+  ✅ Processed: Item_0
+  ✅ Processed: Item_0
+  ✅ Processed: Item_0
+  ✅ Processed: Item_0
+  ✅ Processed: Item_0
+
+Error Report:
+  Summary: {'total_operations': 11, 'successful': 11, 'failed': 0, 'success_rate': '100.0%'}
+  Health Status: healthy
+  Recent Errors: 0
+  Warnings: 0
+
+==================================================
+✅ Best Practices Summary
+==================================================
+
+1. Always validate inputs before processing
+2. Use try-catch blocks around external calls
+3. Implement retry logic for transient failures
+4. Have fallback strategies for critical paths
+5. Use circuit breakers to prevent cascading failures
+6. Aggregate and monitor errors for insights
+7. Return structured error responses
+8. Log errors for debugging and monitoring

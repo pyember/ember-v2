@@ -29,6 +29,7 @@ dependencies = [
     # Core dependencies
     "equinox>=0.11.0",
     "jax>=0.4.0",
+    "optax>=0.1.7",  # JAX optimization library
     "pandas>=1.0.0,<2.2.0",
     "numpy>=1.21.0,<1.27.0",
     "pydantic>=2.7.4",
@@ -41,6 +42,14 @@ dependencies = [
     "openai>=1.57.2",
     "anthropic>=0.40.0",
     "google-generativeai>=0.8.3",
+    "google-ai-generativelanguage>=0.6.6",
+    "grpcio==1.51.3",
+    "grpcio-status==1.51.3",
+    "proto-plus==1.22.3",
+    "googleapis-common-protos>=1.63.2",
+    "protobuf>=4.21.0,<5.0.0",
+    "pyasn1==0.4.8",
+    "pyasn1-modules==0.2.8",
     
     # HTTP and async - Critical core functionality
     "aiohttp>=3.9.5",
@@ -48,6 +57,9 @@ dependencies = [
     "httpx==0.25.2",  # Compatible with anthropic client
     "httpcore==1.0.2",  # Compatible with httpx 0.25.2
     "h11==0.14.0",  # Latest version (with manual patch required)
+    
+    # CLI and formatting
+    "rich>=13.0.0",
     "requests>=2.32.2",
     
     # Data processing
@@ -229,13 +241,13 @@ verbosity = 1
 suppress_health_check = ["too_slow"]
 
 [tool.black]
-line-length = 88
+line-length = 100
 target-version = ["py39"]
 include = '\.pyi?$'
 
 [tool.isort]
 profile = "black"
-line_length = 88
+line_length = 100
 multi_line_output = 3
 
 [tool.mypy]
@@ -250,7 +262,7 @@ no_implicit_optional = true
 strict_optional = true
 
 [tool.ruff]
-line-length = 88
+line-length = 100
 target-version = "py39"
 
 [tool.ruff.lint]
@@ -260,6 +272,12 @@ ignore = []
 [build-system]
 requires = ["setuptools>=68.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[dependency-groups]
+dev = [
+    "black>=25.1.0",
+    "ruff>=0.12.0",
+]
 
 [tool.setuptools]
 package-dir = {"" = "src"}

@@ -1,0 +1,69 @@
+{
+  "version": "1.0",
+  "example": "04_compound_ai/operators_progressive_disclosure.py",
+  "execution_mode": "simulated",
+  "sections": [
+    {
+      "header": "Level 1: Simple Functions (90% Case)",
+      "output": ""
+    },
+    {
+      "header": "Simple function operator:",
+      "output": "Input: I love this new API!\n  Sentiment: positive"
+    },
+    {
+      "header": "Level 2: Basic Operator Class",
+      "output": ""
+    },
+    {
+      "header": "Basic operator class:",
+      "output": "Processed: Hello World\n  Style: formal"
+    },
+    {
+      "header": "Level 3: Validated Operators (Advanced)",
+      "output": ""
+    },
+    {
+      "header": "Using ember.operators.advanced for validation:",
+      "output": "```python\nfrom ember.operators.advanced import Operator, Specification\nfrom ember.types import EmberModel, Field\n\nclass QueryInput(EmberModel):\n    query: str = Field(..., max_length=1000)\n    max_results: int = Field(10, ge=1, le=100)\n\nclass SearchOperator(Operator):\n    specification = Specification(\n        input_model=QueryInput,\n        output_model=SearchResults\n    )\n```"
+    },
+    {
+      "header": "Level 4: JAX-Integrated Operators (ML Systems)",
+      "output": ""
+    },
+    {
+      "header": "Learnable Router Example:",
+      "output": "Query: 'Explain quantum computing'\nRoute: simple (99.32%)\n\nQuery: 'Write a poem about the sea'\nRoute: simple (99.32%)\n\nQuery: 'What is 2+2?'\nRoute: simple (99.32%)\n\nKey insight: JAX integration allows gradients!\n```python\n# Compute gradient w.r.t. routing weights\ngrad_fn = jax.grad(lambda weights: loss(weights, data))\ngrads = grad_fn(router.routing_weights)\n```"
+    },
+    {
+      "header": "Level 5: Complex Nested Systems (Platform-Level)",
+      "output": ""
+    },
+    {
+      "header": "Using ember.operators.experimental for cutting-edge features:",
+      "output": "```python\nfrom ember.operators.experimental import (\n    trace,           # Execution tracing\n    jit_compile,     # Advanced JIT compilation\n    pattern_optimize # Pattern-based optimization\n)\n\n# Trace execution for debugging\ntraced_op = trace(my_complex_operator)\n\n# Compile entire operator graphs\ncompiled = jit_compile(operator_graph)\n\n# Pattern-based optimization\noptimized = pattern_optimize(\n    operator,\n    patterns=['fusion', 'constant_folding']\n)\n```"
+    },
+    {
+      "header": "Bonus: XCS Integration for Static/Dynamic Mix",
+      "output": ""
+    },
+    {
+      "header": "XCS correctly handles static/dynamic mix:",
+      "output": "Static result: 3\n  Dynamic result: 0.6000000238418579"
+    },
+    {
+      "header": "\u2705 Progressive Disclosure Summary",
+      "output": ""
+    },
+    {
+      "header": "\ud83d\udcca Usage Distribution:",
+      "output": "Level 1 (@op functions): ~90% of use cases\n  Level 2 (Basic Operator): ~8% of use cases\n  Level 3 (Validated): ~1.5% of use cases\n  Level 4 (JAX/ML): ~0.4% of use cases\n  Level 5 (Platform): ~0.1% of use cases\n\n\ud83d\udd11 Key Insights:\n  1. Start simple - just use @op on functions\n  2. JAX arrays are automatically learnable\n  3. Models and tools are automatically static\n  4. XCS handles the static/dynamic split perfectly\n  5. Each level is self-contained - no forced complexity\n\n\ud83c\udfaf Design Philosophy:\n  \u2022 Simple things should be simple\n  \u2022 Complex things should be possible\n  \u2022 The API grows with your needs\n  \u2022 No premature complexity\n\n\ud83d\udca1 When to use each level:\n  @op \u2192 You just need a simple transformation\n  Operator \u2192 You need initialization or state\n  Validated \u2192 You need strict input/output contracts\n  JAX-integrated \u2192 You're building ML systems\n  Experimental \u2192 You're pushing boundaries"
+    }
+  ],
+  "total_time": 2.97,
+  "api_keys_required": [],
+  "metrics": {
+    "lines_of_code": 251,
+    "api_calls": 0
+  }
+}

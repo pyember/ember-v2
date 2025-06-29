@@ -1,0 +1,188 @@
+
+==================================================
+  Streaming Data Processing
+==================================================
+
+🎯 Streaming for AI Applications:
+
+• Handle datasets larger than memory
+• Process data in real-time
+• Reduce latency and memory usage
+• Enable continuous learning
+
+=== Basic Streaming ===
+
+Why streaming matters:
+  • Process data that doesn't fit in memory
+  • Start processing before full download
+  • Reduce memory footprint
+  • Enable real-time processing
+
+Streaming 1000 records:
+  Streaming: Record 0
+  Streaming: Record 1
+  ... (continues streaming)
+
+
+=== Batch Processing ===
+
+Processing 100 items in batches of 16:
+
+  Batch 1: 16 items
+  Batch 2: 16 items
+  Batch 3: 16 items
+  ...
+
+Total: 7 batches, 100 items processed
+
+
+=== Memory-Efficient Loading ===
+
+Techniques for large datasets:
+
+1. Generator-based loading:
+   def load_data():
+       with open('large_file.txt') as f:
+           for line in f:
+               yield process_line(line)
+
+2. Chunked reading:
+   for chunk in pd.read_csv('data.csv', chunksize=10000):
+       process_chunk(chunk)
+
+3. Memory mapping:
+   data = np.memmap('large_array.dat', dtype='float32', mode='r')
+   # Access data without loading all into RAM
+
+4. Lazy loading:
+   dataset = Dataset('path/to/data', lazy=True)
+   # Data loaded only when accessed
+
+
+=== Stream Transformations ===
+
+Stream transformation pipeline:
+  numbers → square → filter_even
+
+Input: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+After square: 0, 1, 4, 9, 16, 25, 36, 49, 64, 81
+After filter: [0, 4, 16, 36, 64]
+
+
+=== Parallel Streaming ===
+
+Parallel processing strategies:
+
+1. Thread pool for I/O-bound:
+   with ThreadPoolExecutor(max_workers=4) as pool:
+       results = pool.map(fetch_data, urls)
+       for result in results:
+           process(result)
+
+2. Process pool for CPU-bound:
+   with ProcessPoolExecutor() as pool:
+       for result in pool.map(cpu_intensive, data_stream()):
+           save(result)
+
+3. Async streaming:
+   async for item in async_data_stream():
+       result = await process_async(item)
+       await save_async(result)
+
+
+=== Windowed Processing ===
+
+Sliding window (size=5, stride=2):
+Data: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+
+  Window 0: [0, 1, 2, 3, 4]
+  Window 1: [2, 3, 4, 5, 6]
+  Window 2: [4, 5, 6, 7, 8]
+  Window 3: [6, 7, 8, 9, 10]
+  ...
+
+Total windows: 8
+Use cases: Time series analysis, sequence modeling
+
+
+=== Streaming Aggregation ===
+
+Online statistics calculation:
+
+Processing stream...
+  After 10 items:
+    Mean: 97.92
+    Variance: 71.60
+    Range: [77.54, 110.53]
+  After 100 items:
+    Mean: 100.87
+    Variance: 174.86
+    Range: [60.70, 135.04]
+  After 1000 items:
+    Mean: 99.73
+    Variance: 233.91
+    Range: [52.68, 156.28]
+
+
+=== Backpressure Handling ===
+
+Managing flow control in streams:
+
+1. Buffer with limits:
+   buffer = collections.deque(maxlen=1000)
+   # Automatically drops oldest when full
+
+2. Rate limiting:
+   rate_limiter = RateLimiter(100)  # 100 items/sec
+   for item in stream:
+       rate_limiter.acquire()
+       process(item)
+
+3. Adaptive batching:
+   batch = []
+   for item in stream:
+       batch.append(item)
+       if len(batch) >= batch_size or timeout_reached:
+           process_batch(batch)
+           batch = []
+
+
+=== Complete Streaming Pipeline ===
+
+End-to-end streaming pipeline:
+
+  1. Source: Read from files/API/database
+  2. Parse: Extract structured data
+  3. Filter: Remove invalid records
+  4. Transform: Normalize and enrich
+  5. Batch: Group for efficient processing
+  6. Process: Apply ML models
+  7. Aggregate: Compute statistics
+  8. Sink: Write results
+
+Example metrics:
+  • Input rate: 10,000 records/sec
+  • Processing latency: 50ms/batch
+  • Memory usage: 500MB constant
+  • Throughput: 9,500 records/sec
+
+==================================================
+✅ Streaming Best Practices
+==================================================
+
+1. Use generators for memory efficiency
+2. Process in batches for performance
+3. Implement proper error handling
+4. Monitor memory usage and throughput
+5. Handle backpressure gracefully
+6. Use appropriate buffer sizes
+7. Consider parallelism carefully
+
+🔧 Tools & Libraries:
+• itertools - Built-in iteration tools
+• asyncio - Async streaming
+• pandas chunks - Large CSV processing
+• Apache Beam - Distributed streaming
+• Dask - Parallel computing
+
+Next: Explore practical patterns in '../09_practical_patterns/'

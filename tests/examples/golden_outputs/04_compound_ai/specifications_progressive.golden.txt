@@ -1,0 +1,98 @@
+
+============================================================
+🔧 Running in simulated mode (no API keys detected)
+============================================================
+
+To run this example with real API calls, set one of:
+  export OPENAI_API_KEY='your-key-here'
+  export ANTHROPIC_API_KEY='your-key-here'
+  export GOOGLE_API_KEY='your-key-here'
+
+Simulated output will demonstrate the expected behavior.
+============================================================
+
+
+==================================================
+  Specifications with Progressive Disclosure
+==================================================
+
+Level 1: No Specifications - Just Functions
+==================================================
+
+Simple function result: positive
+✓ No validation needed - trust Python's type system
+
+==================================================
+Level 2: Native Python Types
+==================================================
+
+Native types result:
+  mean: 0.45
+  count: 4
+  above_threshold: 2
+  threshold: 0.4
+  min: 0.1
+  max: 0.9
+✓ Python's type hints + simple validation
+
+==================================================
+Level 3: EmberModel for Rich Validation
+==================================================
+
+Search for 'machine learning':
+  doc-0: Result for: machine learning (score: 0.9)
+  doc-1: Result for: machine learning (score: 0.8)
+  doc-2: Result for: machine learning (score: 0.7)
+✓ Automatic validation on inputs and outputs
+
+==================================================
+Level 4: Full Specification with Prompt Templates
+==================================================
+
+Complex specification result:
+  Risk Score: 6.8/10
+  Recommendations: 2
+  Confidence: 85%
+✓ Full validation, prompt templates, structured I/O
+
+==================================================
+✅ Specification Progression Summary
+==================================================
+
+📊 When to Use Each Level:
+
+Level 1 - No Specs (90%):
+  ✓ Simple transformations
+  ✓ Trust Python's type system
+  ✓ Internal functions
+  Example: text → sentiment
+
+Level 2 - Native Types (8%):
+  ✓ Need basic validation
+  ✓ Simple parameter checking
+  ✓ Standard Python types suffice
+  Example: List[float] → Dict stats
+
+Level 3 - EmberModel (1.5%):
+  ✓ Structured data with constraints
+  ✓ Field-level validation
+  ✓ Reusable data models
+  Example: SearchQuery → List[SearchResult]
+
+Level 4 - Full Specification (0.5%):
+  ✓ Complex business logic
+  ✓ Prompt templates needed
+  ✓ Strict input/output contracts
+  ✓ Cross-field validation
+  Example: InvestmentAnalysis
+
+🎯 Progressive Disclosure Benefits:
+  1. Start simple - add validation only when needed
+  2. No premature abstraction
+  3. Each level is self-contained
+  4. Easy to upgrade when requirements grow
+  5. Zero overhead for simple cases
+
+💡 Best Practice:
+  Always start at Level 1. Only move up when you
+  actually need the additional validation features.

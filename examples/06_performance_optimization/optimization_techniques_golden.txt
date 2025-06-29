@@ -1,0 +1,125 @@
+
+==================================================
+  Performance Optimization Techniques
+==================================================
+
+
+============================================================
+🔧 Running in simulated mode (no API keys detected)
+============================================================
+
+To run this example with real API calls, set one of:
+  export OPENAI_API_KEY='your-key-here'
+  export ANTHROPIC_API_KEY='your-key-here'
+  export GOOGLE_API_KEY='your-key-here'
+
+Simulated output will demonstrate the expected behavior.
+============================================================
+
+==================================================
+Example 1: JIT Compilation Speedup
+==================================================
+
+Normal execution: 0.00s
+  Result: {'sentiment': 'positive', 'emotion': 'joy', 'intensity': 5}
+
+First JIT call (includes compilation): 0.00s
+Optimized JIT call: 0.00s
+Speedup: 0.1x faster
+
+==================================================
+Example 2: Batch Processing with vmap
+==================================================
+
+Sequential processing:
+  - The new iPhone features AI cap... -> tech
+  - The team won the championship ... -> sports
+  - Congress passed the new climat... -> politics
+  - The movie broke box office rec... -> entertainment
+  - Scientists discover new exopla... -> other
+
+Sequential time: 0.00s
+
+Batch processing with vmap:
+  - The new iPhone features AI cap... -> tech
+  - The team won the championship ... -> sports
+  - Congress passed the new climat... -> politics
+  - The movie broke box office rec... -> entertainment
+  - Scientists discover new exopla... -> other
+
+Batch time: 0.00s
+Speedup: 0.1x faster
+
+==================================================
+Example 3: Caching Pattern
+==================================================
+
+Translation requests:
+  [Cache miss for 'Hello, how are you?...']
+  'Hello, how are you?' -> 'Hola, ¿cómo estás?'
+  [Cache miss for 'Thank you very much...']
+  'Thank you very much' -> 'Muchas gracias'
+  [Cache hit for 'Hello, how are you?...']
+  'Hello, how are you?' -> 'Hola, ¿cómo estás?'
+  [Cache miss for 'Good morning...']
+  'Good morning' -> 'Buenos días'
+  [Cache hit for 'Thank you very much...']
+  'Thank you very much' -> 'Muchas gracias'
+
+Cache stats: 3 unique translations cached
+
+==================================================
+Example 4: Optimized Pipeline
+==================================================
+
+Processing documents in batch:
+
+Document 1:
+  Preview: AI research has made significant progress in natur...
+  Summary: AI research advances natural language understanding capabilities.
+  Category: research
+
+Document 2:
+  Preview: The stock market reached new highs today as tech c...
+  Summary: AI research advances natural language understanding capabilities.
+  Category: research
+
+Document 3:
+  Preview: A new study shows the benefits of regular exercise...
+  Summary: AI research advances natural language understanding capabilities.
+  Category: research
+
+Total processing time: 0.00s
+Average per document: 0.00s
+
+==================================================
+Performance Optimization Tips
+==================================================
+
+1. 🚀 Use @jit for functions called multiple times
+   - First call includes compilation overhead
+   - Subsequent calls are significantly faster
+   - Best for: Repeated operations, production APIs
+
+2. 📦 Use vmap() for batch processing
+   - Processes multiple inputs in parallel
+   - Automatic batching optimization
+   - Best for: Processing lists, datasets, bulk operations
+
+3. 💾 Implement caching where appropriate
+   - Cache expensive LLM calls
+   - Consider TTL for dynamic content
+   - Best for: Repeated queries, reference data
+
+4. 🔧 Combine optimizations
+   - JIT + vmap = Maximum performance
+   - Cache + JIT = Fast repeated operations
+   - Best for: Production systems
+
+5. 📊 Profile before optimizing
+   - Measure actual bottlenecks
+   - Focus on hot paths
+   - Best for: Real-world applications
+
+✨ Remember: Premature optimization is the root of all evil.
+   Profile first, then optimize where it matters!

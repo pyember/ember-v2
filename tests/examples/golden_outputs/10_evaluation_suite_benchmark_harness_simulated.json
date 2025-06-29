@@ -1,0 +1,73 @@
+{
+  "version": "1.0",
+  "example": "10_evaluation_suite/benchmark_harness.py",
+  "execution_mode": "simulated",
+  "sections": [
+    {
+      "header": "\ud83c\udfaf Comprehensive AI Benchmarking:",
+      "output": "\u2022 Measure what matters\n\u2022 Compare models objectively\n\u2022 Track performance over time\n\u2022 Optimize cost vs quality\n\u2022 Make data-driven decisions"
+    },
+    {
+      "header": "Essential benchmark components:",
+      "output": "1. Models to test\n  2. Datasets/test cases\n  3. Metrics to measure\n  4. Execution framework\n  5. Results analysis\n\nExample benchmark configuration:\n  Models: ['gpt-3.5-turbo', 'gpt-4', 'claude-2']\n  Dataset: 'MMLU' (1000 questions)\n  Metrics: ['accuracy', 'latency', 'cost']\n  Runs: 3 (for averaging)"
+    },
+    {
+      "header": "Key metrics to track:",
+      "output": "Latency:\n  \u2022 First token: Time to first response token\n  \u2022 Total: End-to-end completion time\n  \u2022 P50/P95/P99: Percentile latencies\n\nThroughput:\n  \u2022 Tokens/sec: Generation speed\n  \u2022 Requests/sec: Concurrent handling\n  \u2022 Batch efficiency: Speedup from batching\n\nResource Usage:\n  \u2022 Memory: Peak memory consumption\n  \u2022 CPU: Processor utilization\n  \u2022 API calls: External service usage\n\nCost:\n  \u2022 Per token: $ per input/output token\n  \u2022 Per request: Total cost per call\n  \u2022 Per accuracy: Cost efficiency metric"
+    },
+    {
+      "header": "Common accuracy benchmarks:",
+      "output": "Benchmark   Description              Size"
+    },
+    {
+      "header": "MMLU       Multitask language understanding 57 subjects",
+      "output": "HumanEval  Code generation           164 problems\nGSM8K      Math word problems        8,500 questions\nGPQA       Graduate-level Q&A        448 questions\nBBH        Big Bench Hard            23 tasks\n\nExample results:\n  Model        MMLU   HumanEval  GSM8K\n  ----------   ----   ---------  -----\n  GPT-3.5      70.0%    48.1%    57.1%\n  GPT-4        86.4%    67.0%    92.0%\n  Claude-2     78.5%    71.2%    88.0%"
+    },
+    {
+      "header": "Harness components:",
+      "output": "1. Configuration Manager:\n   benchmark_config = {\n       'models': ['gpt-3.5', 'gpt-4'],\n       'datasets': ['mmlu', 'humaneval'],\n       'metrics': ['accuracy', 'latency'],\n       'parallel_workers': 4\n   }\n\n2. Dataset Loader:\n   def load_dataset(name):\n       return DatasetRegistry.get(name)\n\n3. Model Runner:\n   async def run_model(model, prompt):\n       start = time.time()\n       response = await model.generate(prompt)\n       latency = time.time() - start\n       return response, latency\n\n4. Metric Calculator:\n   def calculate_metrics(predictions, ground_truth):\n       accuracy = sum(p == g for p, g in ...)\n       return {'accuracy': accuracy}"
+    },
+    {
+      "header": "Parallelization strategies:",
+      "output": "1. Model parallelism:\n   Run different models concurrently\n   \u251c\u2500 Worker 1: GPT-3.5\n   \u251c\u2500 Worker 2: GPT-4\n   \u2514\u2500 Worker 3: Claude\n\n2. Data parallelism:\n   Split dataset across workers\n   \u251c\u2500 Worker 1: Questions 1-250\n   \u251c\u2500 Worker 2: Questions 251-500\n   \u251c\u2500 Worker 3: Questions 501-750\n   \u2514\u2500 Worker 4: Questions 751-1000\n\n3. Pipeline parallelism:\n   Stage 1: Load data \u2192 Queue\n   Stage 2: Generate \u2192 Queue\n   Stage 3: Evaluate \u2192 Results"
+    },
+    {
+      "header": "Analyzing benchmark results:",
+      "output": "1. Descriptive statistics:\n   Model: GPT-4\n   Accuracy: 86.4% \u00b1 2.1%\n   Latency: 1.2s \u00b1 0.3s\n   Cost: $0.03 \u00b1 $0.002\n\n2. Statistical significance:\n   GPT-4 vs GPT-3.5 accuracy\n   t-statistic: 8.32\n   p-value: 0.0001\n   Result: Significant improvement\n\n3. Correlation analysis:\n   Latency vs Accuracy: r = 0.72\n   Cost vs Accuracy: r = 0.85\n   \u2192 Higher accuracy correlates with cost"
+    },
+    {
+      "header": "Visualization types:",
+      "output": "1. Performance radar chart:\n         Accuracy\n           100%\n            |\n   Speed ---+--- Cost\n            |\n         Reliability\n\n2. Time series plot:\n   Latency (ms)\n   1500 |    \u2571\u2572\n   1000 |   \u2571  \u2572__\u2571\u2572\n    500 |__\u2571        \u2572\n      0 +------------->\n        0   50  100  Request #\n\n3. Comparison matrix:\n   \u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\n   \u2502 Model   \u2502 MMLU   \u2502 Speed  \u2502 Cost   \u2502\n   \u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u253c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524\n   \u2502 GPT-3.5 \u2502 70.0%  \u2502 0.8s   \u2502 $0.002 \u2502\n   \u2502 GPT-4   \u2502 86.4%  \u2502 1.2s   \u2502 $0.030 \u2502\n   \u2502 Claude  \u2502 78.5%  \u2502 1.0s   \u2502 $0.015 \u2502\n   \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518"
+    },
+    {
+      "header": "CI/CD integration:",
+      "output": "1. Automated triggers:\n   \u2022 On model update\n   \u2022 On code change\n   \u2022 Nightly runs\n   \u2022 On demand\n\n2. Regression detection:\n   if new_accuracy < baseline_accuracy - threshold:\n       alert('Performance regression detected!')\n       block_deployment()\n\n3. Trend tracking:\n   Week 1: 84.2%\n   Week 2: 84.5% \u2191\n   Week 3: 85.1% \u2191\n   Week 4: 84.8% \u2193 \u26a0\ufe0f"
+    },
+    {
+      "header": "Strategies to reduce benchmark costs:",
+      "output": "1. Sampling strategies:\n   \u2022 Start with 10% of dataset\n   \u2022 If variance < threshold, stop\n   \u2022 Else increase to 25%, 50%...\n\n2. Cascading evaluation:\n   \u2022 Run cheap models first\n   \u2022 Only test expensive models if needed\n   \u2022 Early stopping on poor performance\n\n3. Result caching:\n   \u2022 Cache model responses\n   \u2022 Reuse for multiple metrics\n   \u2022 Share across experiments\n\n4. Cost tracking:\n   Benchmark run #42:\n   \u2022 API calls: 1,000\n   \u2022 Total cost: $45.20\n   \u2022 Cost/datapoint: $0.045\n   \u2022 Budget remaining: $154.80"
+    },
+    {
+      "header": "Executive Summary",
+      "output": ""
+    },
+    {
+      "header": "Date: 2024-01-15",
+      "output": "Models tested: 3\nTotal test cases: 5,000\nTotal duration: 4.2 hours\nTotal cost: $127.50\n\nKey Findings:\n\u2022 GPT-4 leads in accuracy (86.4%)\n\u2022 Claude-2 best cost/performance ratio\n\u2022 GPT-3.5 fastest response time\n\nRecommendations:\n1. Use GPT-4 for high-stakes decisions\n2. Use Claude-2 for general tasks\n3. Use GPT-3.5 for real-time applications\n\nDetailed Results: [See appendix]\nRaw Data: [Download CSV]\nInteractive Dashboard: [View Online]"
+    },
+    {
+      "header": "\u2705 Benchmarking Best Practices",
+      "output": ""
+    },
+    {
+      "header": "1. Define clear success criteria",
+      "output": "2. Use representative datasets\n3. Control for randomness\n4. Measure multiple dimensions\n5. Account for variability\n6. Version everything\n7. Automate execution\n8. Monitor costs closely\n\n\ud83d\udd27 Tools & Frameworks:\n\u2022 pytest-benchmark - Python benchmarking\n\u2022 Apache JMeter - Load testing\n\u2022 Locust - Scalable testing\n\u2022 Weights & Biases - Experiment tracking\n\u2022 MLflow - ML lifecycle management\n\n\ud83c\udf89 Congratulations on completing the Ember examples!"
+    }
+  ],
+  "total_time": 0.02,
+  "api_keys_required": [],
+  "metrics": {
+    "lines_of_code": 270,
+    "api_calls": 0
+  }
+}

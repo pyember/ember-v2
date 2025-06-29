@@ -1,0 +1,53 @@
+{
+  "version": "1.0",
+  "example": "06_performance_optimization/batch_processing.py",
+  "execution_mode": "simulated",
+  "sections": [
+    {
+      "header": "Part 1: Basic vmap Usage",
+      "output": ""
+    },
+    {
+      "header": "Processing batch of texts:",
+      "output": "1. positive - This product is absolutely amazing and w...\n2. negative - Terrible experience, would not recommend...\n3. neutral - It's okay, nothing special really....\n4. positive - Love this! Great quality and excellent s...\n5. negative - Poor design and awful customer support....\n  Batch processing time: 0.0002s\n\nComparing with sequential processing:\n  Sequential time: 0.0000s\n  Speedup: 0.0x faster with vmap"
+    },
+    {
+      "header": "Part 2: Multiple Arguments",
+      "output": ""
+    },
+    {
+      "header": "Scoring keyword matches in batch:",
+      "output": "'learning' in 'Machine learning is transforming how we build soft...': 1 matches\n'learning' in 'Deep learning models require lots of data': 1 matches\n'AI' in 'Ember makes AI development simple and efficient': 1 matches\n'ML' in 'Natural language processing is a key ML applicatio...': 1 matches"
+    },
+    {
+      "header": "Part 3: Combining vmap and @jit",
+      "output": ""
+    },
+    {
+      "header": "Extracting features from 80 texts:",
+      "output": "Total texts processed: 80\n  Processing time: 0.0016s\n  Texts per second: 51213\n\nSample features from first text:\n  length: 44\n  words: 9\n  avg_word_length: 4.888888888888889\n  capitalized_words: 1\n  punctuation_count: 1\n  unique_words: 8"
+    },
+    {
+      "header": "Part 4: Practical Pattern",
+      "output": ""
+    },
+    {
+      "header": "Batch preparing documents for model analysis:",
+      "output": "Documents prepared: 4\n  Estimated total tokens: 82\n  Estimated cost (@$0.01/1K tokens): $0.0008"
+    },
+    {
+      "header": "Part 5: Best Practices",
+      "output": ""
+    },
+    {
+      "header": "\u2705 Use vmap for:",
+      "output": "\u2022 Processing multiple independent items\n  \u2022 Parallel text/data transformations\n  \u2022 Batch model inference preparation\n  \u2022 Feature extraction from collections\n\n\ud83c\udfaf vmap + @jit pattern:\n  1. Define single-item function\n  2. Apply @jit for optimization\n  3. Use vmap for batch processing\n  4. Get both compilation and parallelization benefits\n\n\ud83d\udca1 Tips:\n  \u2022 vmap automatically handles different input sizes\n  \u2022 Works with functions returning dicts, lists, or scalars\n  \u2022 Combine with @jit for maximum performance\n  \u2022 Great for preprocessing before model calls\n\n\ud83c\udf89 Key Takeaways:\n  1. vmap enables efficient batch processing\n  2. Automatic parallelization of operations\n  3. Works seamlessly with existing functions\n  4. Combines perfectly with @jit\n  5. Significant speedups for batch operations"
+    }
+  ],
+  "total_time": 0.84,
+  "api_keys_required": [],
+  "metrics": {
+    "lines_of_code": 208,
+    "api_calls": 0
+  }
+}

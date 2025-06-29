@@ -5,7 +5,7 @@ console.log('\n=== EMBER SETUP WIZARD - Professional Design ===\n');
 
 console.log('Welcome Screen:');
 console.log('  ◆');
-console.log('  EMBER AI');
+console.log('  EMBER');
 console.log('  Professional AI Infrastructure');
 console.log('  Initializing setup...\n');
 

@@ -6,7 +6,7 @@ verbosity control.
 Example:
     >>> from ember.utils.logging import configure_logging
     >>> configure_logging(verbose=False)
-    
+
     >>> # Adjust specific component verbosity
     >>> from ember.utils.logging import set_component_level
     >>> set_component_level("model_discovery", logging.DEBUG)
@@ -14,6 +14,8 @@ Example:
 
 import logging
 import os
+from contextlib import contextmanager
+from typing import List, Optional, Union
 
 # Component groups allow configuring related loggers together
 COMPONENT_GROUPS = {
@@ -21,14 +23,17 @@ COMPONENT_GROUPS = {
         "ember.core.registry.model",
         "ember.core.registry.model.initialization",
         "ember.core.registry.model.base.registry.discovery",
-        "ember.core.registry.model.base.registry.model_registry"],
+        "ember.core.registry.model.base.registry.model_registry",
+    ],
     "model_warnings": [
         # These loggers produce too many warnings during discovery
-        "ember.core.registry.model.base.registry.discovery"],
+        "ember.core.registry.model.base.registry.discovery"
+    ],
     "model_discovery": [
         "ember.core.registry.model.providers.anthropic.anthropic_discovery",
         "ember.core.registry.model.providers.openai.openai_discovery",
-        "ember.core.registry.model.providers.deepmind.deepmind_discovery"],
+        "ember.core.registry.model.providers.deepmind.deepmind_discovery",
+    ],
     "http": [
         "httpcore",
         "httpcore.connection",
@@ -41,7 +46,8 @@ COMPONENT_GROUPS = {
         "openai._base_client",
         "openai._http_client",
         "anthropic",
-        "anthropic._base_client"],
+        "anthropic._base_client",
+    ],
 }
 
 # Reverse mapping to find group by logger name
@@ -54,7 +60,8 @@ for group_name, loggers in COMPONENT_GROUPS.items():
 def configure_logging(
     level: int = logging.INFO,
     format_str: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    verbose: bool = False) -> None:
+    verbose: bool = False,
+) -> None:
     """Configure logging for the Ember framework.
 
     Args:
@@ -146,7 +153,7 @@ def _configure_http_library_handlers() -> None:
         http_level = getattr(logging, http_log_level.upper())
     except AttributeError:
         http_level = logging.ERROR
-    
+
     # Extended list of HTTP libraries to suppress
     http_libraries = [
         "httpcore",
@@ -158,11 +165,12 @@ def _configure_http_library_handlers() -> None:
         "urllib3.util.retry",
         "openai",
         "openai._base_client",
-        "openai._http_client", 
+        "openai._http_client",
         "anthropic",
         "anthropic._base_client",
         "requests",
-        "requests.packages.urllib3"]
+        "requests.packages.urllib3",
+    ]
 
     # Use configured level for all HTTP libraries
     for name in http_libraries:
@@ -190,19 +198,16 @@ def get_ember_logger(name: str) -> logging.Logger:
 
 # Context managers for temporary log level control
 
-from contextlib import contextmanager
-from typing import Optional, List, Union
-
 
 @contextmanager
 def suppress_logs(loggers: Union[str, List[str]], level: int = logging.ERROR):
     """
     Context manager to temporarily suppress logs from specific loggers.
-    
+
     Args:
         loggers: Logger name(s) to suppress. Can be a string or list of strings.
         level: Minimum level to show (default: ERROR, so only ERROR and CRITICAL show)
-        
+
     Example:
         with suppress_logs("ember.core.registry.model"):
             # Model discovery logs suppressed here
@@ -210,14 +215,14 @@ def suppress_logs(loggers: Union[str, List[str]], level: int = logging.ERROR):
     """
     if isinstance(loggers, str):
         loggers = [loggers]
-    
+
     # Store original levels
     original_levels = {}
     for logger_name in loggers:
         logger = logging.getLogger(logger_name)
         original_levels[logger_name] = logger.level
         logger.setLevel(level)
-    
+
     try:
         yield
     finally:
@@ -230,11 +235,11 @@ def suppress_logs(loggers: Union[str, List[str]], level: int = logging.ERROR):
 def log_level(level: Union[int, str], logger_name: Optional[str] = None):
     """
     Context manager to temporarily change log level.
-    
+
     Args:
         level: Log level (e.g., logging.DEBUG, "DEBUG")
         logger_name: Specific logger to modify (None for root logger)
-        
+
     Example:
         with log_level("DEBUG", "ember.xcs"):
             # XCS logs at DEBUG level here
@@ -243,14 +248,14 @@ def log_level(level: Union[int, str], logger_name: Optional[str] = None):
     # Convert string level to int if needed
     if isinstance(level, str):
         level = getattr(logging, level.upper())
-    
+
     # Get the logger
     logger = logging.getLogger(logger_name) if logger_name else logging.getLogger()
-    
+
     # Store original level
     original_level = logger.level
     logger.setLevel(level)
-    
+
     try:
         yield
     finally:
@@ -262,9 +267,9 @@ def log_level(level: Union[int, str], logger_name: Optional[str] = None):
 def verbose_mode():
     """
     Context manager for temporary verbose logging.
-    
+
     Enables INFO level for all Ember components temporarily.
-    
+
     Example:
         with verbose_mode():
             # All Ember logs at INFO level or above
@@ -272,10 +277,10 @@ def verbose_mode():
     """
     # Get all Ember component groups
     groups_to_adjust = ["model_registry", "model_discovery", "http"]
-    
+
     # Store original levels
     original_levels = {}
-    
+
     # Set INFO level for all groups
     for group in groups_to_adjust:
         if group in COMPONENT_GROUPS:
@@ -283,7 +288,7 @@ def verbose_mode():
                 logger = logging.getLogger(logger_name)
                 original_levels[logger_name] = logger.level
                 logger.setLevel(logging.INFO)
-    
+
     try:
         yield
     finally:

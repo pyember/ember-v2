@@ -21,7 +21,7 @@ export const Welcome: React.FC<Props> = ({onNext}) => {
       </Box>
       <Box marginBottom={1}>
         <Text color="blue" bold>
-          EMBER AI
+          EMBER
         </Text>
       </Box>
       <Box marginBottom={3}>

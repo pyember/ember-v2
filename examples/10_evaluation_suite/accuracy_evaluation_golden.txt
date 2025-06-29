@@ -1,0 +1,15 @@
+
+==================================================
+  Accuracy Evaluation Framework
+==================================================
+
+📊 Part 1: Creating Evaluation Datasets
+
+Traceback (most recent call last):
+  File "/Users/jq/Downloads/eb1/examples/10_evaluation_suite/accuracy_evaluation.py", line 453, in <module>
+    sys.exit(main())
+  File "/Users/jq/Downloads/eb1/examples/10_evaluation_suite/accuracy_evaluation.py", line 32, in main
+    class EvaluationDataset(operators.Operator):
+  File "/Users/jq/Downloads/eb1/examples/10_evaluation_suite/accuracy_evaluation.py", line 35, in EvaluationDataset
+    specification = operators.Specification()
+AttributeError: module 'ember.api.operators' has no attribute 'Specification'

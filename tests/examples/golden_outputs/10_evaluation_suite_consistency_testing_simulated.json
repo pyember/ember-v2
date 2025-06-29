@@ -1,0 +1,61 @@
+{
+  "version": "1.0",
+  "example": "10_evaluation_suite/consistency_testing.py",
+  "execution_mode": "simulated",
+  "sections": [
+    {
+      "header": "\ud83c\udfaf Why Consistency Testing Matters:",
+      "output": "\u2022 Builds user trust\n\u2022 Ensures reliability\n\u2022 Identifies model issues\n\u2022 Validates deployments\n\u2022 Maintains quality standards"
+    },
+    {
+      "header": "Testing model consistency:",
+      "output": "\u2022 Same input \u2192 Same output?\n  \u2022 Similar inputs \u2192 Similar outputs?\n  \u2022 Deterministic behavior?\n  \u2022 Stable across time?\n\nTest: Run same prompt 5 times\nPrompt: \"What is the capital of France?\"\n\nResults:\n  Run 1: Paris\n  Run 2: Paris\n  Run 3: Paris\n  Run 4: The capital of France is Paris\n  Run 5: Paris\n\nConsistency score: 4/5 (80%)\nIssue: Response format varies"
+    },
+    {
+      "header": "Testing semantic equivalence:",
+      "output": "Question: \"What is 2+2?\"\nResponses:\n  \u2022 4\n  \u2022 Four\n  \u2022 The answer is 4\n  \u2022 2+2 equals 4\nSemantic consistency: \u2713 (All convey same meaning)\n\nQuestion: \"Who wrote Romeo and Juliet?\"\nResponses:\n  \u2022 Shakespeare\n  \u2022 William Shakespeare\n  \u2022 It was written by Shakespeare\nSemantic consistency: \u2713 (All convey same meaning)\n\nQuestion: \"Is water wet?\"\nResponses:\n  \u2022 Yes\n  \u2022 Yes, water is wet\n  \u2022 Water is indeed wet\nSemantic consistency: \u2713 (All convey same meaning)"
+    },
+    {
+      "header": "Testing robustness to input variations:",
+      "output": "Base prompt and variations:\n  1. 'Explain photosynthesis'\n  2. 'explain photosynthesis'\n  3. 'Explain photosynthesis.'\n  4. 'Explain  photosynthesis'\n  5. 'Explain photosynthesis\n'\n  6. 'Can you explain photosynthesis?'\n\nExpected: Similar responses for all variations\nTesting for:\n  \u2022 Case sensitivity\n  \u2022 Whitespace handling\n  \u2022 Punctuation robustness\n  \u2022 Format flexibility"
+    },
+    {
+      "header": "Testing consistency over time:",
+      "output": "Test scenario: Ask same question daily for a week\nQuestion: \"What are the main programming paradigms?\"\n\nDaily responses:\n  Monday: Object-oriented, functional, procedural\n  Tuesday: OOP, functional, procedural programming\n  Wednesday: Object-oriented, functional, procedural\n  Thursday: Object-oriented, functional, and procedural\n  Friday: OOP, FP, and procedural paradigms\n  Saturday: Object-oriented, functional, procedural\n  Sunday: The main paradigms are OOP, functional, procedural\n\nAnalysis:\n  \u2022 Content: Consistent \u2713\n  \u2022 Format: Variable \u26a0\n  \u2022 Terminology: Mixed (OOP vs Object-oriented)"
+    },
+    {
+      "header": "Comparing consistency across models:",
+      "output": "Question: \"What is machine learning?\"\n\nModel responses:\n  GPT-3.5: Machine learning is a subset of AI that enables systems to learn from data\n  GPT-4: Machine learning is a field of AI where computers learn patterns from data without explicit programming\n  Claude: Machine learning is an AI approach where algorithms improve through experience with data\n\nConsistency analysis:\n  \u2022 Core concept: Consistent \u2713\n  \u2022 Key terms: AI, data, learn \u2713\n  \u2022 Detail level: Varies\n  \u2022 Technical accuracy: Consistent \u2713"
+    },
+    {
+      "header": "Measuring consistency:",
+      "output": "1. Exact Match Rate:\n   Identical responses / Total runs\n   Example: 8/10 = 80%\n\n2. Semantic Similarity:\n   Average cosine similarity of embeddings\n   Example: 0.95 (very similar)\n\n3. Key Information Retention:\n   Critical facts preserved / Total facts\n   Example: 15/15 = 100%\n\n4. Format Consistency:\n   Responses with same structure / Total\n   Example: 6/10 = 60%\n\n5. Confidence Variance:\n   Standard deviation of confidence scores\n   Example: \u03c3 = 0.05 (low variance)"
+    },
+    {
+      "header": "Testing consistency on edge cases:",
+      "output": "Edge case tests:\n  Empty input:\n    Input: ''\n    Expected: Should handle gracefully\n  Very long input:\n    Input: [10,000 chars]\n    Expected: Should truncate/summarize\n  Special characters:\n    Input: \ud83c\udf89 \u00f1 \u00a9 \u03c0\n    Expected: Should process correctly\n  Mixed languages:\n    Input: Hello \u4f60\u597d Bonjour\n    Expected: Should handle appropriately\n  Contradictory request:\n    Input: Be brief but explain in detail\n    Expected: Should clarify or choose\n  Nonsense input:\n    Input: Colorless green ideas sleep\n    Expected: Should indicate confusion\n\nConsistency requirements:\n  \u2022 Never crash or error out\n  \u2022 Provide meaningful response\n  \u2022 Maintain safety guidelines\n  \u2022 Be predictable in handling"
+    },
+    {
+      "header": "Comprehensive testing framework:",
+      "output": "1. Setup Phase:\n   \u2022 Define test prompts\n   \u2022 Set consistency thresholds\n   \u2022 Configure test parameters\n\n2. Execution Phase:\n   For each test case:\n     \u2022 Run N times with same parameters\n     \u2022 Run with parameter variations\n     \u2022 Run at different times\n     \u2022 Run on different models\n\n3. Analysis Phase:\n   \u2022 Calculate consistency scores\n   \u2022 Identify outliers\n   \u2022 Group similar responses\n   \u2022 Generate report\n\n4. Sample Report:\n   \u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\n   \u2502 Consistency Test Results        \u2502\n   \u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524\n   \u2502 Total test cases: 50            \u2502\n   \u2502 Exact match rate: 76%           \u2502\n   \u2502 Semantic similarity: 0.92       \u2502\n   \u2502 Format consistency: 84%         \u2502\n   \u2502 Edge case handling: PASS        \u2502\n   \u2502 Temporal stability: 91%         \u2502\n   \u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518"
+    },
+    {
+      "header": "Continuous consistency monitoring:",
+      "output": "1. Real-time tracking:\n   \u2022 Log all model inputs/outputs\n   \u2022 Calculate rolling consistency metrics\n   \u2022 Alert on anomalies\n\n2. A/B testing:\n   \u2022 Compare model versions\n   \u2022 Track consistency changes\n   \u2022 Measure drift over time\n\n3. Dashboard example:\n   Consistency Metrics (Last 24h)\n   \u251c\u2500 Response similarity: 94.2% \u2191\n   \u251c\u2500 Format consistency: 87.5% \u2192\n   \u251c\u2500 Semantic drift: 0.03 \u2193\n   \u2514\u2500 Error rate: 0.1% \u2192"
+    },
+    {
+      "header": "\u2705 Consistency Testing Best Practices",
+      "output": ""
+    },
+    {
+      "header": "1. Define clear consistency criteria",
+      "output": "2. Test multiple dimensions (semantic, format, etc.)\n3. Include edge cases and adversarial inputs\n4. Monitor consistency over time\n5. Set appropriate thresholds for your use case\n6. Automate testing in CI/CD pipeline\n7. Document expected variations\n\n\ud83d\udd27 Testing Strategies:\n\u2022 Use fixed random seeds when possible\n\u2022 Test with temperature=0 for determinism\n\u2022 Create comprehensive test suites\n\u2022 Version your test cases\n\u2022 Track metrics over time\n\nNext: See 'benchmark_harness.py' for performance testing"
+    }
+  ],
+  "total_time": 0.02,
+  "api_keys_required": [],
+  "metrics": {
+    "lines_of_code": 239,
+    "api_calls": 0
+  }
+}

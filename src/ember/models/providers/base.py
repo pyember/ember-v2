@@ -23,59 +23,59 @@ from ember.models.schemas import ChatResponse
 
 class BaseProvider(ABC):
     """Minimal provider interface following SOLID principles.
-    
+
     This abstract base class defines the contract for all model providers.
     It's intentionally minimal - just two required methods and two optional
     ones. This allows providers to range from simple HTTP wrappers to
     complex systems with caching, retries, and failover.
-    
+
     The design follows these principles:
         - Single Responsibility: Only defines the provider contract
         - Open/Closed: Extensible via subclassing, closed for modification
         - Interface Segregation: Minimal interface, no unused methods
         - Dependency Inversion: Registry depends on this abstraction
-    
+
     Attributes:
         api_key: Authentication credential for the provider's API.
                  Can be None if provider doesn't require auth.
-                 
+
     Examples:
         Implementing a minimal provider:
-        
+
         >>> class MinimalProvider(BaseProvider):
         ...     def complete(self, prompt, model, **kwargs):
         ...         # Make API call and return ChatResponse
         ...         return ChatResponse(data="Generated text")
-        ...     
+        ...
         ...     def _get_api_key_from_env(self):
         ...         return os.getenv("MINIMAL_API_KEY")
     """
-    
+
     def __init__(self, api_key: Optional[str] = None):
         """Initialize the provider.
-        
+
         The initialization follows a clear precedence order for API keys:
         1. Explicitly passed api_key parameter
         2. Environment variable (via _get_api_key_from_env)
         3. Raise ValueError if neither available
-        
+
         This pattern supports both programmatic usage and twelve-factor
         app principles for configuration.
-        
+
         Args:
             api_key: API key for authentication. If not provided,
                     will attempt to get from environment variables.
-                    
+
         Raises:
             ValueError: If no API key is available from any source.
-            
+
         Examples:
             Explicit key:
-            
+
             >>> provider = SomeProvider(api_key="sk-...")
-            
+
             Environment key:
-            
+
             >>> os.environ["OPENAI_API_KEY"] = "sk-..."
             >>> provider = OpenAIProvider()  # Gets from env
         """
@@ -85,21 +85,21 @@ class BaseProvider(ABC):
                 f"API key required for {self.__class__.__name__}. "
                 f"Set via constructor or environment variable."
             )
-    
+
     @abstractmethod
     def complete(self, prompt: str, model: str, **kwargs) -> ChatResponse:
         """Complete a prompt using the specified model.
-        
+
         This is the core method that all providers must implement. It serves
         as the bridge between Ember's unified API and provider-specific APIs.
-        
+
         Implementation Requirements:
             1. Make the API call to the provider
             2. Handle provider-specific errors gracefully
             3. Convert response to ChatResponse format
             4. Include usage statistics if available
             5. Preserve raw response in ChatResponse.raw_output
-        
+
         Args:
             prompt: The input text to complete. Providers should handle
                    any necessary formatting (e.g., chat templates).
@@ -112,29 +112,29 @@ class BaseProvider(ABC):
                 - stop (str|List[str]): Stop sequences
                 - stream (bool): Whether to stream response
                 - And any provider-specific parameters
-        
+
         Returns:
             ChatResponse containing:
                 - data: The generated text
                 - usage: Token counts and costs (if available)
                 - model_id: The model used
                 - raw_output: Original API response for debugging
-            
+
         Raises:
             ProviderAPIError: For general API errors. Use context dict:
                 - error_type: "rate_limit" for rate limiting
                 - error_type: "authentication" for auth issues
                 - error_type: "invalid_request" for bad parameters
                 - Include other relevant context
-                
+
         Examples:
             Basic completion:
-            
+
             >>> response = provider.complete("Hello", "gpt-4")
             >>> print(response.data)
-            
+
             With parameters:
-            
+
             >>> response = provider.complete(
             ...     "Write a story",
             ...     "claude-3",
@@ -143,27 +143,27 @@ class BaseProvider(ABC):
             ... )
         """
         pass
-    
+
     @abstractmethod
     def _get_api_key_from_env(self) -> Optional[str]:
         """Get API key from environment variables.
-        
+
         Each provider should implement this to check their specific
         environment variables. The method should check multiple possible
         variable names for flexibility.
-        
+
         Recommended Implementation Pattern:
             1. Check PROVIDER_API_KEY (e.g., OPENAI_API_KEY)
             2. Check EMBER_PROVIDER_API_KEY (e.g., EMBER_OPENAI_API_KEY)
             3. Check any legacy or alternative names
             4. Return None if not found (don't raise)
-        
+
         Returns:
             API key string or None if not found in environment.
-            
+
         Examples:
             Typical implementation:
-            
+
             >>> def _get_api_key_from_env(self) -> Optional[str]:
             ...     return (
             ...         os.getenv("OPENAI_API_KEY") or
@@ -171,51 +171,51 @@ class BaseProvider(ABC):
             ...     )
         """
         pass
-    
+
     def validate_model(self, model: str) -> bool:
         """Check if this provider supports the given model.
-        
+
         Optional method for providers to validate model names before
         attempting API calls. This can prevent unnecessary API requests
         for invalid model names.
-        
+
         The default implementation accepts all models, following the
         principle of late validation - let the API return errors for
         truly invalid models.
-        
+
         Args:
             model: Model identifier to validate.
-            
+
         Returns:
             True if model is supported, False otherwise.
-            
+
         Examples:
             Override for specific models:
-            
+
             >>> def validate_model(self, model: str) -> bool:
             ...     valid_models = {"gpt-4", "gpt-3.5-turbo", "gpt-4-turbo"}
             ...     return model in valid_models
-            
+
             Pattern matching:
-            
+
             >>> def validate_model(self, model: str) -> bool:
             ...     return model.startswith("gpt-") or model == "davinci"
         """
         return True
-    
+
     def get_model_info(self, model: str) -> Dict[str, Any]:
         """Get information about a specific model.
-        
+
         Optional method for providers to expose model metadata. This can
         include context windows, pricing, capabilities, and other details
         useful for model selection and validation.
-        
+
         The default implementation returns minimal information. Providers
         should override to add model-specific details.
-        
+
         Args:
             model: Model identifier.
-            
+
         Returns:
             Dictionary with model information. Common fields:
                 - model: The model identifier
@@ -225,10 +225,10 @@ class BaseProvider(ABC):
                 - supports_functions: Boolean
                 - supports_vision: Boolean
                 - Any provider-specific metadata
-                
+
         Examples:
             Rich implementation:
-            
+
             >>> def get_model_info(self, model: str) -> Dict[str, Any]:
             ...     info = super().get_model_info(model)
             ...     if model == "gpt-4":

@@ -33,33 +33,48 @@ def timer(name: str):
 
 def format_model_response(response: Any) -> str:
     """Format model response for display."""
-    if hasattr(response, 'text'):
+    if hasattr(response, "text"):
         return response.text
-    elif isinstance(response, dict) and 'text' in response:
-        return response['text']
+    elif isinstance(response, dict) and "text" in response:
+        return response["text"]
     elif isinstance(response, str):
         return response
     else:
         return str(response)
 
 
-def ensure_api_key(provider: str) -> bool:
-    """Check if API key is configured for provider."""
+def ensure_api_key(provider: str, optional: bool = False) -> bool:
+    """Check if API key is configured for provider.
+
+    Args:
+        provider: Name of the provider (openai, anthropic, google, cohere)
+        optional: If True, don't print warnings when key is missing
+
+    Returns:
+        True if API key is found, False otherwise
+    """
     import os
-    
+
     key_mapping = {
         "openai": "OPENAI_API_KEY",
         "anthropic": "ANTHROPIC_API_KEY",
         "google": "GOOGLE_API_KEY",
         "cohere": "COHERE_API_KEY",
     }
-    
+
     env_var = key_mapping.get(provider.lower())
     if env_var and os.getenv(env_var):
         return True
-    
-    print(f"Warning: {env_var} not found in environment")
-    print(f"Please set your {provider} API key to run this example")
+
+    if not optional:
+        print(f"\n⚠️  {env_var} not found in environment")
+        print(f"\nTo run this example with real API calls:")
+        print(f"1. Run: uv run ember setup")
+        print(f"2. Follow the interactive setup to configure your {provider} API key")
+        print(f"\nAlternatively, set the environment variable directly:")
+        print(f"   export {env_var}='your-api-key-here'")
+        print(f"\nThis example will continue with simulated responses.\n")
+
     return False
 
 
@@ -69,7 +84,7 @@ def example_metadata(
     time_estimate: str,
     prerequisites: Optional[list] = None,
     learning_objectives: Optional[list] = None,
-    concepts: Optional[list] = None
+    concepts: Optional[list] = None,
 ) -> Dict[str, Any]:
     """Generate standardized example metadata."""
     return {
@@ -78,7 +93,7 @@ def example_metadata(
         "time_estimate": time_estimate,
         "prerequisites": prerequisites or [],
         "learning_objectives": learning_objectives or [],
-        "concepts": concepts or []
+        "concepts": concepts or [],
     }
 
 
@@ -87,20 +102,20 @@ def print_example_metadata(metadata: Dict[str, Any]) -> None:
     print_section_header(metadata["title"])
     print(f"Difficulty: {metadata['difficulty']}")
     print(f"Time: {metadata['time_estimate']}")
-    
+
     if metadata["prerequisites"]:
         print("\nPrerequisites:")
         for prereq in metadata["prerequisites"]:
             print(f"  - {prereq}")
-    
+
     if metadata["learning_objectives"]:
         print("\nLearning Objectives:")
         for obj in metadata["learning_objectives"]:
             print(f"  - {obj}")
-    
+
     if metadata["concepts"]:
         print("\nKey Concepts:")
         for concept in metadata["concepts"]:
             print(f"  - {concept}")
-    
+
     print()  # Empty line

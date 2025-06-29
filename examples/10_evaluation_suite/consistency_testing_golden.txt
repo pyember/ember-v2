@@ -1,0 +1,256 @@
+
+==================================================
+  Consistency Testing
+==================================================
+
+🎯 Why Consistency Testing Matters:
+
+• Builds user trust
+• Ensures reliability
+• Identifies model issues
+• Validates deployments
+• Maintains quality standards
+
+=== Basic Consistency Testing ===
+
+Testing model consistency:
+  • Same input → Same output?
+  • Similar inputs → Similar outputs?
+  • Deterministic behavior?
+  • Stable across time?
+
+Test: Run same prompt 5 times
+Prompt: "What is the capital of France?"
+
+Results:
+  Run 1: Paris
+  Run 2: Paris
+  Run 3: Paris
+  Run 4: The capital of France is Paris
+  Run 5: Paris
+
+Consistency score: 4/5 (80%)
+Issue: Response format varies
+
+
+=== Semantic Consistency ===
+
+Testing semantic equivalence:
+
+Question: "What is 2+2?"
+Responses:
+  • 4
+  • Four
+  • The answer is 4
+  • 2+2 equals 4
+Semantic consistency: ✓ (All convey same meaning)
+
+Question: "Who wrote Romeo and Juliet?"
+Responses:
+  • Shakespeare
+  • William Shakespeare
+  • It was written by Shakespeare
+Semantic consistency: ✓ (All convey same meaning)
+
+Question: "Is water wet?"
+Responses:
+  • Yes
+  • Yes, water is wet
+  • Water is indeed wet
+Semantic consistency: ✓ (All convey same meaning)
+
+
+
+=== Input Perturbation Testing ===
+
+Testing robustness to input variations:
+
+Base prompt and variations:
+  1. 'Explain photosynthesis'
+  2. 'explain photosynthesis'
+  3. 'Explain photosynthesis.'
+  4. 'Explain  photosynthesis'
+  5. 'Explain photosynthesis
+'
+  6. 'Can you explain photosynthesis?'
+
+Expected: Similar responses for all variations
+Testing for:
+  • Case sensitivity
+  • Whitespace handling
+  • Punctuation robustness
+  • Format flexibility
+
+
+=== Temporal Consistency ===
+
+Testing consistency over time:
+
+Test scenario: Ask same question daily for a week
+Question: "What are the main programming paradigms?"
+
+Daily responses:
+  Monday: Object-oriented, functional, procedural
+  Tuesday: OOP, functional, procedural programming
+  Wednesday: Object-oriented, functional, procedural
+  Thursday: Object-oriented, functional, and procedural
+  Friday: OOP, FP, and procedural paradigms
+  Saturday: Object-oriented, functional, procedural
+  Sunday: The main paradigms are OOP, functional, procedural
+
+Analysis:
+  • Content: Consistent ✓
+  • Format: Variable ⚠
+  • Terminology: Mixed (OOP vs Object-oriented)
+
+
+=== Cross-Model Consistency ===
+
+Comparing consistency across models:
+
+Question: "What is machine learning?"
+
+Model responses:
+  GPT-3.5: Machine learning is a subset of AI that enables systems to learn from data
+  GPT-4: Machine learning is a field of AI where computers learn patterns from data without explicit programming
+  Claude: Machine learning is an AI approach where algorithms improve through experience with data
+
+Consistency analysis:
+  • Core concept: Consistent ✓
+  • Key terms: AI, data, learn ✓
+  • Detail level: Varies
+  • Technical accuracy: Consistent ✓
+
+
+=== Consistency Metrics ===
+
+Measuring consistency:
+
+1. Exact Match Rate:
+   Identical responses / Total runs
+   Example: 8/10 = 80%
+
+2. Semantic Similarity:
+   Average cosine similarity of embeddings
+   Example: 0.95 (very similar)
+
+3. Key Information Retention:
+   Critical facts preserved / Total facts
+   Example: 15/15 = 100%
+
+4. Format Consistency:
+   Responses with same structure / Total
+   Example: 6/10 = 60%
+
+5. Confidence Variance:
+   Standard deviation of confidence scores
+   Example: σ = 0.05 (low variance)
+
+
+=== Edge Case Consistency ===
+
+Testing consistency on edge cases:
+
+Edge case tests:
+  Empty input:
+    Input: ''
+    Expected: Should handle gracefully
+  Very long input:
+    Input: [10,000 chars]
+    Expected: Should truncate/summarize
+  Special characters:
+    Input: 🎉 ñ © π
+    Expected: Should process correctly
+  Mixed languages:
+    Input: Hello 你好 Bonjour
+    Expected: Should handle appropriately
+  Contradictory request:
+    Input: Be brief but explain in detail
+    Expected: Should clarify or choose
+  Nonsense input:
+    Input: Colorless green ideas sleep
+    Expected: Should indicate confusion
+
+Consistency requirements:
+  • Never crash or error out
+  • Provide meaningful response
+  • Maintain safety guidelines
+  • Be predictable in handling
+
+
+=== Consistency Test Suite ===
+
+Comprehensive testing framework:
+
+1. Setup Phase:
+   • Define test prompts
+   • Set consistency thresholds
+   • Configure test parameters
+
+2. Execution Phase:
+   For each test case:
+     • Run N times with same parameters
+     • Run with parameter variations
+     • Run at different times
+     • Run on different models
+
+3. Analysis Phase:
+   • Calculate consistency scores
+   • Identify outliers
+   • Group similar responses
+   • Generate report
+
+4. Sample Report:
+   ┌─────────────────────────────────┐
+   │ Consistency Test Results        │
+   ├─────────────────────────────────┤
+   │ Total test cases: 50            │
+   │ Exact match rate: 76%           │
+   │ Semantic similarity: 0.92       │
+   │ Format consistency: 84%         │
+   │ Edge case handling: PASS        │
+   │ Temporal stability: 91%         │
+   └─────────────────────────────────┘
+
+
+=== Automated Consistency Monitoring ===
+
+Continuous consistency monitoring:
+
+1. Real-time tracking:
+   • Log all model inputs/outputs
+   • Calculate rolling consistency metrics
+   • Alert on anomalies
+
+2. A/B testing:
+   • Compare model versions
+   • Track consistency changes
+   • Measure drift over time
+
+3. Dashboard example:
+   Consistency Metrics (Last 24h)
+   ├─ Response similarity: 94.2% ↑
+   ├─ Format consistency: 87.5% →
+   ├─ Semantic drift: 0.03 ↓
+   └─ Error rate: 0.1% →
+
+==================================================
+✅ Consistency Testing Best Practices
+==================================================
+
+1. Define clear consistency criteria
+2. Test multiple dimensions (semantic, format, etc.)
+3. Include edge cases and adversarial inputs
+4. Monitor consistency over time
+5. Set appropriate thresholds for your use case
+6. Automate testing in CI/CD pipeline
+7. Document expected variations
+
+🔧 Testing Strategies:
+• Use fixed random seeds when possible
+• Test with temperature=0 for determinism
+• Create comprehensive test suites
+• Version your test cases
+• Track metrics over time
+
+Next: See 'benchmark_harness.py' for performance testing

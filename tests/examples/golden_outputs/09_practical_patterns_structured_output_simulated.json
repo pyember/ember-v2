@@ -1,0 +1,59 @@
+{
+  "version": "1.0",
+  "example": "09_practical_patterns/structured_output.py",
+  "execution_mode": "simulated",
+  "sections": [
+    {
+      "header": "\ud83d\udccb Part 1: Defining Structured Output Models",
+      "output": "Defined structured models:\n- ProductInfo: name, price, category, in_stock, tags\n- AnalysisResult: summary, sentiment, key_points, confidence, metadata"
+    },
+    {
+      "header": "\ud83d\udd27 Part 2: JSON Parsing with Validation",
+      "output": ""
+    },
+    {
+      "header": "Testing JSON parser:",
+      "output": "\u2713 Parsed: {'name': 'Widget', 'price': 19.99}\n\u2713 Parsed: {'category': 'tools', 'in_stock': True}\n\u2713 Parsed: {'tags': ['new', 'featured'], 'confidence': 0.95}"
+    },
+    {
+      "header": "\ud83d\udd04 Part 3: Validation with Retry Logic",
+      "output": ""
+    },
+    {
+      "header": "Testing validated output with retry:",
+      "output": "\u2713 Success on attempt 1: Laptop\n\u2713 Success on attempt 1: Laptop\n\u2713 Success on attempt 1: Laptop"
+    },
+    {
+      "header": "\ud83c\udfd7\ufe0f Part 4: Complete Structured Output Pipeline",
+      "output": ""
+    },
+    {
+      "header": "Using Structured LLM Operators:",
+      "output": "Product Extraction Success:\n  Name: Laptop\n  Price: $999.99\n  Category: Electronics\n  In Stock: True\n  Tags: computers, portable\n\n\nAnalysis Extraction Success:\n  Sentiment: positive\n  Confidence: 87.00%\n  Key Points: High quality, Good value..."
+    },
+    {
+      "header": "\ud83d\udee1\ufe0f Part 5: Error Recovery Patterns",
+      "output": ""
+    },
+    {
+      "header": "Robust Extraction:",
+      "output": "Method: primary\n  Confidence: 100%\n  Data: positive"
+    },
+    {
+      "header": "\u2705 Key Takeaways",
+      "output": ""
+    },
+    {
+      "header": "1. Always validate LLM outputs against expected schema",
+      "output": "2. Implement retry logic for reliability\n3. Use type-safe models (EmberModel) for structure\n4. Provide clear schemas in prompts\n5. Have fallback strategies for production\n6. Consider partial extraction when full parsing fails\n\nNext: Explore chain_of_thought.py for reasoning patterns!"
+    }
+  ],
+  "total_time": 0.56,
+  "api_keys_required": [
+    "OPENAI_API_KEY"
+  ],
+  "metrics": {
+    "lines_of_code": 352,
+    "api_calls": 0
+  }
+}

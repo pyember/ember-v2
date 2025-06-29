@@ -13,6 +13,11 @@ seaborn>=0.12.0
 pandas>=1.5.0
 numpy>=1.23.0
 
+# For testing examples
+pytest>=7.0.0
+pytest-timeout>=2.1.0
+pytest-xdist>=3.0.0
+
 # For integration examples (optional)
 # Uncomment as needed:
 # fastapi>=0.100.0

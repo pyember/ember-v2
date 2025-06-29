@@ -14,10 +14,11 @@ import jax.numpy as jnp
 # Pattern 1: Simple Parallelization
 # =============================================================================
 
+
 @jit
 def analyze_documents(documents):
     """Automatically parallelize document analysis.
-    
+
     XCS detects the list comprehension and executes in parallel.
     """
     # This runs in parallel automatically!
@@ -42,23 +43,24 @@ def synthesize_summaries(summaries):
 # Pattern 2: Batched Processing with vmap
 # =============================================================================
 
+
 @jit
 @vmap
 def classify_texts(text):
     """Classify texts in parallel using vmap.
-    
+
     vmap automatically batches LLM calls for efficiency.
     """
     # Extract features (tensor operation)
     embedding = embed_text(text)
-    
+
     # Classify using LLM (orchestration operation)
     llm = model("gpt-4")
     classification = llm(f"Classify this text: {text}")
-    
+
     # Post-process (tensor operation)
     confidence = compute_confidence(embedding)
-    
+
     return {"class": classification, "confidence": confidence}
 
 
@@ -77,23 +79,26 @@ def compute_confidence(embedding):
 # Pattern 3: Sequential Processing with scan
 # =============================================================================
 
+
 @jit
 @scan
 def iterative_refinement(draft, feedback):
     """Iteratively refine a draft based on feedback.
-    
+
     Each iteration improves the draft based on user feedback.
     """
     llm = model("claude-3-opus")
-    
+
     # Improve draft based on feedback
-    improved = llm(f"""
+    improved = llm(
+        f"""
     Current draft: {draft}
     Feedback: {feedback}
     
     Improve the draft based on the feedback.
-    """)
-    
+    """
+    )
+
     # Return both new state and output
     return improved, improved
 
@@ -101,32 +106,30 @@ def iterative_refinement(draft, feedback):
 def refine_document(initial_draft, feedback_list):
     """Refine a document through multiple rounds of feedback."""
     final_draft, revision_history = iterative_refinement(initial_draft, feedback_list)
-    return {
-        "final": final_draft,
-        "revisions": revision_history
-    }
+    return {"final": final_draft, "revisions": revision_history}
 
 
 # =============================================================================
 # Pattern 4: Hybrid Tensor/Orchestration with grad
 # =============================================================================
 
+
 @jit
 @grad
 def hybrid_loss(params, inputs, targets):
     """Compute loss for hybrid model with tensor and LLM components.
-    
+
     XCS intelligently computes gradients only for tensor operations.
     """
     # Tensor operation - differentiable
     embeddings = neural_encoder(params, inputs)
     predictions = neural_classifier(embeddings)
     tensor_loss = jnp.mean((predictions - targets) ** 2)
-    
+
     # Orchestration operation - not differentiable
     # XCS handles this gracefully
     quality = assess_quality(predictions)
-    
+
     # Combined loss (only tensor part gets gradients)
     return tensor_loss + quality_penalty(quality)
 
@@ -158,12 +161,13 @@ def quality_penalty(quality):
 # Pattern 5: Nested Transformations
 # =============================================================================
 
+
 @jit
 @vmap  # Batch over users
 @vmap  # Batch over documents per user
 def analyze_user_documents(doc):
     """Analyze documents with nested batching.
-    
+
     Efficiently processes multiple documents for multiple users.
     """
     # Each document is processed independently
@@ -181,23 +185,24 @@ def analyze_single_document(doc):
 # Pattern 6: Complex Production Pipeline
 # =============================================================================
 
+
 @jit
 def production_pipeline(requests):
     """Complex production pipeline with multiple stages.
-    
+
     XCS discovers the full operator tree and optimizes globally.
     """
     # Stage 1: Validate and preprocess (parallel)
     validated = [validate_request(req) for req in requests]
-    
+
     # Stage 2: Route to appropriate handlers (parallel within groups)
     routed = route_requests(validated)
-    
+
     # Stage 3: Process each group (parallel)
     results = {}
     for category, items in routed.items():
         results[category] = process_category(category, items)
-    
+
     # Stage 4: Post-process and combine
     return combine_results(results)
 
@@ -236,7 +241,7 @@ def get_processor(category):
     processors = {
         "simple": lambda x: f"Simple: {x}",
         "complex": lambda x: f"Complex: {x}",
-        "special": lambda x: f"Special: {x}"
+        "special": lambda x: f"Special: {x}",
     }
     return processors.get(category, lambda x: x)
 
@@ -252,6 +257,7 @@ def combine_results(results):
 # =============================================================================
 # Pattern 7: Error Handling Patterns
 # =============================================================================
+
 
 # Default: Fail fast
 @jit
@@ -290,7 +296,7 @@ def safe_process(item):
 # @pmap(mesh=model_mesh, axis_name='model')
 # def distributed_ensemble(prompt):
 #     """Distribute inference across multiple models.
-#     
+#
 #     Coming soon: ModelMesh will enable distribution across:
 #     - Multiple API keys
 #     - Different model providers
@@ -309,18 +315,18 @@ if __name__ == "__main__":
     docs = ["Document 1 content...", "Document 2 content...", "Document 3 content..."]
     result = analyze_documents(docs)
     print(f"Analysis result: {result}")
-    
+
     # Example 2: Batch classification
     texts = ["positive text", "negative text", "neutral text"]
     classifications = classify_texts(texts)
     print(f"Classifications: {classifications}")
-    
+
     # Example 3: Iterative refinement
     draft = "Initial draft of my document."
     feedback = ["Make it more concise", "Add more details", "Improve clarity"]
     refined = refine_document(draft, feedback)
     print(f"Final draft: {refined['final']}")
-    
+
     # Example 4: Production pipeline
     requests = [{"id": 1}, {"id": 2}, {"id": 3}]
     results = production_pipeline(requests)

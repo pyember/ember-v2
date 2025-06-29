@@ -1,0 +1,69 @@
+{
+  "version": "1.0",
+  "example": "02_core_concepts/error_handling.py",
+  "execution_mode": "simulated",
+  "sections": [
+    {
+      "header": "Part 1: Ember's Simplified Exception Types",
+      "output": ""
+    },
+    {
+      "header": "Ember's focused exception hierarchy:",
+      "output": "\u2022 ModelError (base)\n    \u251c\u2500\u2500 ModelNotFoundError - Model doesn't exist\n    \u251c\u2500\u2500 ModelProviderError - Missing/invalid API key\n    \u2514\u2500\u2500 ProviderAPIError - Provider errors (rate limits, etc.)\n\nGone: Complex hierarchies, ambiguous exceptions\nNew: Clear, actionable exception types\n\nError handling examples:\n  gpt-4 \u2192 Response from gpt-4: Success!\n  invalid-model \u2192 Handled ModelNotFoundError\n  gpt-4 \u2192 Handled ProviderAPIError\n  no-api-key \u2192 Handled ModelProviderError"
+    },
+    {
+      "header": "Part 2: Retry Strategies (Function-Based)",
+      "output": ""
+    },
+    {
+      "header": "Testing retry logic:",
+      "output": "Attempt 1 failed. Retrying in 1.0s...\n  Attempt 2 failed. Retrying in 2.0s...\nResult: Success after retries!"
+    },
+    {
+      "header": "Part 3: Model Fallback Chains",
+      "output": ""
+    },
+    {
+      "header": "Testing fallback chain:",
+      "output": "Try 1: claude-3 (fallbacks: 1)\n  Try 2: claude-3 (fallbacks: 1)\n  Try 3: gpt-4 (fallbacks: 0)"
+    },
+    {
+      "header": "Part 4: Optimized Error Handling with @jit",
+      "output": ""
+    },
+    {
+      "header": "JIT-optimized error handling:",
+      "output": "\u2713 '  Normal text  ...' \u2192 success\n  \u2717 '...' \u2192 error\n  \u2713 'Good text...' \u2192 success"
+    },
+    {
+      "header": "Part 5: Simple Circuit Breaker",
+      "output": ""
+    },
+    {
+      "header": "Circuit breaker demo:",
+      "output": "Call 1: Failed - Service unavailable\n  Circuit breaker opened after 2 failures\n  Call 2: Failed - Service unavailable\n  Call 3: Failed - Circuit breaker is OPEN\n  Call 4: Failed - Circuit breaker is OPEN\n  Call 5: Failed - Circuit breaker is OPEN"
+    },
+    {
+      "header": "Part 6: Real-World Error Handling Pattern",
+      "output": ""
+    },
+    {
+      "header": "Testing robust model function:",
+      "output": "\u2713 gpt-3.5-turbo (attempts: 3)\n  \u2713 gpt-4 (attempts: 1)\n  \u2713 gpt-4 (attempts: 2)\n  \u2713 gpt-4 (attempts: 1)\n  \u2713 gpt-4 (attempts: 1)"
+    },
+    {
+      "header": "\u2705 Error Handling Best Practices",
+      "output": ""
+    },
+    {
+      "header": "1. Use Ember's focused exceptions:",
+      "output": "- ModelNotFoundError \u2192 Try different model\n   - ProviderAPIError \u2192 Retry with backoff\n   - ModelProviderError \u2192 Check API keys\n\n2. Implement smart retries:\n   - Exponential backoff for rate limits\n   - Immediate retry for network blips\n   - Circuit breaker for persistent failures\n\n3. Build fallback chains:\n   - Primary \u2192 Secondary \u2192 Fallback models\n   - Cached responses as last resort\n   - Graceful degradation\n\n4. Optimize with @jit:\n   - Error handling code runs faster\n   - Validation is optimized\n   - Retry logic is efficient\n\n5. Monitor and log:\n   - Track error rates\n   - Log with context\n   - Alert on anomalies\n\nExample production pattern:\n```python\nfrom ember.api import models\nfrom ember._internal.exceptions import ProviderAPIError\n\n@jit\ndef safe_generate(prompt: str) -> str:\n    try:\n        return models('gpt-4', prompt).text\n    except ProviderAPIError:\n        # Fallback to cheaper model\n        return models('gpt-3.5-turbo', prompt).text\n```"
+    }
+  ],
+  "total_time": 4.21,
+  "api_keys_required": [],
+  "metrics": {
+    "lines_of_code": 322,
+    "api_calls": 1
+  }
+}

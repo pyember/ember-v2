@@ -289,4 +289,5 @@ __all__ = [
     "MinimalRandomSampler",
     "MinimalValidator",
     "MinimalSchemaValidator",
-    "MinimalDataService"]
+    "MinimalDataService",
+]

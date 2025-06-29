@@ -48,9 +48,7 @@ class IStatefulEvaluator(ABC, Generic[T_out, T_ans]):
     """Evaluator that accumulates results across samples."""
 
     @abstractmethod
-    def update(
-        self, system_output: T_out, correct_answer: T_ans, **kwargs: Any
-    ) -> None:
+    def update(self, system_output: T_out, correct_answer: T_ans, **kwargs: Any) -> None:
         """Add sample to internal state.
 
         Args:

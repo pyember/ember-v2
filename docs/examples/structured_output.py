@@ -43,7 +43,7 @@ class TodoItem(BaseModel):
 async def main():
     # Example 1: Product Review Analysis
     print("=== Product Review Analysis ===")
-    
+
     @ember.op
     async def analyze_review(review_text: str) -> ProductReview:
         """Extract structured information from a product review."""
@@ -52,9 +52,9 @@ async def main():
 Review: {review_text}
 
 Extract the product name, rating (1-5), pros, cons, summary, and whether it's recommended."""
-        
+
         return await ember.llm(prompt, output_type=ProductReview)
-    
+
     review = """
     I recently bought the TechPro X1 Wireless Headphones and I have mixed feelings. 
     The sound quality is absolutely incredible - crisp highs and deep bass. The 
@@ -62,7 +62,7 @@ Extract the product name, rating (1-5), pros, cons, summary, and whether it's re
     expensive at $299, and the comfort isn't great for long sessions. The ear cups 
     press too hard. Overall, they're good but not perfect. I'd give them 3.5 stars.
     """
-    
+
     try:
         analysis = await analyze_review(review)
         print(f"Product: {analysis.product_name}")
@@ -73,12 +73,12 @@ Extract the product name, rating (1-5), pros, cons, summary, and whether it's re
         print(f"Recommended: {'Yes' if analysis.recommended else 'No'}")
     except Exception as e:
         print(f"Error analyzing review: {e}")
-    
+
     print()
 
     # Example 2: Movie Analysis
     print("=== Movie Analysis ===")
-    
+
     movie_description = """
     'Eternal Sunshine of the Spotless Mind' follows Joel and Clementine, former 
     lovers who undergo a procedure to erase memories of each other. As Joel's 
@@ -87,12 +87,12 @@ Extract the product name, rating (1-5), pros, cons, summary, and whether it's re
     melancholic yet hopeful meditation on love and loss, with surreal sequences 
     representing the memory erasure process.
     """
-    
+
     movie_analysis = await ember.llm(
         f"Analyze this movie description: {movie_description}",
-        output_type=MovieAnalysis
+        output_type=MovieAnalysis,
     )
-    
+
     print(f"Title: {movie_analysis.title}")
     print(f"Genres: {', '.join(movie_analysis.genre)}")
     print(f"Themes: {', '.join(movie_analysis.themes)}")
@@ -103,7 +103,7 @@ Extract the product name, rating (1-5), pros, cons, summary, and whether it's re
 
     # Example 3: Generating Structured Data
     print("=== Generating Todo List ===")
-    
+
     @ember.op
     async def create_project_todos(project_description: str) -> List[TodoItem]:
         """Generate a todo list for a project."""
@@ -112,12 +112,12 @@ Extract the product name, rating (1-5), pros, cons, summary, and whether it's re
 Project: {project_description}
 
 Generate 5-7 specific tasks with priorities, time estimates, and relevant tags."""
-        
+
         return await ember.llm(prompt, output_type=List[TodoItem])
-    
+
     project = "Build a personal portfolio website with blog functionality"
     todos = await create_project_todos(project)
-    
+
     print(f"Generated {len(todos)} tasks for: {project}")
     for todo in todos:
         print(f"\n[{todo.priority.upper()}] {todo.task}")
@@ -126,24 +126,24 @@ Generate 5-7 specific tasks with priorities, time estimates, and relevant tags."
             print(f"  Tags: {', '.join(todo.tags)}")
         if todo.due_date:
             print(f"  Due: {todo.due_date}")
-    
+
     print()
 
     # Example 4: Nested Structures
     print("=== Nested Structure Example ===")
-    
+
     class Character(BaseModel):
         name: str
         age: int
         occupation: str
         personality_traits: List[str]
         backstory: str
-    
+
     class PlotPoint(BaseModel):
         chapter: int
         description: str
         characters_involved: List[str]
-    
+
     class StoryOutline(BaseModel):
         title: str
         genre: str
@@ -151,14 +151,13 @@ Generate 5-7 specific tasks with priorities, time estimates, and relevant tags."
         main_characters: List[Character]
         plot_points: List[PlotPoint]
         themes: List[str]
-    
+
     story_prompt = "A mystery novel set in a 1920s speakeasy"
-    
+
     outline = await ember.llm(
-        f"Create a detailed story outline for: {story_prompt}",
-        output_type=StoryOutline
+        f"Create a detailed story outline for: {story_prompt}", output_type=StoryOutline
     )
-    
+
     print(f"Story: {outline.title}")
     print(f"Genre: {outline.genre}")
     print(f"Setting: {outline.setting}")
@@ -166,27 +165,29 @@ Generate 5-7 specific tasks with priorities, time estimates, and relevant tags."
     for char in outline.main_characters:
         print(f"  - {char.name} ({char.age}): {char.occupation}")
         print(f"    Traits: {', '.join(char.personality_traits)}")
-    
+
     print(f"\nPlot Points:")
     for point in outline.plot_points[:3]:  # Show first 3
         print(f"  Chapter {point.chapter}: {point.description}")
-    
+
     # Example 5: Error Handling
     print("\n=== Error Handling ===")
-    
+
     class StrictFormat(BaseModel):
         exact_number: float = Field(..., ge=10.0, le=20.0)
         specific_choice: str = Field(..., pattern="^(option_a|option_b|option_c)$")
-    
+
     @ember.op
-    async def parse_with_retry(text: str, max_attempts: int = 3) -> Optional[StrictFormat]:
+    async def parse_with_retry(
+        text: str, max_attempts: int = 3
+    ) -> Optional[StrictFormat]:
         """Parse text with retry on validation errors."""
         for attempt in range(max_attempts):
             try:
                 result = await ember.llm(
                     f"Extract data from: {text}. Number must be between 10-20, "
                     f"choice must be option_a, option_b, or option_c",
-                    output_type=StrictFormat
+                    output_type=StrictFormat,
                 )
                 print(f"Success on attempt {attempt + 1}")
                 return result
@@ -196,10 +197,12 @@ Generate 5-7 specific tasks with priorities, time estimates, and relevant tags."
                     print("Retrying with clearer prompt...")
                     text = f"BE VERY CAREFUL: {text}"
         return None
-    
+
     result = await parse_with_retry("I choose 15.5 and option_b")
     if result:
-        print(f"Parsed successfully: number={result.exact_number}, choice={result.specific_choice}")
+        print(
+            f"Parsed successfully: number={result.exact_number}, choice={result.specific_choice}"
+        )
 
 
 if __name__ == "__main__":

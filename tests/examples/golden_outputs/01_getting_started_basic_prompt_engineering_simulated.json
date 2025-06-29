@@ -1,0 +1,53 @@
+{
+  "version": "1.0",
+  "example": "01_getting_started/basic_prompt_engineering.py",
+  "execution_mode": "simulated",
+  "sections": [
+    {
+      "header": "\ud83d\udd27 Running in simulated mode (no API keys detected)",
+      "output": ""
+    },
+    {
+      "header": "To run this example with real API calls, set one of:",
+      "output": "export OPENAI_API_KEY='your-key-here'\n\nSimulated output will demonstrate the expected behavior."
+    },
+    {
+      "header": "Vague prompt:",
+      "output": "\"Tell me about Python\"\n\nResponse (truncated):\n  Python is a high-level, interpreted programming language known for its simplicity...\n\nSpecific prompt:\n  \"List exactly 3 key advantages of Python for data science...\"\n\nResponse:\n  1. **Rich Data Science Ecosystem**\n     - One-sentence: Python offers comprehensive libraries like NumPy, Pandas, and Scikit-learn for data manipulation and analysis.\n     - Example: Use Pandas to load, clean, and analyze a CSV file in just 3 lines of code.\n\n  2. **Simple and Readable Syntax**\n     - One-sentence: Python's clean syntax allows data scientists to focus on solving problems rather than wrestling with complex code.\n     - Example: A machine learning model can be trained with sklearn in under 10 readable lines.\n\n  3. **Excellent Visualization Capabilities**\n     - One-sentence: Libraries like Matplotlib and Seaborn enable creation of publication-quality visualizations with minimal code.\n     - Example: Create an interactive dashboard with Plotly to explore real-time data trends."
+    },
+    {
+      "header": "Few-shot prompt with examples:",
+      "output": "[Shows 3 examples, then asks for new tagline]\n\nGenerated tagline:\n  \"Power your adventure, naturally\""
+    },
+    {
+      "header": "Structured output prompt:",
+      "output": "[Requests specific JSON format]\n\nResponse:\n{\n    \"sentiment\": \"positive\",\n    \"key_topics\": [\"electric vehicles\", \"battery technology\", \"charging infrastructure\", \"consumer concerns\"],\n    \"summary\": \"The electric vehicle market is experiencing significant growth despite ongoing consumer concerns about range and charging.\"\n}\n\n\u2705 Successfully parsed as JSON!"
+    },
+    {
+      "header": "Expert role prompt:",
+      "output": "[Assigns role of senior software architect]\n\nResponse:\n  Hey there! Let me break down microservices for you. Think of it like building with LEGO blocks instead of carving...\n\n\nTeacher role prompt:\n  [Assigns role of elementary school teacher]\n\nResponse:\n  Hi there! Imagine AI is like a really smart robot friend who learns by looking at lots of examples..."
+    },
+    {
+      "header": "Direct prompt:",
+      "output": "If a store has 120 apples and sells 3/4 of them on Monday...\n\nResponse:\n  15 apples\n\n\nChain-of-thought prompt:\n  [Asks for step-by-step reasoning]\n\nResponse:\n  Step 1: Calculate apples sold on Monday\n  - 3/4 of 120 = (3 \u00d7 120) / 4 = 360 / 4 = 90 apples\n  \n  Step 2: Find remaining after Monday\n  - 120 - 90 = 30 apples\n  \n  Step 3: Calculate apples sold on Tuesday\n  - Half of 30 = 30 / 2 = 15 apples\n  \n  Step 4: Determine final count\n  - 30 - 15 = 15 apples\n  \n  Therefore, 15 apples are left."
+    },
+    {
+      "header": "Analysis of remote work:",
+      "output": "\u2022 [Flexibility Boost]: Remote work significantly improves work-life balance by eliminating commute time.\n\u2022 [Productivity Paradox]: While individual tasks often see gains, collaborative innovation may suffer.\n\u2022 [Digital Collaboration]: Success heavily depends on robust communication tools and clear protocols.\n\nAnalysis of electric vehicles:\n\u2022 [Carbon Reduction]: EVs can reduce lifetime emissions by up to 70% compared to gas vehicles.\n\u2022 [Total Cost Benefits]: Despite higher upfront costs, EVs save money through lower fuel and maintenance.\n\u2022 [Infrastructure Gap]: Charging network expansion is critical for widespread adoption success."
+    },
+    {
+      "header": "\u2705 Prompt Engineering Best Practices",
+      "output": ""
+    },
+    {
+      "header": "1. Start specific - vague prompts get vague answers",
+      "output": "2. Show examples - few-shot learning improves results\n3. Request structured output - JSON, lists, specific formats\n4. Use role prompts - expertise affects response style\n5. Ask for reasoning - chain-of-thought improves accuracy\n6. Create templates - reuse successful patterns\n\n\ud83c\udfaf Next Steps:\n\u2022 Experiment with different prompt styles\n\u2022 Build a library of effective prompts\n\u2022 Test prompts across different models"
+    }
+  ],
+  "total_time": 0.03,
+  "api_keys_required": [],
+  "metrics": {
+    "lines_of_code": 274,
+    "api_calls": 0
+  }
+}

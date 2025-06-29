@@ -10,58 +10,65 @@ import jax
 import jax.numpy as jnp
 from dataclasses import dataclass
 from typing import List
-from ember.core.operators import LearnableRouter, Operator, Chain
+from ember.operators import LearnableRouter, Operator, Chain
+
 
 # Mock model operators for demonstration
 class QuickModel(Operator):
     """Fast but less accurate model."""
+
     def forward(self, text: str) -> str:
         return f"[Quick Analysis] {text[:50]}..."
 
+
 class DeepModel(Operator):
     """Slower but more accurate model."""
+
     def forward(self, text: str) -> str:
         words = len(text.split())
         return f"[Deep Analysis] {words} words analyzed. Key insights extracted."
 
+
 class CreativeModel(Operator):
     """Model optimized for creative tasks."""
+
     def forward(self, text: str) -> str:
         return f"[Creative Response] Reimagining: {text[:30]}... in new ways"
+
 
 # =============================================================================
 # Pattern 1: Simple Embedding Function (Most Common Case)
 # =============================================================================
+
 
 def complexity_embedder(text: str) -> jax.Array:
     """Embed text based on complexity heuristics."""
     # Simple heuristics for demonstration
     word_count = len(text.split())
     avg_word_length = sum(len(w) for w in text.split()) / max(word_count, 1)
-    sentence_count = text.count('.') + text.count('!') + text.count('?')
-    
+    sentence_count = text.count(".") + text.count("!") + text.count("?")
+
     # Create embedding based on these features
-    features = jnp.array([
-        word_count / 100.0,           # Normalized word count
-        avg_word_length / 10.0,       # Normalized average word length
-        sentence_count / 10.0,        # Normalized sentence count
-        float('?' in text),           # Has questions
-        float(any(w.isupper() for w in text.split()))  # Has emphasis
-    ])
-    
+    features = jnp.array(
+        [
+            word_count / 100.0,  # Normalized word count
+            avg_word_length / 10.0,  # Normalized average word length
+            sentence_count / 10.0,  # Normalized sentence count
+            float("?" in text),  # Has questions
+            float(any(w.isupper() for w in text.split())),  # Has emphasis
+        ]
+    )
+
     return features
+
 
 # Create router with embedding function
 simple_router = LearnableRouter(
-    routes={
-        "quick": QuickModel(),
-        "deep": DeepModel(),
-        "creative": CreativeModel()
-    },
+    routes={"quick": QuickModel(), "deep": DeepModel(), "creative": CreativeModel()},
     embedding_fn=complexity_embedder,
     embed_dim=5,
     key=jax.random.PRNGKey(42),
-    temperature=0.5  # Lower temperature = more decisive routing
+    temperature=0.5,  # Lower temperature = more decisive routing
 )
 
 print("=== Pattern 1: Router with Embedding Function ===")
@@ -72,7 +79,7 @@ inputs = [
     "Hello",
     "What is the meaning of life, the universe, and everything?",
     "The quick brown fox jumps over the lazy dog. This is a simple sentence.",
-    "URGENT: Need creative solution NOW! Help redesign our approach!!!"
+    "URGENT: Need creative solution NOW! Help redesign our approach!!!",
 ]
 
 for text in inputs:
@@ -85,22 +92,22 @@ for text in inputs:
 # Pattern 2: External Embeddings (Advanced Use Case)
 # =============================================================================
 
+
 @dataclass
 class AnalysisRequest:
     """Structured input with pre-computed embeddings."""
+
     data: str
     embedding: jax.Array
     metadata: dict = None
 
+
 # Router expecting external embeddings
 advanced_router = LearnableRouter(
-    routes={
-        "technical": DeepModel(),
-        "general": QuickModel()
-    },
+    routes={"technical": DeepModel(), "general": QuickModel()},
     embedding_fn=None,  # No embedding function - expects structured input
     embed_dim=10,
-    key=jax.random.PRNGKey(123)
+    key=jax.random.PRNGKey(123),
 )
 
 print("=== Pattern 2: Router with External Embeddings ===")
@@ -115,13 +122,13 @@ requests = [
     AnalysisRequest(
         data="Explain quantum computing algorithms",
         embedding=technical_embedding,
-        metadata={"source": "academic", "priority": "high"}
+        metadata={"source": "academic", "priority": "high"},
     ),
     AnalysisRequest(
         data="What's the weather like today?",
         embedding=general_embedding,
-        metadata={"source": "casual", "priority": "low"}
-    )
+        metadata={"source": "casual", "priority": "low"},
+    ),
 ]
 
 for req in requests:
@@ -135,56 +142,57 @@ for req in requests:
 # Pattern 3: Composition - Router Within a Larger System
 # =============================================================================
 
+
 class AdaptiveAnalyzer(Operator):
     """Sophisticated analyzer that routes based on learned embeddings."""
-    
+
     def __init__(self, key):
         key1, key2 = jax.random.split(key)
-        
+
         # Learnable parameters for embedding computation
         self.context_weights = jax.random.normal(key1, (50, 8))
-        
+
         # Router with custom embedding function
         self.router = LearnableRouter(
             routes={
-                "factual": Chain([
-                    QuickModel(),
-                    SummaryOperator()  # Chain operators
-                ]),
+                "factual": Chain([QuickModel(), SummaryOperator()]),  # Chain operators
                 "analytical": DeepModel(),
-                "creative": CreativeModel()
+                "creative": CreativeModel(),
             },
             embedding_fn=self.compute_contextual_embedding,
             embed_dim=8,
-            key=key2
+            key=key2,
         )
-    
+
     def compute_contextual_embedding(self, text: str) -> jax.Array:
         """Compute embedding using learned weights."""
         # Extract simple features (in practice, would be more sophisticated)
         features = []
-        
+
         # Character distribution features
         for i in range(50):
             if i < len(text):
                 features.append(float(ord(text[i])) / 128.0)
             else:
                 features.append(0.0)
-        
+
         feature_vector = jnp.array(features)
-        
+
         # Apply learned transformation
         embedding = feature_vector @ self.context_weights
         return jax.nn.tanh(embedding)  # Bounded activation
-    
+
     def forward(self, text: str) -> str:
         # Add any pre/post processing here
         return self.router(text)
 
+
 class SummaryOperator(Operator):
     """Post-process to create summaries."""
+
     def forward(self, analysis: str) -> str:
         return f"{analysis} [Summary: Key points extracted]"
+
 
 print("=== Pattern 3: Composed System with Learned Routing ===")
 print()
@@ -194,7 +202,7 @@ analyzer = AdaptiveAnalyzer(jax.random.PRNGKey(999))
 test_inputs = [
     "List the prime numbers between 1 and 20",
     "Analyze the economic impact of renewable energy",
-    "Write a haiku about machine learning"
+    "Write a haiku about machine learning",
 ]
 
 for text in test_inputs:

@@ -1,0 +1,63 @@
+{
+  "version": "1.0",
+  "example": "02_core_concepts/rich_specifications.py",
+  "execution_mode": "simulated",
+  "sections": [
+    {
+      "header": "Part 1: Basic Structured Types with Validation",
+      "output": ""
+    },
+    {
+      "header": "Creating valid user profile:",
+      "output": "Username: john_doe\n  Email: john@example.com\n  Verified: False\n\nTesting validation (invalid username):\n\u2713 Validation caught error: 1 validation error for UserProfile\nusername\n  String should have at least 3 char..."
+    },
+    {
+      "header": "Part 2: Nested Structures with Complex Validation",
+      "output": ""
+    },
+    {
+      "header": "Creating nested customer structure:",
+      "output": "Customer ID: CUST-12345\n  Username: alice_smith\n  City: San Francisco\n  Tags: ['premium', 'early_adopter']"
+    },
+    {
+      "header": "Part 3: Operators with Rich Type Validation",
+      "output": ""
+    },
+    {
+      "header": "Document analysis with rich specifications:",
+      "output": "Request ID: REQ-7975\n  Word count: 16\n  Sentiment: {'positive': 0.6, 'negative': 0.1, 'neutral': 0.3}\n  Confidence: 85.0%"
+    },
+    {
+      "header": "Part 4: Advanced Validation Patterns",
+      "output": ""
+    },
+    {
+      "header": "Testing complex validation rules:",
+      "output": "\u2713 Valid transaction created\n\u2713 Validation caught: 1 validation error for FinancialTransaction\n  Value error, T..."
+    },
+    {
+      "header": "Part 5: Rich Error Messages",
+      "output": ""
+    },
+    {
+      "header": "EmberModel provides detailed validation errors:",
+      "output": "Validation errors (truncated):\n  3 validation errors for UserProfile\n  username\n    String should have at least 3 characters [type=string_too_short, input_value='x', input_type=str]\n      For further information visit https://errors.pydantic.dev/2.10/v/string_too_short\n  email\n    String should match pattern '^[\\w\\.-]+@[\\w\\.-]+\\.\\w+$' [type=string_pattern_mismatch, input_value='not-an-email', input_type=str]\n      For further information visit https://errors.pydantic.dev/2.10/v/string_pattern_mismatch\n  age\n  ..."
+    },
+    {
+      "header": "\u2705 Rich Type Validation Summary",
+      "output": ""
+    },
+    {
+      "header": "\ud83c\udfaf Key Capabilities:",
+      "output": "\u2022 Type-safe structures with EmberModel (Pydantic)\n  \u2022 Field-level constraints (min/max, patterns, etc.)\n  \u2022 Cross-field validation with @model_validator\n  \u2022 Nested structures with full validation\n  \u2022 Conditional fields and union types\n  \u2022 Custom validators for business logic\n  \u2022 Excellent error messages with context\n\n\ud83d\udca1 Best Practices:\n  1. Use EmberModel for all structured data\n  2. Add constraints at the field level\n  3. Use validators for complex logic\n  4. Provide helpful descriptions\n  5. Test edge cases thoroughly\n\n\ud83d\udcda Example Pattern:\n```python\nclass MyInput(EmberModel):\n    text: str = Field(min_length=1, max_length=1000)\n    options: Dict[str, Any] = Field(default_factory=dict)\n    \n    @field_validator('text')\n    def clean_text(cls, v):\n        return v.strip()\n\ndef my_operator(inputs: MyInput) -> MyOutput:\n    # Automatic validation through type annotations!\n    return MyOutput(...)\n```"
+    }
+  ],
+  "total_time": 0.84,
+  "api_keys_required": [
+    "OPENAI_API_KEY"
+  ],
+  "metrics": {
+    "lines_of_code": 331,
+    "api_calls": 4
+  }
+}

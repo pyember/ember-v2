@@ -1,7 +1,7 @@
 {
   "name": "@ember-ai/setup",
   "version": "1.0.0",
-  "description": "Delightful setup wizard for Ember AI",
+  "description": "Delightful setup wizard for Ember",
   "type": "module",
   "bin": {
     "ember-setup": "./dist/cli.js"

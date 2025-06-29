@@ -1,0 +1,258 @@
+
+==================================================
+  Chain of Thought Reasoning
+==================================================
+
+🎯 Why Chain of Thought Works:
+
+• Breaks complex problems into steps
+• Reduces errors through explicit reasoning
+• Improves interpretability
+• Enables verification of logic
+• Handles multi-step problems better
+
+=== Basic Chain of Thought ===
+
+Problem:
+  If a train travels 120 miles in 2 hours, then speeds up to travel 180 miles in the next 2 hours, what is its average speed for the entire journey?
+
+Without Chain of Thought:
+  'The average speed is 75 mph.'
+
+With Chain of Thought:
+  Step 1: Calculate total distance
+    First segment: 120 miles
+    Second segment: 180 miles
+    Total distance: 120 + 180 = 300 miles
+
+  Step 2: Calculate total time
+    First segment: 2 hours
+    Second segment: 2 hours
+    Total time: 2 + 2 = 4 hours
+
+  Step 3: Calculate average speed
+    Average speed = Total distance / Total time
+    Average speed = 300 miles / 4 hours = 75 mph
+
+  Answer: The average speed is 75 mph.
+
+
+=== Structured Reasoning Templates ===
+
+Template 1: Problem Decomposition
+  1. Understand: What is being asked?
+  2. Identify: What information is given?
+  3. Plan: What steps are needed?
+  4. Execute: Work through each step
+  5. Verify: Check the answer
+
+Template 2: Hypothesis Testing
+  1. State hypothesis
+  2. List supporting evidence
+  3. List contradicting evidence
+  4. Evaluate strength of evidence
+  5. Draw conclusion
+
+Template 3: Comparative Analysis
+  1. Identify options
+  2. Define criteria
+  3. Evaluate each option
+  4. Compare results
+  5. Make recommendation
+
+
+=== Mathematical Problem Solving ===
+
+Problem:
+  A baker has 24 eggs. Each cake requires 3 eggs and each batch of cookies requires 2 eggs. If the baker makes 5 cakes, how many batches of cookies can be made with the remaining eggs?
+
+Chain of Thought Solution:
+  Given information:
+    • Total eggs: 24
+    • Eggs per cake: 3
+    • Eggs per cookie batch: 2
+    • Number of cakes to make: 5
+
+  Step 1: Calculate eggs used for cakes
+    Eggs for cakes = 5 cakes × 3 eggs/cake = 15 eggs
+
+  Step 2: Calculate remaining eggs
+    Remaining eggs = 24 - 15 = 9 eggs
+
+  Step 3: Calculate cookie batches possible
+    Cookie batches = 9 eggs ÷ 2 eggs/batch = 4.5 batches
+    Since we can't make half a batch: 4 batches
+
+  Answer: 4 batches of cookies
+
+
+=== Logical Reasoning ===
+
+Logical puzzle:
+  'All roses are flowers. Some flowers fade quickly.
+   No roses are blue. Can we conclude anything about
+   blue flowers fading quickly?'
+
+Chain of Thought:
+  1. Parse the statements:
+     • All roses are flowers (roses ⊆ flowers)
+     • Some flowers fade quickly
+     • No roses are blue (roses ∩ blue = ∅)
+
+  2. What do we know about blue flowers?
+     • Blue flowers exist (implied)
+     • Blue flowers are not roses
+     • Blue flowers are flowers
+
+  3. Can blue flowers fade quickly?
+     • Some flowers fade quickly
+     • Blue flowers are flowers
+     • Therefore, blue flowers COULD fade quickly
+
+  4. Conclusion:
+     We cannot determine if blue flowers fade quickly.
+     The information is insufficient.
+
+
+=== Code Debugging with Chain of Thought ===
+
+Bug report: 'Function returns wrong sum for list [1, 2, 3]'
+
+Buggy code:
+  def sum_list(lst):
+      total = 0
+      for i in range(len(lst)):
+          total = lst[i]
+      return total
+
+Chain of Thought Debugging:
+  1. Understand expected behavior:
+     Input: [1, 2, 3]
+     Expected: 6 (1 + 2 + 3)
+     Actual: 3
+
+  2. Trace execution:
+     i=0: total = lst[0] = 1
+     i=1: total = lst[1] = 2
+     i=2: total = lst[2] = 3
+     Return: 3
+
+  3. Identify issue:
+     Using '=' instead of '+='
+     Each iteration overwrites total
+
+  4. Fix:
+     Change 'total = lst[i]' to 'total += lst[i]'
+
+
+=== Multi-Step Analysis ===
+
+Analyzing a business decision:
+
+Question: Should we launch product in Region A or Region B?
+
+Step 1: Identify factors
+  • Market size
+  • Competition
+  • Regulatory environment
+  • Distribution costs
+  • Cultural fit
+
+Step 2: Gather data
+  Region A:
+    • Market size: $10M
+    • Competitors: 3 major
+    • Regulations: Moderate
+    • Distribution: $$$
+    • Cultural fit: High
+
+  Region B:
+    • Market size: $15M
+    • Competitors: 1 major
+    • Regulations: Light
+    • Distribution: $
+    • Cultural fit: Medium
+
+Step 3: Weighted analysis
+  (Weights: Size=0.3, Competition=0.2, Reg=0.2, Cost=0.2, Fit=0.1)
+  Region A: 0.3(7) + 0.2(4) + 0.2(6) + 0.2(3) + 0.1(9) = 5.6
+  Region B: 0.3(9) + 0.2(8) + 0.2(8) + 0.2(9) + 0.1(6) = 8.3
+
+Step 4: Recommendation
+  Region B scores higher (8.3 vs 5.6)
+  Recommend: Launch in Region B
+
+
+=== Error Recovery Reasoning ===
+
+Scenario: API call failed with timeout
+
+Chain of Thought Recovery:
+  1. Identify error type:
+     • Timeout error
+     • Not a client error (4xx)
+     • Possibly transient
+
+  2. Consider possible causes:
+     • Network congestion
+     • Server overload
+     • Large request size
+     • Rate limiting
+
+  3. Determine recovery strategy:
+     • Check if idempotent → Yes
+     • Check retry budget → 2 retries left
+     • Check backoff needed → Yes
+
+  4. Execute recovery:
+     • Wait 2 seconds (exponential backoff)
+     • Retry with same parameters
+     • If fails again, try with smaller batch
+
+
+=== Prompt Engineering for CoT ===
+
+Effective CoT prompt patterns:
+
+1. Explicit instruction:
+   "Let's solve this step by step:"
+
+2. Few-shot with reasoning:
+   "Q: [Problem 1]"
+   "A: Let me work through this:"
+   "   Step 1: ..."
+   "   Step 2: ..."
+   "   Therefore: ..."
+
+3. Structured format:
+   "Problem: [statement]"
+   "Approach: Break down into steps"
+   "Solution:"
+   "1. First, ..."
+   "2. Then, ..."
+   "3. Finally, ..."
+
+4. Self-consistency:
+   "Solve this problem three different ways"
+   "and verify they give the same answer."
+
+==================================================
+✅ Chain of Thought Best Practices
+==================================================
+
+1. Be explicit about each step
+2. Show intermediate calculations
+3. State assumptions clearly
+4. Verify logic at each stage
+5. Use consistent formatting
+6. Include sanity checks
+7. Explain the 'why' not just 'what'
+
+🔧 Implementation Tips:
+• Start with 'Let's think step by step'
+• Number or bullet each step
+• Use clear transitions between steps
+• Summarize at the end
+• Check work when possible
+
+Next: Explore evaluation in '../10_evaluation_suite/'

@@ -4,8 +4,18 @@ Build AI systems with the elegance of print("Hello World").
 
 ## Installation
 
+### From PyPI
+
 ```bash
 pip install ember-ai
+```
+
+### From Source (Development)
+
+```bash
+git clone https://github.com/pyember/ember.git
+cd ember
+uv sync
 ```
 
 ## Quick Setup
@@ -13,13 +23,11 @@ pip install ember-ai
 Run our interactive setup wizard for the best experience:
 
 ```bash
+# If installed from PyPI
 ember setup
-```
 
-Or use npx if you haven't installed Ember yet:
-
-```bash
-npx @ember-ai/setup
+# If running from source
+uv run ember setup
 ```
 
 This will:
@@ -49,19 +57,25 @@ export GOOGLE_API_KEY="..."
 **Option 2: Configuration File** (Recommended)
 ```bash
 # Run setup for each provider
-ember setup  # Interactive wizard
+ember setup  # Interactive wizard (if installed from PyPI)
+# OR
+uv run ember setup  # If running from source
 
 # Or configure manually
 ember configure set credentials.openai_api_key "sk-..."
 ember configure set credentials.anthropic_api_key "sk-ant-..."
 ember configure set credentials.google_api_key "..."
+# OR (if running from source)
+uv run ember configure set credentials.openai_api_key "sk-..."
+uv run ember configure set credentials.anthropic_api_key "sk-ant-..."
+uv run ember configure set credentials.google_api_key "..."
 ```
 
 **Option 3: Runtime Context**
 ```python
-from ember.context import with_context
+from ember import context
 
-with with_context(credentials={"openai_api_key": "sk-..."}):
+with context.manager(credentials={"openai_api_key": "sk-..."}):
     response = models("gpt-4", "Hello!")
 ```
 
@@ -132,6 +146,49 @@ Common model identifiers:
 - **Google**: `gemini-pro`, `gemini-ultra`
 
 Models are automatically routed to the correct provider based on their name.
+
+## Core Patterns
+
+### Context Management
+
+Ember uses a unified context system for configuration and state management:
+
+```python
+from ember import context
+
+# Get the current context
+ctx = context.get()
+
+# Temporary configuration overrides
+with context.manager(models={"default": "gpt-4", "temperature": 0.9}) as ctx:
+    # All operations in this block use these settings
+    response = models("Hello")  # Uses gpt-4 with temperature 0.9
+```
+
+The context system provides:
+- Thread-safe and async-safe configuration management
+- Hierarchical configuration with proper isolation
+- Clean scoping for temporary overrides
+
+### Progressive Disclosure in APIs
+
+Ember APIs follow a pattern of progressive disclosure - simple things are simple, complex things are possible:
+
+```python
+from ember import models
+
+# Level 1: Simple one-off calls
+response = models("gpt-4", "Hello world")
+
+# Level 2: Reusable configured instances  
+assistant = models.instance("gpt-4", temperature=0.7, system="You are helpful")
+response = assistant("How do I center a div?")
+```
+
+This pattern appears throughout Ember:
+- `models()` for quick calls, `models.instance()` for configured instances
+- `operators.op` for simple functions, full `Operator` classes for complex needs
+- Direct data access for simple cases, streaming pipelines for scale
 
 ## Core Concepts
 
@@ -303,32 +360,45 @@ answer = consensus_answer("What's the best approach to distributed systems?")
 
 ## Command Line Interface
 
-Ember provides a comprehensive CLI for setup, configuration, and testing:
+Ember provides a comprehensive CLI for setup, configuration, and introspection.
+
+**Note:** If you installed Ember from PyPI, use `ember` directly. If running from source, prefix commands with `uv run`.
 
 ### Setup and Configuration
 
 ```bash
 # Interactive setup wizard (recommended for first-time setup)
-ember setup
+ember setup   # or: uv run ember setup
 
 # Test your API connection
-ember test
+ember test   # or: uv run ember test
 ember test --model claude-3-opus
-
-# List available models and providers
-ember models                    # List all models
-ember models --provider openai  # Filter by provider
-ember models --providers        # List providers only
 
 # Configuration management
 ember configure get models.default              # Get a config value
 ember configure set models.default "gpt-4"     # Set a config value
 ember configure list                            # Show all configuration
 ember configure show credentials               # Show specific section
-ember configure migrate                        # Migrate old config files
 
 # Version information
-ember version
+ember version   # or: uv run ember version
+```
+
+### Introspection Commands
+
+```bash
+# Context introspection
+ember context view                              # View current configuration
+ember context view --format json                # Output as JSON
+ember context view --filter models              # Show only models config
+ember context validate                          # Validate configuration
+
+# Registry introspection  
+ember registry list-models                      # List available models
+ember registry list-models --provider openai    # Filter by provider
+ember registry list-models --verbose            # Detailed information
+ember registry list-providers                   # Show provider status
+ember registry info gpt-4                       # Detailed model info
 ```
 
 ### Advanced Configuration
@@ -341,27 +411,22 @@ The context system supports multiple configuration sources with priority:
 4. **Defaults** (lowest priority)
 
 ```python
-from ember.context import create_context, with_context
+from ember import context
 
-# Create isolated contexts for different use cases
-dev_context = create_context(
+# Use context manager for temporary overrides
+with context.manager(
     models={"default": "gpt-3.5-turbo", "temperature": 0.0},
     credentials={"openai_api_key": "dev-key"}
-)
+) as dev_ctx:
+    # Development operations here
+    pass
 
-prod_context = create_context(
+with context.manager(
     models={"default": "gpt-4", "temperature": 0.7},
     credentials={"openai_api_key": "prod-key"}
-)
-
-# Use different contexts in different parts of your app
-with dev_context:
-    # All calls here use dev settings
-    test_response = models(None, "Test prompt")
-
-with prod_context:
-    # All calls here use production settings  
-    prod_response = models(None, "Production prompt")
+) as prod_ctx:
+    # Production operations here
+    response = models("Production query")
 ```
 
 ## Advanced Features
@@ -443,17 +508,19 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed design documentation.
 ## Development
 
 ```bash
-# Install development dependencies
-pip install -e ".[dev]"
+# Clone and install development dependencies
+git clone https://github.com/pyember/ember.git
+cd ember
+uv sync --all-extras
 
 # Run tests
-pytest
+uv run pytest
 
 # Type checking
-mypy src/
+uv run mypy src/
 
 # Benchmarks
-python -m benchmarks.suite
+uv run python -m benchmarks.suite
 ```
 
 ## Contributing

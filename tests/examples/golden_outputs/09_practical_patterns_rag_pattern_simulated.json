@@ -1,0 +1,59 @@
+{
+  "version": "1.0",
+  "example": "09_practical_patterns/rag_pattern.py",
+  "execution_mode": "simulated",
+  "sections": [
+    {
+      "header": "\ud83d\udd0d Part 1: Document Processing",
+      "output": "Created 4 chunks from 4 documents\n  Sample chunk: Machine learning is a subset of artificial intelligence that enables systems to learn and improve fr..."
+    },
+    {
+      "header": "\ud83d\uddc2\ufe0f Part 2: Indexing with Simple Embeddings",
+      "output": ""
+    },
+    {
+      "header": "Created 4 embeddings",
+      "output": "Embedding dimension: 5"
+    },
+    {
+      "header": "\ud83d\udd0e Part 3: Semantic Retrieval",
+      "output": ""
+    },
+    {
+      "header": "Query: What are the different types of machine learning?",
+      "output": "Retrieved chunks:\n\n1. From: Types of Machine Learning (similarity: 0.999)\n   There are three main types of machine learning: supervised learning uses labeled data to train models, unsupervised learning finds patterns in unlabel...\n\n2. From: Machine Learning Applications (similarity: 0.998)\n   Machine learning powers many modern applications including recommendation systems, fraud detection, autonomous vehicles, medical diagnosis, and natura..."
+    },
+    {
+      "header": "\ud83d\udca1 Part 4: Context-Aware Generation",
+      "output": ""
+    },
+    {
+      "header": "Generated Answer:",
+      "output": "Based on the provided context, there are three main types of machine learning: supervised learning (using labeled data), unsupervised learning (finding patterns in unlabeled data), and reinforcement learning (learning through environment interaction with rewards).\n\nBased on 2 sources"
+    },
+    {
+      "header": "\ud83d\ude80 Part 5: Complete RAG Pipeline",
+      "output": ""
+    },
+    {
+      "header": "RAG Pipeline Results:",
+      "output": "Q: What are the different types of machine learning?\nA: Based on the provided context, there are three main types of machine learning: supervised learning (using labeled data), unsupervised learning (finding patterns in unlabeled data), and reinforcement learning (learning through environment interaction with rewards).\nSources: Types of Machine Learning, Machine Learning Applications\nMetadata: Searched 4 chunks\n\nQ: How does deep learning work?\nA: Based on the context about Deep Learning Fundamentals, how does deep learning work.\nSources: Deep Learning Fundamentals, Types of Machine Learning\nMetadata: Searched 4 chunks\n\nQ: What are some applications of ML?\nA: Based on the context about Introduction to Machine Learning, what are some applications of ml.\nSources: Introduction to Machine Learning, Machine Learning Applications\nMetadata: Searched 4 chunks"
+    },
+    {
+      "header": "\u2705 Key Takeaways",
+      "output": ""
+    },
+    {
+      "header": "1. RAG separates retrieval from generation",
+      "output": "2. Operators handle each stage independently\n3. Clean composition creates powerful systems\n4. Each component is testable and reusable\n5. Real implementations would use:\n   - Vector databases (Pinecone, Weaviate, etc.)\n   - Real embeddings (OpenAI, Sentence Transformers)\n   - LLMs for generation\n\nNext: Explore more patterns in other examples!"
+    }
+  ],
+  "total_time": 0.65,
+  "api_keys_required": [
+    "OPENAI_API_KEY"
+  ],
+  "metrics": {
+    "lines_of_code": 269,
+    "api_calls": 0
+  }
+}

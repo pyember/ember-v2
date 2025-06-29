@@ -1,5 +1,6 @@
 """Your first Ember program!"""
-from ember.api import models, Models
+
+from ember.api import Models, models
 
 # Direct API call
 response = models("claude-3-haiku", "Hello! Tell me something interesting.")

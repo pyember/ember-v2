@@ -1,0 +1,57 @@
+{
+  "version": "1.0",
+  "example": "02_core_concepts/context_management.py",
+  "execution_mode": "simulated",
+  "sections": [
+    {
+      "header": "\ud83c\udfaf Context Management in Ember:",
+      "output": "\u2022 Centralized configuration and state\n\u2022 Thread-safe resource access\n\u2022 Isolated environments\n\u2022 Lifecycle management\n\u2022 Dependency injection"
+    },
+    {
+      "header": "Getting current context:",
+      "output": "ctx = context.get()\n  Thread-safe: Yes\n  Isolated: Yes\n  Auto-configures from environment\n\nAccessing components:\n  credentials = ctx.get_credential('provider', 'key')\n  config = ctx.get_config('models.default')\n  \u2022 Manages API keys and configuration"
+    },
+    {
+      "header": "Configuration with context manager:",
+      "output": "with context.manager(models={'default': 'gpt-4'}) as ctx:\n      # All operations use gpt-4 in this scope\n      response = models('Hello')  # Uses gpt-4\n\nConfiguration access:\n  # Get configuration values\n  model = context.get().get_config('models.default')\n  temp = context.get().get_config('models.temperature', 0.7)\n\nContext manages configuration:\n  \u2022 Validates configuration schema\n  \u2022 Provides type-safe access\n  \u2022 Supports environment variables\n  \u2022 Handles defaults gracefully"
+    },
+    {
+      "header": "Model access patterns:",
+      "output": "1. Get default model:\n   model = ctx.get_model()\n   \u2192 Returns configured default model\n\n2. Get specific model:\n   model = ctx.get_model('gpt-4')\n   \u2192 Returns requested model if available\n\n3. List available models:\n   models = ctx.list_models()\n   \u2192 ['gpt-3.5-turbo', 'gpt-4', 'claude-3-opus', ...]\n\n4. Model with custom settings:\n   model = ctx.get_model('gpt-4', temperature=0.2)\n   \u2192 Model instance with overridden parameters"
+    },
+    {
+      "header": "Data access through context:",
+      "output": "1. Load dataset:\n   dataset = ctx.load_dataset('mmlu')\n   \u2192 Loads and caches dataset\n\n2. List available datasets:\n   datasets = ctx.list_datasets()\n   \u2192 ['mmlu', 'gsm8k', 'humaneval', ...]\n\n3. Register custom dataset:\n   ctx.register_dataset('my_data', loader_func)\n   \u2192 Makes dataset available in context\n\n4. Dataset with transforms:\n   dataset = ctx.load_dataset('mmlu', transform=preprocess)\n   \u2192 Applies transformation pipeline"
+    },
+    {
+      "header": "Context isolation ensures:",
+      "output": "\u2022 Each context has its own state\n  \u2022 No interference between contexts\n  \u2022 Thread-safe operations\n  \u2022 Clean testing environments\n\nExample: Multiple contexts with manager\n  with context.manager(models={'default': 'gpt-4'}) as ctx1:\n      # Production context\n  with context.manager(models={'default': 'gpt-3.5'}) as ctx2:\n      # Testing context\n\nEach context maintains:\n  \u2022 Separate configuration\n  \u2022 Independent state\n  \u2022 Isolated credentials\n  \u2022 Own settings"
+    },
+    {
+      "header": "Sharing context across services:",
+      "output": "class AIService:\n    def __init__(self, ctx):\n        self.ctx = ctx\n        self.config = ctx.get_config('models.default')\n\n# Get current context\nctx = context.get()\n\n# Initialize services with same context\nclassifier = TextClassifier(ctx)\nsummarizer = TextSummarizer(ctx)\nanalyzer = SentimentAnalyzer(ctx)\n\nBenefits:\n  \u2022 Shared configuration\n  \u2022 Consistent settings\n  \u2022 Unified state management\n  \u2022 Centralized resource access"
+    },
+    {
+      "header": "Context lifecycle stages:",
+      "output": "1. Access:\n   ctx = context.get()\n   \u2192 Gets current context\n   \u2192 Auto-creates if needed\n   \u2192 Thread-safe access\n\n2. Usage:\n   config = ctx.get_config('key')\n   cred = ctx.get_credential('provider', 'key')\n   \u2192 Access configuration\n   \u2192 Manage credentials\n\n3. Scoped overrides:\n   with context.manager(**overrides) as ctx:\n       # Use modified context\n   \u2192 Temporary changes\n   \u2192 Automatic restoration\n\nContext manager pattern:\n  with context.manager(models={'default': 'gpt-4'}) as ctx:\n      # All operations use overridden config\n      # Automatic cleanup on exit"
+    },
+    {
+      "header": "1. Nested Context Managers:",
+      "output": "with context.manager(models={'default': 'gpt-4'}) as ctx1:\n       with context.manager(models={'temperature': 0.2}) as ctx2:\n           # Nested configuration overrides\n\n2. Configuration Access:\n   from ember.context import get_config, set_config\n   value = get_config('models.default')\n   set_config('models.temperature', 0.7)\n\n3. Global Context:\n   from ember.context import context\n   ctx = context.get()\n   \u2192 Thread-local context access\n\n4. Testing Pattern:\n   with context.manager(test_mode=True) as ctx:\n       # Run tests with isolated context\n   \u2192 Clean test environment"
+    },
+    {
+      "header": "\u2705 Context Best Practices",
+      "output": ""
+    },
+    {
+      "header": "1. Create context early in application lifecycle",
+      "output": "2. Share context instead of creating multiple\n3. Use context managers for automatic cleanup\n4. Leverage context for dependency injection\n5. Keep context immutable after initialization\n6. Use child contexts for testing/experimentation\n7. Access all resources through context\n\n\ud83d\udd27 Common Patterns:\n\u2022 Application context: Single shared context\n\u2022 Request context: Per-request isolation\n\u2022 Test context: Isolated test environment\n\u2022 Worker context: Per-worker in parallel processing\n\nNext: Learn about error handling in 'error_handling.py'"
+    }
+  ],
+  "total_time": 1.16,
+  "api_keys_required": [],
+  "metrics": {
+    "lines_of_code": 218,
+    "api_calls": 0
+  }
+}

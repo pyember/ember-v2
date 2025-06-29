@@ -6,8 +6,7 @@ from ember.integrations.mcp import EmberMCPServer
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 
 
@@ -26,10 +25,10 @@ async def main():
     print("- ember://models/costs: Get pricing information")
     print("- ember://metrics/usage: View usage statistics")
     print("\nPress Ctrl+C to stop the server.\n")
-    
+
     # Create and run server
     server = EmberMCPServer(name="ember-basic")
-    
+
     try:
         await server.run(transport="stdio")
     except KeyboardInterrupt:

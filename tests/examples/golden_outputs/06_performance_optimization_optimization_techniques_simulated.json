@@ -1,0 +1,63 @@
+{
+  "version": "1.0",
+  "example": "06_performance_optimization/optimization_techniques.py",
+  "execution_mode": "simulated",
+  "sections": [
+    {
+      "header": "\ud83d\udd27 Running in simulated mode (no API keys detected)",
+      "output": ""
+    },
+    {
+      "header": "To run this example with real API calls, set one of:",
+      "output": "export OPENAI_API_KEY='your-key-here'\n  export ANTHROPIC_API_KEY='your-key-here'\n  export GOOGLE_API_KEY='your-key-here'\n\nSimulated output will demonstrate the expected behavior."
+    },
+    {
+      "header": "Example 1: JIT Compilation Speedup",
+      "output": ""
+    },
+    {
+      "header": "Normal execution: 0.00s",
+      "output": "Result: {'sentiment': 'positive', 'emotion': 'joy', 'intensity': 5}\n\nFirst JIT call (includes compilation): 0.00s\nOptimized JIT call: 0.00s\nSpeedup: 0.2x faster"
+    },
+    {
+      "header": "Example 2: Batch Processing with vmap",
+      "output": ""
+    },
+    {
+      "header": "Sequential processing:",
+      "output": "- The new iPhone features AI cap... -> tech\n  - The team won the championship ... -> sports\n  - Congress passed the new climat... -> politics\n  - The movie broke box office rec... -> entertainment\n  - Scientists discover new exopla... -> other\n\nSequential time: 0.00s\n\nBatch processing with vmap:\n  - The new iPhone features AI cap... -> tech\n  - The team won the championship ... -> sports\n  - Congress passed the new climat... -> politics\n  - The movie broke box office rec... -> entertainment\n  - Scientists discover new exopla... -> other\n\nBatch time: 0.00s\nSpeedup: 0.1x faster"
+    },
+    {
+      "header": "Example 3: Caching Pattern",
+      "output": ""
+    },
+    {
+      "header": "Translation requests:",
+      "output": "[Cache miss for 'Hello, how are you?...']\n  'Hello, how are you?' -> 'Hola, \u00bfc\u00f3mo est\u00e1s?'\n  [Cache miss for 'Thank you very much...']\n  'Thank you very much' -> 'Muchas gracias'\n  [Cache hit for 'Hello, how are you?...']\n  'Hello, how are you?' -> 'Hola, \u00bfc\u00f3mo est\u00e1s?'\n  [Cache miss for 'Good morning...']\n  'Good morning' -> 'Buenos d\u00edas'\n  [Cache hit for 'Thank you very much...']\n  'Thank you very much' -> 'Muchas gracias'\n\nCache stats: 3 unique translations cached"
+    },
+    {
+      "header": "Example 4: Optimized Pipeline",
+      "output": ""
+    },
+    {
+      "header": "Processing documents in batch:",
+      "output": "Document 1:\n  Preview: AI research has made significant progress in natur...\n  Summary: AI research advances natural language understanding capabilities.\n  Category: research\n\nDocument 2:\n  Preview: The stock market reached new highs today as tech c...\n  Summary: AI research advances natural language understanding capabilities.\n  Category: research\n\nDocument 3:\n  Preview: A new study shows the benefits of regular exercise...\n  Summary: AI research advances natural language understanding capabilities.\n  Category: research\n\nTotal processing time: 0.00s\nAverage per document: 0.00s"
+    },
+    {
+      "header": "Performance Optimization Tips",
+      "output": ""
+    },
+    {
+      "header": "1. \ud83d\ude80 Use @jit for functions called multiple times",
+      "output": "- First call includes compilation overhead\n   - Subsequent calls are significantly faster\n   - Best for: Repeated operations, production APIs\n\n2. \ud83d\udce6 Use vmap() for batch processing\n   - Processes multiple inputs in parallel\n   - Automatic batching optimization\n   - Best for: Processing lists, datasets, bulk operations\n\n3. \ud83d\udcbe Implement caching where appropriate\n   - Cache expensive LLM calls\n   - Consider TTL for dynamic content\n   - Best for: Repeated queries, reference data\n\n4. \ud83d\udd27 Combine optimizations\n   - JIT + vmap = Maximum performance\n   - Cache + JIT = Fast repeated operations\n   - Best for: Production systems\n\n5. \ud83d\udcca Profile before optimizing\n   - Measure actual bottlenecks\n   - Focus on hot paths\n   - Best for: Real-world applications\n\n\u2728 Remember: Premature optimization is the root of all evil.\n   Profile first, then optimize where it matters!"
+    }
+  ],
+  "total_time": 0.63,
+  "api_keys_required": [
+    "OPENAI_API_KEY"
+  ],
+  "metrics": {
+    "lines_of_code": 224,
+    "api_calls": 0
+  }
+}

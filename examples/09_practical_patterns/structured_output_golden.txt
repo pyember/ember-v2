@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/Users/jq/Downloads/eb1/examples/09_practical_patterns/structured_output.py", line 22, in <module>
+    from ember.api.operators import EmberModel, Field
+ImportError: cannot import name 'EmberModel' from 'ember.api.operators' (/Users/jq/Downloads/eb1/src/ember/api/operators.py)

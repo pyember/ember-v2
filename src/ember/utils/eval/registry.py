@@ -21,7 +21,8 @@ class EvaluatorRegistry:
 
         Args:
             name (str): A unique identifier for the evaluator.
-            factory (Callable[..., IEvaluator[Any, Any]]): A callable that returns an IEvaluator instance.
+            factory (Callable[..., IEvaluator[Any, Any]]): A callable that returns an 
+                IEvaluator instance.
         """
         self._registry[name] = factory
 

@@ -15,7 +15,11 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from ember._internal.exceptions import DataError, DataTransformationError, ExecutionError
+from ember._internal.exceptions import (
+    DataError,
+    DataTransformationError,
+    ExecutionError,
+)
 from ember.utils.eval.base_evaluator import EvaluationResult, IEvaluator
 
 
@@ -23,9 +27,7 @@ class CodeExecutionError(ExecutionError):
     """Raised when code execution fails due to runtime errors or security violations."""
 
     DEFAULT_ERROR_CODE = 4300
-    DEFAULT_RECOVERY_HINT = (
-        "Check code for syntax errors and ensure it meets security requirements"
-    )
+    DEFAULT_RECOVERY_HINT = "Check code for syntax errors and ensure it meets security requirements"
 
     @classmethod
     def for_execution(
@@ -34,7 +36,8 @@ class CodeExecutionError(ExecutionError):
         error_type: str,
         stderr: Optional[str] = None,
         exit_code: Optional[int] = None,
-        **context: Any) -> "CodeExecutionError":
+        **context: Any,
+    ) -> "CodeExecutionError":
         """Create an exception for a specific code execution error.
 
         Args:
@@ -53,9 +56,7 @@ class CodeExecutionError(ExecutionError):
 
         if stderr:
             # Truncate stderr to avoid excessive context size
-            error_context["stderr"] = stderr[:500] + (
-                "..." if len(stderr) > 500 else ""
-            )
+            error_context["stderr"] = stderr[:500] + ("..." if len(stderr) > 500 else "")
 
         if exit_code is not None:
             error_context["exit_code"] = exit_code
@@ -67,9 +68,7 @@ class SecurityViolationError(DataTransformationError):
     """Raised when code contains potentially unsafe operations."""
 
     DEFAULT_ERROR_CODE = 4301
-    DEFAULT_RECOVERY_HINT = (
-        "Remove unsafe operations like imports, file access, and network calls"
-    )
+    DEFAULT_RECOVERY_HINT = "Remove unsafe operations like imports, file access, and network calls"
 
     @classmethod
     def for_pattern(
@@ -132,9 +131,7 @@ class LanguageHandler(ABC):
         """Return the command to compile the code, if needed."""
         return None
 
-    def compare_outputs(
-        self, expected: str, actual: str, case_sensitive: bool = True
-    ) -> bool:
+    def compare_outputs(self, expected: str, actual: str, case_sensitive: bool = True) -> bool:
         """Compare expected and actual outputs, normalizing whitespace."""
         # Normalize line endings
         expected = expected.replace("\r\n", "\n").strip()
@@ -183,7 +180,8 @@ class PythonHandler(LanguageHandler):
             "import random",
             "import string",
             "from collections import Counter, defaultdict, deque",
-            "from itertools import combinations, permutations, product"]
+            "from itertools import combinations, permutations, product",
+        ]
 
         # Security patterns to check (pattern, description)
         unsafe_patterns = [
@@ -216,35 +214,33 @@ class PythonHandler(LanguageHandler):
             (r"setattr\s*\(", "attribute modification"),
             (r"getattr\s*\(", "attribute access"),
             (r"import\s+ctypes", "C bindings"),
-            (r"import\s+multiprocessing", "process spawning")]
+            (r"import\s+multiprocessing", "process spawning"),
+        ]
 
         # Check for unsafe patterns and collect violations
         violations = []
         for pattern, description in unsafe_patterns:
             match = re.search(pattern, code)
             if match:
-                snippet = code[
-                    max(0, match.start() - 10) : min(len(code), match.end() + 10)
-                ]
+                snippet = code[max(0, match.start() - 10) : min(len(code), match.end() + 10)]
                 violations.append(f"{description} ({pattern}): {snippet}")
 
         # If any violations, raise a security error
         if violations:
-            violation_details = "\n- ".join([f"{v}" for v in violations])
+            "\n- ".join([f"{v}" for v in violations])
             raise SecurityViolationError.for_pattern(
-                pattern=(
-                    "multiple security violations"
-                    if len(violations) > 1
-                    else violations[0]
-                ),
-                code_snippet=code[:200] if len(code) > 200 else code)
+                pattern=("multiple security violations" if len(violations) > 1 else violations[0]),
+                code_snippet=code[:200] if len(code) > 200 else code,
+            )
 
         # Memory and CPU limits to prevent infinite loops and memory bombs
         resource_limits = [
             "# Set resource limits",
             "import resource",
             "resource.setrlimit(resource.RLIMIT_CPU, (5, 5))  # 5 CPU seconds",
-            "resource.setrlimit(resource.RLIMIT_AS, (500 * 1024 * 1024, 500 * 1024 * 1024))  # 500MB memory"]
+            "resource.setrlimit(resource.RLIMIT_AS, "
+            "(500 * 1024 * 1024, 500 * 1024 * 1024))  # 500MB memory",
+        ]
 
         # Wrap code with safety measures
         wrapper = "\n".join(
@@ -257,7 +253,8 @@ class PythonHandler(LanguageHandler):
                 "",
                 "# Begin user code",
                 code,
-                "# End user code"]
+                "# End user code",
+            ]
         )
 
         return wrapper
@@ -304,7 +301,8 @@ class CPPHandler(LanguageHandler):
             "-Wall",
             str(code_file),
             "-o",
-            str(output_file)]
+            str(output_file),
+        ]
 
     def get_run_command(self, code_file: Path) -> List[str]:
         """Return the command to run compiled C++ code.
@@ -365,7 +363,8 @@ class CodeExecutor:
             raise DataError(
                 message=f"Unsupported language: {language}",
                 context={"language": language, "supported_languages": supported},
-                recovery_hint=f"Use one of the supported languages: {supported}")
+                recovery_hint=f"Use one of the supported languages: {supported}",
+            )
         return handler
 
     def _monitor_process_resources(self, process: subprocess.Popen) -> float:
@@ -379,10 +378,12 @@ class CodeExecutor:
         """
         try:
             import psutil
+
             HAS_PSUTIL = True
         except ImportError:
             HAS_PSUTIL = False
             import logging
+
             logger = logging.getLogger(__name__)
             logger.debug("psutil not available - memory monitoring disabled")
             return 0.0
@@ -410,7 +411,7 @@ class CodeExecutor:
             except (PermissionError, Exception):
                 # If we don't have permission or any other error, just return 0
                 return 0.0
-        
+
         return 0.0
 
     def run_code(
@@ -468,7 +469,8 @@ class CodeExecutor:
                             cwd=temp_dir,
                             capture_output=True,
                             text=True,
-                            timeout=timeout)
+                            timeout=timeout,
+                        )
 
                         if compile_result.returncode != 0:
                             return TestCaseResult(
@@ -478,13 +480,15 @@ class CodeExecutor:
                                 stdout="",
                                 stderr=compile_result.stderr,
                                 error="Compilation error",
-                                exit_code=compile_result.returncode)
+                                exit_code=compile_result.returncode,
+                            )
                     except subprocess.TimeoutExpired:
                         return TestCaseResult(
                             passed=False,
                             execution_time=timeout,
                             error="Compilation timeout",
-                            exit_code=None)
+                            exit_code=None,
+                        )
 
                 # Execute code with resource monitoring
                 run_cmd = handler.get_run_command(code_file)
@@ -502,7 +506,8 @@ class CodeExecutor:
                             stderr=subprocess.PIPE,
                             text=True,
                             # Set process group to enable clean termination of subprocesses
-                            preexec_fn=os.setsid)
+                            preexec_fn=os.setsid,
+                        )
 
                         # Start resource monitoring in a separate thread
                         import threading
@@ -511,7 +516,8 @@ class CodeExecutor:
                             target=lambda: setattr(
                                 threading.current_thread(),
                                 "memory_usage",
-                                self._monitor_process_resources(process))
+                                self._monitor_process_resources(process),
+                            )
                         )
                         monitor_thread.daemon = True
                         monitor_thread.start()
@@ -539,17 +545,14 @@ class CodeExecutor:
                                 )
 
                             return TestCaseResult(
-                                passed=(
-                                    process.returncode == 0
-                                ),  # Will be updated by evaluator
+                                passed=(process.returncode == 0),  # Will be updated by evaluator
                                 execution_time=execution_time,
                                 memory_used_mb=memory_used,
                                 stdout=stdout,
                                 stderr=stderr,
-                                error=(
-                                    None if process.returncode == 0 else "Runtime error"
-                                ),
-                                exit_code=process.returncode)
+                                error=(None if process.returncode == 0 else "Runtime error"),
+                                exit_code=process.returncode,
+                            )
 
                         except subprocess.TimeoutExpired:
                             # Clean termination of process group
@@ -567,7 +570,8 @@ class CodeExecutor:
                                 execution_time=execution_time,
                                 memory_used_mb=memory_used,
                                 error="Time limit exceeded",
-                                exit_code=None)
+                                exit_code=None,
+                            )
 
                 except Exception as e:
                     # Handle any unexpected errors during execution
@@ -576,7 +580,8 @@ class CodeExecutor:
                         passed=False,
                         execution_time=execution_time,
                         error=f"Execution error: {str(e)}",
-                        exit_code=None)
+                        exit_code=None,
+                    )
 
             except SecurityViolationError:
                 # Re-raise security violations
@@ -618,7 +623,8 @@ class CodeCompetitionEvaluator(IEvaluator[str, Dict[str, Any]]):
         self.executor = CodeExecutor(
             time_limit=time_limit,
             memory_limit_mb=memory_limit_mb,
-            max_output_size=max_output_size)
+            max_output_size=max_output_size,
+        )
 
     def evaluate(
         self, system_output: str, reference_data: Dict[str, Any], **kwargs: Any
@@ -653,7 +659,8 @@ class CodeCompetitionEvaluator(IEvaluator[str, Dict[str, Any]]):
                     "error": f"Unsupported language: {language}",
                     "error_type": "unsupported_language",
                     "supported_languages": self.supported_languages,
-                })
+                },
+            )
 
         # Validate test cases
         test_cases = reference_data.get("test_cases", [])
@@ -664,7 +671,8 @@ class CodeCompetitionEvaluator(IEvaluator[str, Dict[str, Any]]):
                 metadata={
                     "error": "No test cases provided",
                     "error_type": "missing_test_cases",
-                })
+                },
+            )
 
         # Process test cases
         results = []
@@ -747,7 +755,8 @@ class CodeCompetitionEvaluator(IEvaluator[str, Dict[str, Any]]):
                             "language": language,
                             "test_case": test_id,
                             "context": e.context,
-                        })
+                        },
+                    )
 
                 except CodeExecutionError as e:
                     # Code execution errors are per-test-case
@@ -757,9 +766,7 @@ class CodeCompetitionEvaluator(IEvaluator[str, Dict[str, Any]]):
                             "passed": False,
                             "execution_time": 0.0,
                             "error": f"Execution error: {e.message}",
-                            "error_type": e.context.get(
-                                "error_type", "execution_error"
-                            ),
+                            "error_type": e.context.get("error_type", "execution_error"),
                         }
                     )
 
@@ -810,10 +817,9 @@ class CodeCompetitionEvaluator(IEvaluator[str, Dict[str, Any]]):
                 "total_cases": total_cases,
                 "language": language,
                 "total_execution_time": round(total_time, 4),
-                "avg_execution_time": round(
-                    total_time / total_cases if total_cases > 0 else 0, 4
-                ),
+                "avg_execution_time": round(total_time / total_cases if total_cases > 0 else 0, 4),
                 "max_memory_used_mb": round(max_memory, 2),
                 "test_results": results,
                 "error_message": error_message,
-            })
+            },
+        )

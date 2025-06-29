@@ -1,0 +1,17 @@
+{
+  "version": "1.0",
+  "example": "01_getting_started/hello_world.py",
+  "execution_mode": "simulated",
+  "sections": [
+    {
+      "header": "\u2713 Ember package imported successfully",
+      "output": "\u2713 Core APIs imported successfully\n  Ember version: 0.1.0\n\n\u2713 Basic function creation successful\n  Function result: Hello, World! Welcome to Ember.\n  JIT-optimized result: Hello, Ember User! Welcome to Ember.\n  Operator result: {'greeting': 'Hello, Developer!', 'timestamp': '2024-01-20', 'version': 'ember-2.0'}\n\n\ud83c\udf89 Congratulations! Ember is installed and working correctly.\n\nNotice how simple the new API is:\n  - Functions are first-class citizens\n  - No complex base classes or specifications\n  - Optimization is just a decorator away\n\nNext steps:\n  - Run first_model_call.py to make your first LLM call\n  - Explore the examples in numbered order"
+    }
+  ],
+  "total_time": 0.81,
+  "api_keys_required": [],
+  "metrics": {
+    "lines_of_code": 71,
+    "api_calls": 0
+  }
+}

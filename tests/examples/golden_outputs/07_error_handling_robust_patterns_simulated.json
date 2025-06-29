@@ -1,0 +1,77 @@
+{
+  "version": "1.0",
+  "example": "07_error_handling/robust_patterns.py",
+  "execution_mode": "simulated",
+  "sections": [
+    {
+      "header": "\ud83d\udd27 Running in simulated mode (no API keys detected)",
+      "output": ""
+    },
+    {
+      "header": "To run this example with real API calls, set one of:",
+      "output": "export OPENAI_API_KEY='your-key-here'\n  export ANTHROPIC_API_KEY='your-key-here'\n  export GOOGLE_API_KEY='your-key-here'\n\nSimulated output will demonstrate the expected behavior."
+    },
+    {
+      "header": "Example 1: Basic Error Handling",
+      "output": ""
+    },
+    {
+      "header": "Testing error handling:",
+      "output": "Input: 'I love this product!'\n\u2705 Result: positive\n\nInput: ''\n\u274c Error: Invalid input: text must be a non-empty string\n\nInput: None\n\u274c Error: Invalid input: text must be a non-empty string\n\nInput: 'This is okay I guess'\n\u2705 Result: neutral"
+    },
+    {
+      "header": "Example 2: Retry Mechanism",
+      "output": ""
+    },
+    {
+      "header": "Testing retry mechanism:",
+      "output": "Attempt 1 failed: Network timeout\n  Retrying in 1.0s...\n\u2705 Success after 2 attempts: Bonjour le monde"
+    },
+    {
+      "header": "Example 3: Fallback Strategies",
+      "output": ""
+    },
+    {
+      "header": "Trying primary model: gpt-4",
+      "output": "Primary model failed: Simulated primary model failure\nFalling back to: gpt-3.5-turbo\n\nResult: Buenos d\u00edas\nModel used: gpt-3.5-turbo\nFallback used: True"
+    },
+    {
+      "header": "Example 4: Input Validation",
+      "output": ""
+    },
+    {
+      "header": "Testing input validation:",
+      "output": "Test 1: {'text': 'Hello world', 'language': 'English'}\n\u2705 Success\n   Result: {'analysis': 'This English text contains common words and standard grammar.', 'text_length': 11, 'language': 'english'}\n\nTest 2: {'text': '', 'language': 'Spanish'}\n\u274c Failed\n   Errors: [\"Field 'text' cannot be empty\"]\n\nTest 3: {'language': 'French'}\n\u274c Failed\n   Errors: ['Missing required field: text']\n\nTest 4: {'text': 123, 'language': 'German'}\n\u274c Failed\n   Errors: [\"Field 'text' must be a string\"]\n\nTest 5: {'text': 'Bonjour', 'language': 'Klingon'}\n\u274c Failed\n   Errors: ['Unsupported language: Klingon']"
+    },
+    {
+      "header": "Example 5: Circuit Breaker Pattern",
+      "output": ""
+    },
+    {
+      "header": "Testing circuit breaker:",
+      "output": "\u274c Request 1: Service temporarily unavailable\n\u2705 Request 2: Processed: Request 2\n\u2705 Request 3: Processed: Request 3\n\u274c Request 4: Service temporarily unavailable\n  Circuit breaker: OPENED after 2 failures\n\u274c Request 5: Service temporarily unavailable\n\u274c Request 6: Circuit breaker is OPEN - service unavailable"
+    },
+    {
+      "header": "Example 6: Error Aggregation and Reporting",
+      "output": ""
+    },
+    {
+      "header": "Processing items:",
+      "output": "\u2705 Processed: Item_0\n  \u2705 Processed: Item_0\n  \u2705 Processed: Item_0\n  \u2705 Processed: Item_0\n  \u2705 Processed: Item_0\n  \u2705 Processed: Item_0\n  \u2705 Processed: Item_0\n  \u2705 Processed: Item_0\n  \u2705 Processed: Item_0\n  \u2705 Processed: Item_0\n\nError Report:\n  Summary: {'total_operations': 11, 'successful': 11, 'failed': 0, 'success_rate': '100.0%'}\n  Health Status: healthy\n  Recent Errors: 0\n  Warnings: 0"
+    },
+    {
+      "header": "\u2705 Best Practices Summary",
+      "output": ""
+    },
+    {
+      "header": "1. Always validate inputs before processing",
+      "output": "2. Use try-catch blocks around external calls\n3. Implement retry logic for transient failures\n4. Have fallback strategies for critical paths\n5. Use circuit breakers to prevent cascading failures\n6. Aggregate and monitor errors for insights\n7. Return structured error responses\n8. Log errors for debugging and monitoring"
+    }
+  ],
+  "total_time": 7.9,
+  "api_keys_required": [],
+  "metrics": {
+    "lines_of_code": 418,
+    "api_calls": 1
+  }
+}

@@ -177,9 +177,7 @@ class NumericAnswerEvaluator(IEvaluator[str, str]):
             default_pattern = r"(?:answer|result)?\s*(?:is|=|:)?\s*(-?\d+)"
             self.extractor = RegexAnswerExtractor(default_pattern)
 
-    def evaluate(
-        self, system_output: str, correct_answer: str, **kwargs: Any
-    ) -> EvaluationResult:
+    def evaluate(self, system_output: str, correct_answer: str, **kwargs: Any) -> EvaluationResult:
         """Compare extracted numeric answer against expected value.
 
         Args:
@@ -197,7 +195,8 @@ class NumericAnswerEvaluator(IEvaluator[str, str]):
             return EvaluationResult(
                 is_correct=False,
                 score=0.0,
-                metadata={"error": "Invalid reference answer format"})
+                metadata={"error": "Invalid reference answer format"},
+            )
 
         # Extract numbers from the response
         extracted_numbers, metadata = self.extractor.extract(system_output)
@@ -208,7 +207,8 @@ class NumericAnswerEvaluator(IEvaluator[str, str]):
         return EvaluationResult(
             is_correct=is_correct,
             score=1.0 if is_correct else 0.0,
-            metadata={**metadata, "expected": expected, "found": is_correct})
+            metadata={**metadata, "expected": expected, "found": is_correct},
+        )
 
 
 class AIMEAnswerEvaluator(IEvaluator[str, str]):
@@ -219,9 +219,7 @@ class AIMEAnswerEvaluator(IEvaluator[str, str]):
     in priority order to identify the intended answer in the response.
     """
 
-    def __init__(
-        self, custom_extractors: Optional[List[IAnswerExtractor]] = None
-    ) -> None:
+    def __init__(self, custom_extractors: Optional[List[IAnswerExtractor]] = None) -> None:
         """Initialize with AIME-specific extraction strategies.
 
         Args:
@@ -234,7 +232,8 @@ class AIMEAnswerEvaluator(IEvaluator[str, str]):
             TheAnswerExtractor(),
             ThereforeExtractor(),
             GetAnswerExtractor(),
-            EqualsExtractor()]
+            EqualsExtractor(),
+        ]
 
         # Fallback extractor for when no specific answer statements are found
         self.fallback_extractor = GenericNumberExtractor()
@@ -256,9 +255,7 @@ class AIMEAnswerEvaluator(IEvaluator[str, str]):
         except ValueError:
             return False, 0, f"Invalid AIME answer format: {answer_str}"
 
-    def evaluate(
-        self, system_output: str, correct_answer: str, **kwargs: Any
-    ) -> EvaluationResult:
+    def evaluate(self, system_output: str, correct_answer: str, **kwargs: Any) -> EvaluationResult:
         """Evaluate if the response contains the correct AIME answer.
 
         Uses multiple extraction strategies in priority order:
@@ -279,7 +276,8 @@ class AIMEAnswerEvaluator(IEvaluator[str, str]):
             return EvaluationResult(
                 is_correct=False,
                 score=0.0,
-                metadata={"error": error, "expected": correct_answer})
+                metadata={"error": error, "expected": correct_answer},
+            )
 
         # Try each primary extractor in sequence
         for extractor in self.primary_extractors:
@@ -296,7 +294,8 @@ class AIMEAnswerEvaluator(IEvaluator[str, str]):
                         "extractor": metadata["method"],
                         "extracted_values": numbers,
                         "expected": expected,
-                    })
+                    },
+                )
 
         # If no primary extractors found answers, fall back to all numbers
         numbers, metadata = self.fallback_extractor.extract(system_output)
@@ -309,4 +308,5 @@ class AIMEAnswerEvaluator(IEvaluator[str, str]):
                 "extracted_method": "fallback_pattern",
                 "extracted_values": numbers,
                 "expected": expected,
-            })
+            },
+        )

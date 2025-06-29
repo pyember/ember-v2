@@ -1,0 +1,25 @@
+{
+  "version": "1.0",
+  "example": "01_getting_started/first_model_call.py",
+  "execution_mode": "simulated",
+  "sections": [
+    {
+      "header": "\ud83d\udd27 Running in simulated mode (no API keys detected)",
+      "output": ""
+    },
+    {
+      "header": "To run this example with real API calls, set one of:",
+      "output": "export OPENAI_API_KEY='your-key-here'\n\nSimulated output will demonstrate the expected behavior."
+    },
+    {
+      "header": "Method 1: Direct model call",
+      "output": "Response: Machine learning is a type of artificial intelligence that enables computers to learn and improve from experience without being explicitly programmed.\n  Model used: gpt-3.5-turbo\n\nMethod 2: Model binding (reusable)\n  Creative response: Imagine you have a magic toy that gets smarter every time you play with it. Quantum computing is lik...\n\nMethod 3: With system prompt\n  Concise response: Paris.\n\nResponse metadata:\n  Prompt tokens: 2\n  Completion tokens: 1\n  Total tokens: 3\n  Estimated cost: $0.0000\n\nBonus: Using different models\nAvailable models (with API keys):\n  - gpt-4\n  - claude-3-opus\n  - gemini-pro\n\n\u2705 Successfully demonstrated LLM API calls!\n\nKey takeaways:\n  - models() for direct calls\n  - models.instance() for reusable configurations\n  - Automatic cost tracking in response.usage\n  - Same API works with any provider"
+    }
+  ],
+  "total_time": 1.37,
+  "api_keys_required": [],
+  "metrics": {
+    "lines_of_code": 125,
+    "api_calls": 0
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "version": "1.0",
+  "example": "09_practical_patterns/chain_of_thought.py",
+  "execution_mode": "simulated",
+  "sections": [
+    {
+      "header": "\ud83c\udfaf Why Chain of Thought Works:",
+      "output": "\u2022 Breaks complex problems into steps\n\u2022 Reduces errors through explicit reasoning\n\u2022 Improves interpretability\n\u2022 Enables verification of logic\n\u2022 Handles multi-step problems better"
+    },
+    {
+      "header": "Problem:",
+      "output": "If a train travels 120 miles in 2 hours, then speeds up to travel 180 miles in the next 2 hours, what is its average speed for the entire journey?\n\nWithout Chain of Thought:\n  'The average speed is 75 mph.'\n\nWith Chain of Thought:\n  Step 1: Calculate total distance\n    First segment: 120 miles\n    Second segment: 180 miles\n    Total distance: 120 + 180 = 300 miles\n\n  Step 2: Calculate total time\n    First segment: 2 hours\n    Second segment: 2 hours\n    Total time: 2 + 2 = 4 hours\n\n  Step 3: Calculate average speed\n    Average speed = Total distance / Total time\n    Average speed = 300 miles / 4 hours = 75 mph\n\n  Answer: The average speed is 75 mph."
+    },
+    {
+      "header": "Template 1: Problem Decomposition",
+      "output": "1. Understand: What is being asked?\n  2. Identify: What information is given?\n  3. Plan: What steps are needed?\n  4. Execute: Work through each step\n  5. Verify: Check the answer\n\nTemplate 2: Hypothesis Testing\n  1. State hypothesis\n  2. List supporting evidence\n  3. List contradicting evidence\n  4. Evaluate strength of evidence\n  5. Draw conclusion\n\nTemplate 3: Comparative Analysis\n  1. Identify options\n  2. Define criteria\n  3. Evaluate each option\n  4. Compare results\n  5. Make recommendation"
+    },
+    {
+      "header": "Problem:",
+      "output": "A baker has 24 eggs. Each cake requires 3 eggs and each batch of cookies requires 2 eggs. If the baker makes 5 cakes, how many batches of cookies can be made with the remaining eggs?\n\nChain of Thought Solution:\n  Given information:\n    \u2022 Total eggs: 24\n    \u2022 Eggs per cake: 3\n    \u2022 Eggs per cookie batch: 2\n    \u2022 Number of cakes to make: 5\n\n  Step 1: Calculate eggs used for cakes\n    Eggs for cakes = 5 cakes \u00d7 3 eggs/cake = 15 eggs\n\n  Step 2: Calculate remaining eggs\n    Remaining eggs = 24 - 15 = 9 eggs\n\n  Step 3: Calculate cookie batches possible\n    Cookie batches = 9 eggs \u00f7 2 eggs/batch = 4.5 batches\n    Since we can't make half a batch: 4 batches\n\n  Answer: 4 batches of cookies"
+    },
+    {
+      "header": "Logical puzzle:",
+      "output": "'All roses are flowers. Some flowers fade quickly.\n   No roses are blue. Can we conclude anything about\n   blue flowers fading quickly?'\n\nChain of Thought:\n  1. Parse the statements:\n     \u2022 All roses are flowers (roses \u2286 flowers)\n     \u2022 Some flowers fade quickly\n     \u2022 No roses are blue (roses \u2229 blue = \u2205)\n\n  2. What do we know about blue flowers?\n     \u2022 Blue flowers exist (implied)\n     \u2022 Blue flowers are not roses\n     \u2022 Blue flowers are flowers\n\n  3. Can blue flowers fade quickly?\n     \u2022 Some flowers fade quickly\n     \u2022 Blue flowers are flowers\n     \u2022 Therefore, blue flowers COULD fade quickly\n\n  4. Conclusion:\n     We cannot determine if blue flowers fade quickly.\n     The information is insufficient."
+    },
+    {
+      "header": "Bug report: 'Function returns wrong sum for list [1, 2, 3]'",
+      "output": "Buggy code:\n  def sum_list(lst):\n      total = 0\n      for i in range(len(lst)):\n          total = lst[i]\n      return total\n\nChain of Thought Debugging:\n  1. Understand expected behavior:\n     Input: [1, 2, 3]\n     Expected: 6 (1 + 2 + 3)\n     Actual: 3\n\n  2. Trace execution:\n     i=0: total = lst[0] = 1\n     i=1: total = lst[1] = 2\n     i=2: total = lst[2] = 3\n     Return: 3\n\n  3. Identify issue:\n     Using '=' instead of '+='\n     Each iteration overwrites total\n\n  4. Fix:\n     Change 'total = lst[i]' to 'total += lst[i]'"
+    },
+    {
+      "header": "Analyzing a business decision:",
+      "output": "Question: Should we launch product in Region A or Region B?\n\nStep 1: Identify factors\n  \u2022 Market size\n  \u2022 Competition\n  \u2022 Regulatory environment\n  \u2022 Distribution costs\n  \u2022 Cultural fit\n\nStep 2: Gather data\n  Region A:\n    \u2022 Market size: $10M\n    \u2022 Competitors: 3 major\n    \u2022 Regulations: Moderate\n    \u2022 Distribution: $$$\n    \u2022 Cultural fit: High\n\n  Region B:\n    \u2022 Market size: $15M\n    \u2022 Competitors: 1 major\n    \u2022 Regulations: Light\n    \u2022 Distribution: $\n    \u2022 Cultural fit: Medium\n\nStep 3: Weighted analysis\n  (Weights: Size=0.3, Competition=0.2, Reg=0.2, Cost=0.2, Fit=0.1)\n  Region A: 0.3(7) + 0.2(4) + 0.2(6) + 0.2(3) + 0.1(9) = 5.6\n  Region B: 0.3(9) + 0.2(8) + 0.2(8) + 0.2(9) + 0.1(6) = 8.3\n\nStep 4: Recommendation\n  Region B scores higher (8.3 vs 5.6)\n  Recommend: Launch in Region B"
+    },
+    {
+      "header": "Scenario: API call failed with timeout",
+      "output": "Chain of Thought Recovery:\n  1. Identify error type:\n     \u2022 Timeout error\n     \u2022 Not a client error (4xx)\n     \u2022 Possibly transient\n\n  2. Consider possible causes:\n     \u2022 Network congestion\n     \u2022 Server overload\n     \u2022 Large request size\n     \u2022 Rate limiting\n\n  3. Determine recovery strategy:\n     \u2022 Check if idempotent \u2192 Yes\n     \u2022 Check retry budget \u2192 2 retries left\n     \u2022 Check backoff needed \u2192 Yes\n\n  4. Execute recovery:\n     \u2022 Wait 2 seconds (exponential backoff)\n     \u2022 Retry with same parameters\n     \u2022 If fails again, try with smaller batch"
+    },
+    {
+      "header": "Effective CoT prompt patterns:",
+      "output": "1. Explicit instruction:\n   \"Let's solve this step by step:\"\n\n2. Few-shot with reasoning:\n   \"Q: [Problem 1]\"\n   \"A: Let me work through this:\"\n   \"   Step 1: ...\"\n   \"   Step 2: ...\"\n   \"   Therefore: ...\"\n\n3. Structured format:\n   \"Problem: [statement]\"\n   \"Approach: Break down into steps\"\n   \"Solution:\"\n   \"1. First, ...\"\n   \"2. Then, ...\"\n   \"3. Finally, ...\"\n\n4. Self-consistency:\n   \"Solve this problem three different ways\"\n   \"and verify they give the same answer.\""
+    },
+    {
+      "header": "\u2705 Chain of Thought Best Practices",
+      "output": ""
+    },
+    {
+      "header": "1. Be explicit about each step",
+      "output": "2. Show intermediate calculations\n3. State assumptions clearly\n4. Verify logic at each stage\n5. Use consistent formatting\n6. Include sanity checks\n7. Explain the 'why' not just 'what'\n\n\ud83d\udd27 Implementation Tips:\n\u2022 Start with 'Let's think step by step'\n\u2022 Number or bullet each step\n\u2022 Use clear transitions between steps\n\u2022 Summarize at the end\n\u2022 Check work when possible\n\nNext: Explore evaluation in '../10_evaluation_suite/'"
+    }
+  ],
+  "total_time": 0.02,
+  "api_keys_required": [],
+  "metrics": {
+    "lines_of_code": 235,
+    "api_calls": 0
+  }
+}

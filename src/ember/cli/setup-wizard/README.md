@@ -1,6 +1,6 @@
 # Ember Setup Wizard
 
-A delightful, interactive setup experience for Ember AI that gets users from zero to their first API call in under 60 seconds.
+A delightful, interactive setup experience for Ember that gets users from zero to their first API call in under 60 seconds.
 
 ## Usage
 

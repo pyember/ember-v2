@@ -1,0 +1,29 @@
+
+==================================================
+  JAX-XCS Integration
+==================================================
+
+Part 1: Static vs Dynamic Detection
+==================================================
+
+Ember's automatic detection rules:
+  • JAX arrays (jnp.ndarray) → Dynamic (learnable)
+  • Everything else → Static (not learnable)
+  • No decorators needed - it just works!
+
+Traceback (most recent call last):
+  File "/Users/jq/Downloads/eb1/examples/08_advanced_patterns/jax_xcs_integration.py", line 338, in <module>
+    sys.exit(main())
+  File "/Users/jq/Downloads/eb1/examples/08_advanced_patterns/jax_xcs_integration.py", line 75, in main
+    op = MixedOperator()
+  File "/Users/jq/Library/Python/3.9/lib/python/site-packages/equinox/_module.py", line 565, in __call__
+    self = super(_ActualModuleMeta, initable_cls).__call__(*args, **kwargs)
+  File "/Users/jq/Library/Python/3.9/lib/python/site-packages/equinox/_better_abstract.py", line 227, in __call__
+    self = super().__call__(*args, **kwargs)
+  File "/Users/jq/Library/Python/3.9/lib/python/site-packages/equinox/_module.py", line 372, in __init__
+    init(self, *args, **kwargs)
+  File "/Users/jq/Downloads/eb1/examples/08_advanced_patterns/jax_xcs_integration.py", line 49, in __init__
+    self.weights = jnp.array([1.0, 2.0, 3.0])
+  File "/Users/jq/Library/Python/3.9/lib/python/site-packages/equinox/_module.py", line 854, in __setattr__
+    raise AttributeError(f"Cannot set attribute {name}")
+AttributeError: Cannot set attribute weights

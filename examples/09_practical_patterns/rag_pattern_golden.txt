@@ -1,0 +1,15 @@
+
+==================================================
+  RAG Pattern Implementation
+==================================================
+
+🔍 Part 1: Document Processing
+
+Traceback (most recent call last):
+  File "/Users/jq/Downloads/eb1/examples/09_practical_patterns/rag_pattern.py", line 337, in <module>
+    sys.exit(main())
+  File "/Users/jq/Downloads/eb1/examples/09_practical_patterns/rag_pattern.py", line 55, in main
+    class DocumentChunker(operators.Operator):
+  File "/Users/jq/Downloads/eb1/examples/09_practical_patterns/rag_pattern.py", line 58, in DocumentChunker
+    specification = operators.Specification()
+AttributeError: module 'ember.api.operators' has no attribute 'Specification'

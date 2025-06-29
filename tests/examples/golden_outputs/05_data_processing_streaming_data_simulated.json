@@ -1,0 +1,61 @@
+{
+  "version": "1.0",
+  "example": "05_data_processing/streaming_data.py",
+  "execution_mode": "simulated",
+  "sections": [
+    {
+      "header": "\ud83c\udfaf Streaming for AI Applications:",
+      "output": "\u2022 Handle datasets larger than memory\n\u2022 Process data in real-time\n\u2022 Reduce latency and memory usage\n\u2022 Enable continuous learning"
+    },
+    {
+      "header": "Why streaming matters:",
+      "output": "\u2022 Process data that doesn't fit in memory\n  \u2022 Start processing before full download\n  \u2022 Reduce memory footprint\n  \u2022 Enable real-time processing\n\nStreaming 1000 records:\n  Streaming: Record 0\n  Streaming: Record 1\n  ... (continues streaming)"
+    },
+    {
+      "header": "Processing 100 items in batches of 16:",
+      "output": "Batch 1: 16 items\n  Batch 2: 16 items\n  Batch 3: 16 items\n  ...\n\nTotal: 7 batches, 100 items processed"
+    },
+    {
+      "header": "Techniques for large datasets:",
+      "output": "1. Generator-based loading:\n   def load_data():\n       with open('large_file.txt') as f:\n           for line in f:\n               yield process_line(line)\n\n2. Chunked reading:\n   for chunk in pd.read_csv('data.csv', chunksize=10000):\n       process_chunk(chunk)\n\n3. Memory mapping:\n   data = np.memmap('large_array.dat', dtype='float32', mode='r')\n   # Access data without loading all into RAM\n\n4. Lazy loading:\n   dataset = Dataset('path/to/data', lazy=True)\n   # Data loaded only when accessed"
+    },
+    {
+      "header": "Stream transformation pipeline:",
+      "output": "numbers \u2192 square \u2192 filter_even\n\nInput: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9\nAfter square: 0, 1, 4, 9, 16, 25, 36, 49, 64, 81\nAfter filter: [0, 4, 16, 36, 64]"
+    },
+    {
+      "header": "Parallel processing strategies:",
+      "output": "1. Thread pool for I/O-bound:\n   with ThreadPoolExecutor(max_workers=4) as pool:\n       results = pool.map(fetch_data, urls)\n       for result in results:\n           process(result)\n\n2. Process pool for CPU-bound:\n   with ProcessPoolExecutor() as pool:\n       for result in pool.map(cpu_intensive, data_stream()):\n           save(result)\n\n3. Async streaming:\n   async for item in async_data_stream():\n       result = await process_async(item)\n       await save_async(result)"
+    },
+    {
+      "header": "Sliding window (size=5, stride=2):",
+      "output": "Data: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]\n\n  Window 0: [0, 1, 2, 3, 4]\n  Window 1: [2, 3, 4, 5, 6]\n  Window 2: [4, 5, 6, 7, 8]\n  Window 3: [6, 7, 8, 9, 10]\n  ...\n\nTotal windows: 8\nUse cases: Time series analysis, sequence modeling"
+    },
+    {
+      "header": "Online statistics calculation:",
+      "output": "Processing stream...\n  After 10 items:\n    Mean: 97.92\n    Variance: 71.60\n    Range: [77.54, 110.53]\n  After 100 items:\n    Mean: 100.87\n    Variance: 174.86\n    Range: [60.70, 135.04]\n  After 1000 items:\n    Mean: 99.73\n    Variance: 233.91\n    Range: [52.68, 156.28]"
+    },
+    {
+      "header": "Managing flow control in streams:",
+      "output": "1. Buffer with limits:\n   buffer = collections.deque(maxlen=1000)\n   # Automatically drops oldest when full\n\n2. Rate limiting:\n   rate_limiter = RateLimiter(100)  # 100 items/sec\n   for item in stream:\n       rate_limiter.acquire()\n       process(item)\n\n3. Adaptive batching:\n   batch = []\n   for item in stream:\n       batch.append(item)\n       if len(batch) >= batch_size or timeout_reached:\n           process_batch(batch)\n           batch = []"
+    },
+    {
+      "header": "End-to-end streaming pipeline:",
+      "output": "1. Source: Read from files/API/database\n  2. Parse: Extract structured data\n  3. Filter: Remove invalid records\n  4. Transform: Normalize and enrich\n  5. Batch: Group for efficient processing\n  6. Process: Apply ML models\n  7. Aggregate: Compute statistics\n  8. Sink: Write results\n\nExample metrics:\n  \u2022 Input rate: 10,000 records/sec\n  \u2022 Processing latency: 50ms/batch\n  \u2022 Memory usage: 500MB constant\n  \u2022 Throughput: 9,500 records/sec"
+    },
+    {
+      "header": "\u2705 Streaming Best Practices",
+      "output": ""
+    },
+    {
+      "header": "1. Use generators for memory efficiency",
+      "output": "2. Process in batches for performance\n3. Implement proper error handling\n4. Monitor memory usage and throughput\n5. Handle backpressure gracefully\n6. Use appropriate buffer sizes\n7. Consider parallelism carefully\n\n\ud83d\udd27 Tools & Libraries:\n\u2022 itertools - Built-in iteration tools\n\u2022 asyncio - Async streaming\n\u2022 pandas chunks - Large CSV processing\n\u2022 Apache Beam - Distributed streaming\n\u2022 Dask - Parallel computing\n\nNext: Explore practical patterns in '../09_practical_patterns/'"
+    }
+  ],
+  "total_time": 0.03,
+  "api_keys_required": [],
+  "metrics": {
+    "lines_of_code": 253,
+    "api_calls": 0
+  }
+}

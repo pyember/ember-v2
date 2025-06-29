@@ -37,7 +37,7 @@ Ember follows three core principles:
 
 ### CLI System Integration
 
-The CLI provides comprehensive management capabilities:
+The CLI provides comprehensive management and introspection capabilities:
 
 ```bash
 # Interactive setup with provider selection
@@ -48,12 +48,22 @@ ember configure get KEY           # Get config value
 ember configure set KEY VALUE     # Set config value  
 ember configure list             # Show all config
 ember configure show SECTION     # Show section
-ember configure migrate          # Migrate old configs
+
+# Context introspection
+ember context view               # View resolved configuration
+ember context view --format json # Output as JSON
+ember context view --filter models # Filter to specific path
+ember context validate           # Validate configuration
+
+# Registry introspection
+ember registry list-models       # List available models
+ember registry list-models --provider openai # Filter by provider
+ember registry list-models --verbose # Detailed information
+ember registry list-providers    # Show provider status
+ember registry info gpt-4        # Detailed model info
 
 # Testing and discovery
 ember test [--model MODEL]       # Test connection
-ember models [--provider NAME]  # List models
-ember models --providers        # List providers
 ```
 
 The setup wizard (`@ember-ai/setup`) features:
@@ -66,37 +76,40 @@ The setup wizard (`@ember-ai/setup`) features:
 
 ### 1. Context System
 
-Centralized configuration and credential management with thread-safe and async-safe isolation:
+Centralized configuration and credential management with thread-safe and async-safe isolation.
+
+The context system provides a simplified, unified API following the principle of "one obvious way":
 
 ```python
-from ember.context import get_context, create_context, with_context
+from ember import context
 
-# Automatic context management - creates if needed
-ctx = get_context()  # Gets or creates the current context
+# Primary API - simple and clear
+ctx = context.get()  # Get current context (creates if needed)
 
-# Multiple credential sources with priority ordering
-api_key = ctx.get_credential("openai", "OPENAI_API_KEY")
-# 1. Checks runtime context credentials
-# 2. Falls back to environment variables
-# 3. Falls back to ~/.ember/config.yaml
-# 4. Falls back to ~/.ember/credentials.yaml
-
-# Create isolated child context with deep config inheritance
-with create_context(models={"default": "gpt-4"}) as child_ctx:
-    # All model calls in this block use gpt-4 by default
-    response = models(None, "Hello")  # Uses gpt-4
+# Context manager for temporary overrides
+with context.manager(models={"default": "gpt-4", "temperature": 0.9}) as ctx:
+    # All operations in this block use these settings
+    response = models("Hello")  # Uses gpt-4 with temperature 0.9
     
-# Back to original context - uses original default model
+# Original context automatically restored
 
-# Temporary context with overrides (no persistence)
-with with_context(models={"temperature": 0.9}):
-    # High temperature for creative tasks
-    response = models("gpt-4", "Write a poem")
-
-# Configuration management with dot notation
-ctx.get_config("models.default", "gpt-3.5-turbo")  # With default
-ctx.set_config("models.temperature", 0.7)  # Set value
+# Direct configuration access
+from ember.context import get_config, set_config
+default_model = get_config("models.default", "gpt-3.5-turbo")
+set_config("models.temperature", 0.7)
 ```
+
+**Key Features:**
+- **Thread-safe and async-safe**: Context propagates correctly across boundaries
+- **Hierarchical configuration**: Child contexts inherit from parents
+- **Multiple credential sources**: Runtime > Environment > Config file > Defaults
+- **Clean scoping**: Context managers ensure proper cleanup
+
+**Configuration Priority:**
+1. Runtime context (highest)
+2. Environment variables
+3. ~/.ember/config.yaml
+4. Internal defaults (lowest)
 
 **Async Context Propagation:**
 
@@ -191,9 +204,9 @@ response = models("gpt-4", "Summarize this document")  # Uses temperature=0.7
 The context system provides secure, hierarchical credential management:
 
 ```python
-from ember.context import get_context
+from ember import context
 
-ctx = get_context()
+ctx = context.get()
 
 # Credential lookup hierarchy (first found wins):
 # 1. Runtime context credentials
@@ -205,7 +218,7 @@ ctx = get_context()
 api_key = ctx.get_credential("openai", "OPENAI_API_KEY")
 
 # Set credentials at runtime (not persisted)
-with create_context(credentials={"openai_api_key": "sk-temp-key"}):
+with context.manager(credentials={"openai_api_key": "sk-temp-key"}):
     # This block uses the temporary key
     response = models("gpt-4", "Hello")
 

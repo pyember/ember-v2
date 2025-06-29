@@ -1,0 +1,150 @@
+name: Test Examples
+
+on:
+  push:
+    paths:
+      - 'examples/**'
+      - 'tests/examples/**'
+      - 'src/ember/**'
+  pull_request:
+    paths:
+      - 'examples/**'
+      - 'tests/examples/**'
+      - 'src/ember/**'
+  schedule:
+    # Run daily to catch any issues with examples
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+    inputs:
+      test_with_api_keys:
+        description: 'Test with real API keys (requires secrets)'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  test-examples:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11']
+      fail-fast: false
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+        pip install -r examples/requirements.txt
+        pip install pytest pytest-timeout pytest-xdist
+    
+    - name: Run example tests (simulated mode)
+      run: |
+        pytest tests/examples/ -v --no-api-keys --timeout=300
+    
+    - name: Run example tests (real mode)
+      if: github.event_name == 'workflow_dispatch' && github.event.inputs.test_with_api_keys == 'true'
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+      run: |
+        pytest tests/examples/ -v --timeout=600
+    
+    - name: Validate golden outputs
+      run: |
+        python tests/examples/update_golden.py --list
+    
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results-${{ matrix.python-version }}
+        path: |
+          pytest-report.xml
+          .coverage
+    
+    - name: Comment PR with results
+      if: github.event_name == 'pull_request' && always()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const pytest_report = 'pytest-report.xml';
+          
+          if (fs.existsSync(pytest_report)) {
+            // Parse and format test results
+            const report = fs.readFileSync(pytest_report, 'utf8');
+            // Add comment formatting logic here
+          }
+
+  lint-examples:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install linting tools
+      run: |
+        pip install ruff mypy
+    
+    - name: Run ruff
+      run: |
+        ruff check examples/
+    
+    - name: Run mypy
+      run: |
+        mypy examples/ --ignore-missing-imports || true
+
+  update-golden-outputs:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        pip install -e .
+        pip install -r examples/requirements.txt
+    
+    - name: Update golden outputs
+      run: |
+        python tests/examples/update_golden.py
+    
+    - name: Create PR with updates
+      uses: peter-evans/create-pull-request@v5
+      with:
+        commit-message: 'chore: Update golden outputs for examples'
+        title: 'Update golden outputs'
+        body: |
+          This PR updates the golden outputs for examples based on current execution.
+          
+          Please review the changes to ensure they are expected.
+        branch: update-golden-outputs
+        delete-branch: true

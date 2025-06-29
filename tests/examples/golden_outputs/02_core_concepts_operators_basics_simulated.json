@@ -1,0 +1,81 @@
+{
+  "version": "1.0",
+  "example": "02_core_concepts/operators_basics.py",
+  "execution_mode": "simulated",
+  "sections": [
+    {
+      "header": "\ud83c\udfaf The Simplified Approach",
+      "output": "In Ember's simplified API, ANY function is an operator!\nBenefits:\n  \u2022 No base classes needed\n  \u2022 Natural Python code\n  \u2022 Automatic optimization with @jit\n  \u2022 Easy composition\n  \u2022 Batch processing with vmap()"
+    },
+    {
+      "header": "Part 1: A Simple Function as Operator",
+      "output": ""
+    },
+    {
+      "header": "Text Cleaner Results:",
+      "output": "Original: '  Hello   WORLD!  '\n  Cleaned: hello world!\n  Length: 12"
+    },
+    {
+      "header": "Part 2: Configurable Function",
+      "output": ""
+    },
+    {
+      "header": "Word Counter Results:",
+      "output": "Total words: 7\n  Words >= 3 chars: 4\n  Sample words: ['learning', 'use', 'Ember', 'operators']"
+    },
+    {
+      "header": "Part 3: Composing Functions",
+      "output": ""
+    },
+    {
+      "header": "Pipeline Results:",
+      "output": "Cleaned: the quick brown fox jumps!\n  Stats: {'original_length': 26, 'total_words': 5, 'significant_words': 3}\n\nFast Pipeline Results:\n  Cleaned: another text to process!"
+    },
+    {
+      "header": "Part 4: The @op Decorator",
+      "output": ""
+    },
+    {
+      "header": "Sentiment Analysis (with @op decorator):",
+      "output": "'This is a great product!'\n  \u2192 Sentiment: positive\n\n'Terrible experience, would not recommend.'\n  \u2192 Sentiment: negative\n\n'It's okay, nothing special.'\n  \u2192 Sentiment: neutral"
+    },
+    {
+      "header": "Part 5: Practical Example - Question Analyzer",
+      "output": ""
+    },
+    {
+      "header": "Question Analysis:",
+      "output": "Q: What is machine learning?\n   Type: factual, Complexity: simple\n\nQ: Why does gravity exist?\n   Type: explanatory, Complexity: simple\n\nQ: Is Python a good programming language?\n   Type: yes/no, Complexity: simple\n\nQ: How do neural networks learn from data?\n   Type: explanatory, Complexity: simple"
+    },
+    {
+      "header": "Part 5: Batch Processing",
+      "output": ""
+    },
+    {
+      "header": "Batch Analysis Results:",
+      "output": "1. factual (simple)\n2. explanatory (simple)\n3. yes/no (simple)\n4. explanatory (simple)"
+    },
+    {
+      "header": "Part 6: Integration with Language Models",
+      "output": ""
+    },
+    {
+      "header": "In real usage with API key:",
+      "output": "response = models('gpt-4', 'Analyze: The future of AI is bright...')\n  return {'analysis': response.text}\n\nAI-Powered Analysis:\n  Input: The future of AI is bright\n  Analysis: [AI analysis would appear here]"
+    },
+    {
+      "header": "\u2705 Key Takeaways",
+      "output": ""
+    },
+    {
+      "header": "1. ANY function is an operator - no base classes!",
+      "output": "2. Use @op decorator for extra operator features\n3. Use @jit for automatic optimization\n4. Use vmap() for batch processing\n5. Compose functions naturally with Python\n6. Integrate models seamlessly in any function\n\nNext: Explore more examples in the 03_simplified_apis directory!"
+    }
+  ],
+  "total_time": 0.93,
+  "api_keys_required": [],
+  "metrics": {
+    "lines_of_code": 222,
+    "api_calls": 0
+  }
+}

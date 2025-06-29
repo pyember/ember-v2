@@ -1,0 +1,53 @@
+{
+  "version": "1.0",
+  "example": "06_performance_optimization/jit_basics.py",
+  "execution_mode": "simulated",
+  "sections": [
+    {
+      "header": "Part 1: Basic @jit Usage",
+      "output": ""
+    },
+    {
+      "header": "First call (includes compilation):",
+      "output": "Result: {'word_count': 9, 'char_count': 43, 'unique_chars': 26, 'most_common_char': 'o'}\n  Duration: 0.0001s\n\nSecond call (uses compiled version):\n  Duration: 0.0000s\n  Speedup: 20.4x faster"
+    },
+    {
+      "header": "Part 2: Automatic Caching",
+      "output": ""
+    },
+    {
+      "header": "First call to expensive_analysis:",
+      "output": "Duration: 0.2094s\n\nRepeated call (cached):\n  Duration: 0.1015s (from cache!)\n\nDifferent input:\n  Duration: 0.1051s"
+    },
+    {
+      "header": "Part 3: Complex Function Optimization",
+      "output": ""
+    },
+    {
+      "header": "Analyzing documents with JIT:",
+      "output": "Documents: 4\n  Total words: 33\n  Common words: [('ember', 2), ('and', 2), ('the', 2)]\n  Analysis time: 0.0049s"
+    },
+    {
+      "header": "Part 4: Best Practices",
+      "output": ""
+    },
+    {
+      "header": "\u2705 Use @jit for:",
+      "output": "\u2022 Functions called multiple times with similar inputs\n  \u2022 CPU-intensive computations\n  \u2022 Functions with predictable input patterns\n  \u2022 Data processing pipelines\n\n\u274c Avoid @jit for:\n  \u2022 Functions with side effects (file I/O, network calls)\n  \u2022 Functions that are already fast\n  \u2022 One-time operations\n  \u2022 Functions with highly variable inputs"
+    },
+    {
+      "header": "Part 5: JIT Statistics",
+      "output": ""
+    },
+    {
+      "header": "JIT compilation statistics:",
+      "output": "Compiled functions: 6\n\nNote: Full statistics available with get_jit_stats()\n\n\ud83c\udf89 Key Takeaways:\n  1. @jit provides zero-config optimization\n  2. First call includes compilation overhead\n  3. Subsequent calls are much faster\n  4. Automatic caching for repeated inputs\n  5. Works with any Python function"
+    }
+  ],
+  "total_time": 1.23,
+  "api_keys_required": [],
+  "metrics": {
+    "lines_of_code": 168,
+    "api_calls": 0
+  }
+}

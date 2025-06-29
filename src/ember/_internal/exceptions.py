@@ -1,7 +1,7 @@
 """Exception hierarchy for Ember.
 
 Provides domain-specific exceptions with rich context and actionable recovery hints.
-Error codes are organized by component: Core (1000s), Operators (2000s), 
+Error codes are organized by component: Core (1000s), Operators (2000s),
 Models (3000s), Data (4000s), XCS (5000s), Config (6000s).
 """
 
@@ -57,7 +57,8 @@ class EmberError(Exception):
         error_code: Optional[int] = None,
         context: Optional[Dict[str, Any]] = None,
         cause: Optional[Exception] = None,
-        recovery_hint: Optional[str] = None) -> None:
+        recovery_hint: Optional[str] = None,
+    ) -> None:
         """Initialize EmberError.
 
         Args:
@@ -68,9 +69,7 @@ class EmberError(Exception):
             recovery_hint: How to fix the error.
         """
         self.message = message
-        self.error_code = (
-            error_code if error_code is not None else self.DEFAULT_ERROR_CODE
-        )
+        self.error_code = error_code if error_code is not None else self.DEFAULT_ERROR_CODE
         self.context = context or {}
         self.recovery_hint = recovery_hint or self.DEFAULT_RECOVERY_HINT
         self.__cause__ = cause
@@ -79,9 +78,7 @@ class EmberError(Exception):
             self.add_context(cause_type=type(cause).__name__, cause_message=str(cause))
 
         # Add caller information to the context for better traceability
-        if (
-            self.__class__.DEFAULT_ERROR_CODE is not None
-        ):  # Only add for concrete exceptions
+        if self.__class__.DEFAULT_ERROR_CODE is not None:  # Only add for concrete exceptions
             frame = inspect.currentframe()
             if frame:
                 frame = frame.f_back  # Get the caller's frame
@@ -90,7 +87,8 @@ class EmberError(Exception):
                     self.add_context(
                         caller_file=caller_info.filename,
                         caller_function=caller_info.function,
-                        caller_lineno=caller_info.lineno)
+                        caller_lineno=caller_info.lineno,
+                    )
 
         super().__init__(self._format_message())
 
@@ -131,16 +129,12 @@ class EmberError(Exception):
 
         if self.context:
             # Format context as key=value pairs
-            context_str = ", ".join(
-                f"{k}={v!r}" for k, v in sorted(self.context.items())
-            )
+            context_str = ", ".join(f"{k}={v!r}" for k, v in sorted(self.context.items()))
             parts.append(f"[Context: {context_str}]")
 
         return " ".join(parts)
 
-    def log_with_context(
-        self, logger: logging.Logger, level: int = logging.ERROR
-    ) -> None:
+    def log_with_context(self, logger: logging.Logger, level: int = logging.ERROR) -> None:
         """Log the error with its full context.
 
         Args:
@@ -150,7 +144,8 @@ class EmberError(Exception):
         logger.log(
             level,
             f"{self.__class__.__name__}: {self.message}",
-            extra={"structured_data": self.get_context()})
+            extra={"structured_data": self.get_context()},
+        )
 
     @classmethod
     def from_exception(
@@ -207,7 +202,8 @@ class ErrorGroup(EmberError):
         message: str,
         errors: List[Exception],
         error_code: Optional[int] = None,
-        context: Optional[Dict[str, Any]] = None) -> None:
+        context: Optional[Dict[str, Any]] = None,
+    ) -> None:
         """Initialize with a message and list of errors.
 
         Args:
@@ -222,10 +218,7 @@ class ErrorGroup(EmberError):
         error_context = {} if context is None else dict(context)
         error_context["error_count"] = len(errors)
 
-        super().__init__(
-            message=message,
-            error_code=error_code,
-            context=error_context)
+        super().__init__(message=message, error_code=error_code, context=error_context)
 
     def _format_message(self) -> str:
         """Format the error message with the list of contained errors.
@@ -234,9 +227,7 @@ class ErrorGroup(EmberError):
             Formatted error message string
         """
         base_message = super()._format_message()
-        error_details = "\n".join(
-            f"  - {e.__class__.__name__}: {str(e)}" for e in self.errors
-        )
+        error_details = "\n".join(f"  - {e.__class__.__name__}: {str(e)}" for e in self.errors)
         return f"{base_message}\nContained errors:\n{error_details}"
 
 
@@ -310,9 +301,7 @@ class ConfigFileError(ConfigError):
     """Raised when there's an issue with a configuration file."""
 
     DEFAULT_ERROR_CODE = 6002
-    DEFAULT_RECOVERY_HINT = (
-        "Check that the configuration file exists and has the correct format"
-    )
+    DEFAULT_RECOVERY_HINT = "Check that the configuration file exists and has the correct format"
 
 
 class ConfigValueError(ConfigError):
@@ -348,9 +337,7 @@ class ItemNotFoundError(RegistryError):
     DEFAULT_RECOVERY_HINT = "Verify the item exists and is correctly registered"
 
     @classmethod
-    def for_item(
-        cls, item_name: str, registry_name: Optional[str] = None
-    ) -> "ItemNotFoundError":
+    def for_item(cls, item_name: str, registry_name: Optional[str] = None) -> "ItemNotFoundError":
         """Create an exception for a specific item not found.
 
         Args:
@@ -423,9 +410,7 @@ class ModelProviderError(ModelError):
         Returns:
             A new ModelProviderError
         """
-        return cls(
-            message=message, context={"provider_name": provider_name}, cause=cause
-        )
+        return cls(message=message, context={"provider_name": provider_name}, cause=cause)
 
 
 class ModelNotFoundError(ModelError):
@@ -469,7 +454,8 @@ class ProviderAPIError(ModelError):
         provider_name: str,
         message: str,
         status_code: Optional[int] = None,
-        cause: Optional[Exception] = None) -> "ProviderAPIError":
+        cause: Optional[Exception] = None,
+    ) -> "ProviderAPIError":
         """Create an exception for a specific provider API error.
 
         Args:
@@ -520,7 +506,8 @@ class ModelDiscoveryError(ModelError):
         return cls(
             message=message,
             context={"provider": provider, "reason": reason},
-            cause=cause)
+            cause=cause,
+        )
 
 
 class ModelRegistrationError(ModelError):
@@ -547,7 +534,8 @@ class ModelRegistrationError(ModelError):
         return cls(
             message=message,
             context={"model_name": model_name, "reason": reason},
-            cause=cause)
+            cause=cause,
+        )
 
 
 class MissingLMModuleError(ModelError):
@@ -602,7 +590,8 @@ class OperatorExecutionError(OperatorError):
         operator_name: str,
         message: Optional[str] = None,
         cause: Optional[Exception] = None,
-        **context: Any) -> "OperatorExecutionError":
+        **context: Any,
+    ) -> "OperatorExecutionError":
         """Create an exception for a specific operator execution error.
 
         Args:
@@ -643,9 +632,7 @@ class FlattenError(OperatorError):
     """Raised when flattening an EmberModule fails due to inconsistent field states."""
 
     DEFAULT_ERROR_CODE = 2030
-    DEFAULT_RECOVERY_HINT = (
-        "Ensure module fields are in a consistent state before flattening"
-    )
+    DEFAULT_RECOVERY_HINT = "Ensure module fields are in a consistent state before flattening"
 
 
 # =========================================================
@@ -680,7 +667,8 @@ class DataValidationError(DataError):
         message: Optional[str] = None,
         expected_type: Optional[str] = None,
         actual_value: Any = None,
-        **additional_context: Any) -> "DataValidationError":
+        **additional_context: Any,
+    ) -> "DataValidationError":
         """Create an exception for a specific field validation error.
 
         Args:
@@ -753,9 +741,7 @@ class GatedDatasetAuthenticationError(DataError):
     DEFAULT_RECOVERY_HINT = "Authenticate with the dataset provider"
 
     @classmethod
-    def for_huggingface_dataset(
-        cls, dataset_name: str
-    ) -> "GatedDatasetAuthenticationError":
+    def for_huggingface_dataset(cls, dataset_name: str) -> "GatedDatasetAuthenticationError":
         """Create an exception for a gated HuggingFace dataset requiring authentication.
 
         Args:
@@ -783,7 +769,8 @@ class GatedDatasetAuthenticationError(DataError):
                 "auth_command": "huggingface-cli login",
                 "recovery_steps": recovery_steps,
             },
-            recovery_hint=recovery_steps)
+            recovery_hint=recovery_steps,
+        )
 
 
 # =========================================================
@@ -817,7 +804,8 @@ class TraceError(XCSError):
         cls,
         operation_id: Optional[str] = None,
         message: Optional[str] = None,
-        cause: Optional[Exception] = None) -> "TraceError":
+        cause: Optional[Exception] = None,
+    ) -> "TraceError":
         """Create an exception for a specific tracing error.
 
         Args:
@@ -851,7 +839,8 @@ class CompilationError(XCSError):
         cls,
         graph_id: Optional[str] = None,
         message: Optional[str] = None,
-        cause: Optional[Exception] = None) -> "CompilationError":
+        cause: Optional[Exception] = None,
+    ) -> "CompilationError":
         """Create an exception for a specific graph compilation error.
 
         Args:
@@ -886,7 +875,8 @@ class ExecutionError(XCSError):
         node_id: Optional[str] = None,
         message: Optional[str] = None,
         cause: Optional[Exception] = None,
-        **context: Any) -> "ExecutionError":
+        **context: Any,
+    ) -> "ExecutionError":
         """Create an exception for a specific node execution error.
 
         Args:
@@ -925,7 +915,8 @@ class TransformError(XCSError):
         message: Optional[str] = None,
         cause: Optional[Exception] = None,
         details: Optional[Dict[str, Any]] = None,
-        **context: Any) -> "TransformError":
+        **context: Any,
+    ) -> "TransformError":
         """Create an exception for a specific transform error.
 
         Args:
@@ -968,7 +959,8 @@ class ParallelExecutionError(ExecutionError):
         node_id: Optional[str] = None,
         message: Optional[str] = None,
         cause: Optional[Exception] = None,
-        **context: Any) -> "ParallelExecutionError":
+        **context: Any,
+    ) -> "ParallelExecutionError":
         """Create an exception for a specific worker execution error.
 
         Args:
@@ -1008,7 +1000,8 @@ class DataFlowError(XCSError):
         source_node: str,
         target_node: str,
         graph_id: Optional[str] = None,
-        message: Optional[str] = None) -> "DataFlowError":
+        message: Optional[str] = None,
+    ) -> "DataFlowError":
         """Create an exception for a specific data flow error.
 
         Args:
@@ -1021,9 +1014,7 @@ class DataFlowError(XCSError):
             A new DataFlowError
         """
         if message is None:
-            message = (
-                f"Data flow error between nodes '{source_node}' and '{target_node}'"
-            )
+            message = f"Data flow error between nodes '{source_node}' and '{target_node}'"
             if graph_id:
                 message += f" in graph '{graph_id}'"
 
@@ -1046,7 +1037,8 @@ class SchedulerError(XCSError):
         cls,
         scheduler_type: str,
         graph_id: Optional[str] = None,
-        message: Optional[str] = None) -> "SchedulerError":
+        message: Optional[str] = None,
+    ) -> "SchedulerError":
         """Create an exception for a specific scheduler error.
 
         Args:
@@ -1157,7 +1149,8 @@ class PluginLoadError(PluginError):
         return cls(
             message=message,
             context={"plugin_name": plugin_name, "reason": reason},
-            cause=cause)
+            cause=cause,
+        )
 
 
 # =========================================================
@@ -1266,4 +1259,5 @@ __all__ = [
     "PromptSpecificationError",
     "OperatorSpecificationNotDefinedError",
     "BoundMethodNotInitializedError",
-    "EmberException"]
+    "EmberException",
+]

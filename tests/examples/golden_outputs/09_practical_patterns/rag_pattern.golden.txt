@@ -1,0 +1,76 @@
+
+==================================================
+  RAG Pattern Implementation
+==================================================
+
+🔍 Part 1: Document Processing
+
+Created 4 chunks from 4 documents
+  Sample chunk: Machine learning is a subset of artificial intelligence that enables systems to learn and improve fr...
+
+==================================================
+🗂️ Part 2: Indexing with Simple Embeddings
+==================================================
+
+Created 4 embeddings
+  Embedding dimension: 5
+
+==================================================
+🔎 Part 3: Semantic Retrieval
+==================================================
+
+Query: What are the different types of machine learning?
+
+Retrieved chunks:
+
+1. From: Types of Machine Learning (similarity: 0.999)
+   There are three main types of machine learning: supervised learning uses labeled data to train models, unsupervised learning finds patterns in unlabel...
+
+2. From: Machine Learning Applications (similarity: 0.998)
+   Machine learning powers many modern applications including recommendation systems, fraud detection, autonomous vehicles, medical diagnosis, and natura...
+
+==================================================
+💡 Part 4: Context-Aware Generation
+==================================================
+
+Generated Answer:
+
+Based on the provided context, there are three main types of machine learning: supervised learning (using labeled data), unsupervised learning (finding patterns in unlabeled data), and reinforcement learning (learning through environment interaction with rewards).
+
+Based on 2 sources
+
+==================================================
+🚀 Part 5: Complete RAG Pipeline
+==================================================
+
+RAG Pipeline Results:
+
+Q: What are the different types of machine learning?
+A: Based on the provided context, there are three main types of machine learning: supervised learning (using labeled data), unsupervised learning (finding patterns in unlabeled data), and reinforcement learning (learning through environment interaction with rewards).
+Sources: Types of Machine Learning, Machine Learning Applications
+Metadata: Searched 4 chunks
+
+Q: How does deep learning work?
+A: Based on the context about Deep Learning Fundamentals, how does deep learning work.
+Sources: Deep Learning Fundamentals, Types of Machine Learning
+Metadata: Searched 4 chunks
+
+Q: What are some applications of ML?
+A: Based on the context about Introduction to Machine Learning, what are some applications of ml.
+Sources: Introduction to Machine Learning, Machine Learning Applications
+Metadata: Searched 4 chunks
+
+==================================================
+✅ Key Takeaways
+==================================================
+
+1. RAG separates retrieval from generation
+2. Operators handle each stage independently
+3. Clean composition creates powerful systems
+4. Each component is testable and reusable
+5. Real implementations would use:
+   - Vector databases (Pinecone, Weaviate, etc.)
+   - Real embeddings (OpenAI, Sentence Transformers)
+   - LLMs for generation
+
+Next: Explore more patterns in other examples!

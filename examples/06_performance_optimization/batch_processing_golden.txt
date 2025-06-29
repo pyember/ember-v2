@@ -1,0 +1,84 @@
+
+==================================================
+  Batch Processing with vmap
+==================================================
+
+Part 1: Basic vmap Usage
+==================================================
+
+Processing batch of texts:
+1. positive - This product is absolutely amazing and w...
+2. negative - Terrible experience, would not recommend...
+3. neutral - It's okay, nothing special really....
+4. positive - Love this! Great quality and excellent s...
+5. negative - Poor design and awful customer support....
+  Batch processing time: 0.0003s
+
+Comparing with sequential processing:
+  Sequential time: 0.0000s
+  Speedup: 0.0x faster with vmap
+
+==================================================
+Part 2: Multiple Arguments
+==================================================
+
+Scoring keyword matches in batch:
+'learning' in 'Machine learning is transforming how we build soft...': 1 matches
+'learning' in 'Deep learning models require lots of data': 1 matches
+'AI' in 'Ember makes AI development simple and efficient': 1 matches
+'ML' in 'Natural language processing is a key ML applicatio...': 1 matches
+
+==================================================
+Part 3: Combining vmap and @jit
+==================================================
+
+Extracting features from 80 texts:
+  Total texts processed: 80
+  Processing time: 0.0016s
+  Texts per second: 50511
+
+Sample features from first text:
+  length: 44
+  words: 9
+  avg_word_length: 4.888888888888889
+  capitalized_words: 1
+  punctuation_count: 1
+  unique_words: 8
+
+==================================================
+Part 4: Practical Pattern
+==================================================
+
+Batch preparing documents for model analysis:
+  Documents prepared: 4
+  Estimated total tokens: 82
+  Estimated cost (@$0.01/1K tokens): $0.0008
+
+==================================================
+Part 5: Best Practices
+==================================================
+
+✅ Use vmap for:
+  • Processing multiple independent items
+  • Parallel text/data transformations
+  • Batch model inference preparation
+  • Feature extraction from collections
+
+🎯 vmap + @jit pattern:
+  1. Define single-item function
+  2. Apply @jit for optimization
+  3. Use vmap for batch processing
+  4. Get both compilation and parallelization benefits
+
+💡 Tips:
+  • vmap automatically handles different input sizes
+  • Works with functions returning dicts, lists, or scalars
+  • Combine with @jit for maximum performance
+  • Great for preprocessing before model calls
+
+🎉 Key Takeaways:
+  1. vmap enables efficient batch processing
+  2. Automatic parallelization of operations
+  3. Works seamlessly with existing functions
+  4. Combines perfectly with @jit
+  5. Significant speedups for batch operations

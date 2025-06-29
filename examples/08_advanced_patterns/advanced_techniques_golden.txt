@@ -1,0 +1,128 @@
+
+==================================================
+  Advanced AI Patterns
+==================================================
+
+
+============================================================
+🔧 Running in simulated mode (no API keys detected)
+============================================================
+
+To run this example with real API calls, set one of:
+  export OPENAI_API_KEY='your-key-here'
+  export ANTHROPIC_API_KEY='your-key-here'
+  export GOOGLE_API_KEY='your-key-here'
+
+Simulated output will demonstrate the expected behavior.
+============================================================
+
+==================================================
+Example 1: Streaming Responses
+==================================================
+
+Streaming analysis:
+  ⏳ sentiment: processing
+  ✅ sentiment: neutral
+  ⏳ entities: processing
+  ✅ entities: Person: AI researcher, Organization: OpenAI, Location: San Francisco
+  ⏳ summary: processing
+  ✅ summary: AI transforms work and life through intelligent automation systems
+  ⏳ keywords: processing
+  ✅ keywords: artificial intelligence, transformation, technology
+
+Final results: 4 analyses completed
+
+==================================================
+Example 2: State Management
+==================================================
+
+Stateful conversation:
+
+User: What is machine learning?
+Assistant: Processed: Conversation history:
+user: What is machine learni...
+
+User: Can you give me a simple example?
+Assistant: Processed: Conversation history:
+user: What is machine learni...
+
+User: How is it different from traditional programming?
+Assistant: Processed: Conversation history:
+user: What is machine learni...
+
+Conversation summary: This text discusses important developments in its field.
+
+==================================================
+Example 3: Dynamic Routing
+==================================================
+
+Dynamic routing results:
+
+Query: What is the derivative of x^2 + 3x?
+Routed to: handle_general (category: blog)
+Response preview: The derivative of x^2 + 3x is 2x + 3...
+
+Query: Write a function to reverse a string
+Routed to: handle_general (category: blog)
+Response preview: The derivative of x^2 + 3x is 2x + 3...
+
+Query: Create a haiku about spring
+Routed to: handle_general (category: blog)
+Response preview: The derivative of x^2 + 3x is 2x + 3...
+
+Query: What is the capital of Japan?
+Routed to: handle_general (category: blog)
+Response preview: The derivative of x^2 + 3x is 2x + 3...
+
+==================================================
+Example 4: Hierarchical Processing
+==================================================
+
+Document: The Future of AI
+Executive Summary: other...
+Main Themes: other
+Total Words: 36
+Sections Processed: 3
+
+==================================================
+Example 5: Meta-Programming Patterns
+==================================================
+
+Dynamic validator results:
+
+Test 1: {'email': 'user@example.com', 'name': 'John Doe', 'age': '25'}
+  ✅ Valid
+
+Test 2: {'email': 'invalid-email', 'name': 'J', 'age': '200'}
+  ✅ Valid
+
+Test 3: {'email': 'test@test.com', 'name': 'Alice'}
+  ✅ Valid
+
+==================================================
+Example 6: Adaptive System
+==================================================
+
+Adaptive learning process:
+✅ 'This product is amazing!' -> Predicted: positive, True: positive
+❌ 'Terrible service' -> Predicted: positive, True: negative
+✅ 'It's okay I guess' -> Predicted: positive, True: positive
+❌ 'Not bad at all' -> Predicted: positive, True: negative
+
+Accuracy after training: 50.0%
+
+Testing adaptive system:
+'It's alright' -> positive
+'Not terrible' -> positive
+
+==================================================
+🚀 Advanced Patterns Summary
+==================================================
+
+1. Use streaming for real-time user experience
+2. Maintain state for context-aware processing
+3. Route dynamically for specialized handling
+4. Process hierarchically for complex documents
+5. Generate functions dynamically when needed
+6. Build adaptive systems that improve over time
+7. Combine patterns for sophisticated applications

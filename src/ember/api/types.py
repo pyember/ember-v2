@@ -5,17 +5,24 @@ It centralizes type definitions to ensure consistency and compatibility
 across the codebase.
 
 Examples:
-    from ember.api.types import EmberModel
+    from ember.api.types import EmberModel, Field, field_validator
 
     class MyInputModel(EmberModel):
         text: str
         max_length: int = 100
+
+        @field_validator("text")
+        def clean_text(self, value: str) -> str:
+            return value.strip()
 """
 
 from typing import Any, ClassVar, Dict, Generic, List, Optional, Type, TypeVar, Union
 
 # Re-export core types
-from ember._internal.types import EmberModel
+from ember._internal.types import EmberModel, Field
+
+# Re-export validators for convenience
+from ember.api.validators import field_validator, model_validator
 
 
 # Utility function for extracting values from various response types
@@ -42,16 +49,12 @@ def extract_value(response: Any, key: str, default: Any = None) -> Any:
         return getattr(response, key)
 
     # Try data dictionary if it exists
-    if (
-        hasattr(response, "data")
-        and isinstance(response.data, dict)
-        and key in response.data
-    ):
+    if hasattr(response, "data") and isinstance(response.data, dict) and key in response.data:
         return response.data[key]
 
     # Try to see if it's a nested structure
     if isinstance(response, dict):
-        for k, v in response.items():
+        for _k, v in response.items():
             if isinstance(v, dict) and key in v:
                 return v[key]
 
@@ -62,6 +65,10 @@ def extract_value(response: Any, key: str, default: Any = None) -> Any:
 __all__ = [
     # Base types
     "EmberModel",  # Base model for input/output types
+    "Field",  # Field descriptor for validation constraints
+    # Validators
+    "field_validator",  # Field-level validation decorator
+    "model_validator",  # Model-level validation decorator
     # Utility functions
     "extract_value",  # Extract values from response objects
     # Re-exported typing primitives
@@ -73,4 +80,5 @@ __all__ = [
     "Union",
     "Generic",
     "ClassVar",
-    "Type"]
+    "Type",
+]

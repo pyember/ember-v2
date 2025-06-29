@@ -1,0 +1,70 @@
+
+==================================================
+  JIT Optimization Basics
+==================================================
+
+Part 1: Basic @jit Usage
+==================================================
+
+First call (includes compilation):
+  Result: {'word_count': 9, 'char_count': 43, 'unique_chars': 26, 'most_common_char': 'o'}
+  Duration: 0.0001s
+
+Second call (uses compiled version):
+  Duration: 0.0000s
+  Speedup: 24.1x faster
+
+==================================================
+Part 2: Automatic Caching
+==================================================
+
+First call to expensive_analysis:
+  Duration: 0.2053s
+
+Repeated call (cached):
+  Duration: 0.1051s (from cache!)
+
+Different input:
+  Duration: 0.1012s
+
+==================================================
+Part 3: Complex Function Optimization
+==================================================
+
+Analyzing documents with JIT:
+  Documents: 4
+  Total words: 33
+  Common words: [('ember', 2), ('and', 2), ('the', 2)]
+  Analysis time: 0.0045s
+
+==================================================
+Part 4: Best Practices
+==================================================
+
+✅ Use @jit for:
+  • Functions called multiple times with similar inputs
+  • CPU-intensive computations
+  • Functions with predictable input patterns
+  • Data processing pipelines
+
+❌ Avoid @jit for:
+  • Functions with side effects (file I/O, network calls)
+  • Functions that are already fast
+  • One-time operations
+  • Functions with highly variable inputs
+
+==================================================
+Part 5: JIT Statistics
+==================================================
+
+JIT compilation statistics:
+  Compiled functions: 6
+
+Note: Full statistics available with get_jit_stats()
+
+🎉 Key Takeaways:
+  1. @jit provides zero-config optimization
+  2. First call includes compilation overhead
+  3. Subsequent calls are much faster
+  4. Automatic caching for repeated inputs
+  5. Works with any Python function

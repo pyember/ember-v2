@@ -5,23 +5,23 @@ Just use @jit and let XCS handle the rest.
 
 Examples:
     from ember.api.xcs import jit
-    
+
     @jit
     def process(data):
         return model(data)
-    
+
     # That's it! Automatic parallelization, caching, and optimization.
 
 For the 10% who need more control:
     from ember.api.xcs import jit, Config
-    
+
     @jit(config=Config(cache=False))
     def process_sensitive(data):
         return secure_model(data)
 """
 
 # Re-export the simple API
-from ember.xcs import jit, get_jit_stats
+from ember.xcs import get_jit_stats, jit, vmap
 
 # Config for advanced users (hidden by default)
 # Users must explicitly import this
@@ -31,8 +31,9 @@ from ember.xcs.config import Config as _Config
 Config = _Config
 
 __all__ = [
-    # The 90% API - just these two functions
-    'jit',
-    'get_jit_stats',
+    # The 90% API
+    "jit",
+    "vmap",
+    "get_jit_stats",
     # Config is available but not advertised in __all__
 ]

@@ -1,0 +1,17 @@
+{
+  "version": "1.0",
+  "example": "03_simplified_apis/zero_config_jit.py",
+  "execution_mode": "simulated",
+  "sections": [
+    {
+      "header": "\u26a0\ufe0f  No API keys found. This example requires model API access.",
+      "output": "Run 'ember init' to configure your API keys.\n\nShowing example code structure instead...\n\nExample: Basic JIT usage\n```python\n@jit  # That's all you need!\ndef my_function(input):\n    # Your logic here\n    return result\n```"
+    }
+  ],
+  "total_time": 0.83,
+  "api_keys_required": [],
+  "metrics": {
+    "lines_of_code": 97,
+    "api_calls": 0
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "version": "1.0",
+  "example": "01_getting_started/model_comparison.py",
+  "execution_mode": "simulated",
+  "sections": [
+    {
+      "header": "\ud83d\udd27 Running in simulated mode (no API keys detected)",
+      "output": ""
+    },
+    {
+      "header": "To run this example with real API calls, set one of:",
+      "output": "export OPENAI_API_KEY='your-key-here'\n\nSimulated output will demonstrate the expected behavior."
+    },
+    {
+      "header": "\ud83d\udd27 Running in simulated mode (no API keys detected)",
+      "output": "To run this example with real API calls, set one of:\nexport OPENAI_API_KEY='your-key-here'\n\nSimulated output will demonstrate the expected behavior."
+    },
+    {
+      "header": "gpt-3.5-turbo:",
+      "output": "Machine learning is a type of artificial intelligence that enables computers to learn and improve from experience without being explicitly programmed.\n\ngpt-4:\n  Machine learning is a field of AI where algorithms automatically improve their performance on tasks through exposure to data and experience."
+    },
+    {
+      "header": "Prompt: Write a haiku about programming.",
+      "output": "gpt-3.5-turbo (temp=0.3):\n  Lines of code flow down\nBugs hide in the syntax tree\nDebugger finds peace\n  Tokens: 42\n\ngpt-3.5-turbo (temp=0.9):\n  Dancing pixels glow\nKeyboard whispers dreams in code\nAlgorithms bloom bright\n  Tokens: 42\n\ngpt-4 (temp=0.3):\n  Logic gates align\nAbstraction layers build high\nSoftware comes to life\n  Tokens: 42\n\ngpt-4 (temp=0.9):\n  Binary moonlight\nRecursion dreams infinite\nStack overflow love\n  Tokens: 42"
+    },
+    {
+      "header": "Prompt length: 120 characters",
+      "output": "gpt-3.5-turbo:\n  Response length: 180 characters\n  Prompt tokens: 28\n  Completion tokens: 35\n  Total tokens: 63\n  Estimated cost: $0.0001\n\ngpt-4:\n  Response length: 471 characters\n  Prompt tokens: 28\n  Completion tokens: 78\n  Total tokens: 106\n  Estimated cost: $0.0032"
+    },
+    {
+      "header": "Reasoning Task:",
+      "output": "Prompt: If all roses are flowers and some flowers fade qui...\n\ngpt-3.5-turbo:\n  No, we cannot conclude that some roses fade quickly. The statement only tells us that some flowers fade quickly, but not which specific flowers.\n\ngpt-4:\n  No, we cannot make that conclusion. This is a logical fallacy. While all roses are flowers, and some flowers fade quickly, we don't know if roses are among the flowers that fade quickly. The 'some flo...\n\n\nCode Task:\nPrompt: Write a Python function to reverse a string withou...\n\ngpt-3.5-turbo:\n  def reverse_string(s):\n    result = ''\n    for char in s:\n        result = char + result\n    return result\n\ngpt-4:\n  def reverse_string(s):\n    # Using two pointers approach\n    chars = list(s)\n    left, right = 0, len(chars) - 1\n    while left < right:\n        chars[left], chars[right] = chars[right], chars[left]\n ...\n\n\nCreative Task:\nPrompt: Create a metaphor comparing software development t...\n\ngpt-3.5-turbo:\n  Software development is like cooking a complex meal where recipes are documentation, ingredients are libraries, and the chef is the developer combining everything to create a satisfying dish.\n\ngpt-4:\n  Software development is like being a master chef in a kitchen that never closes. Your code is the recipe, constantly refined through taste tests (debugging). Libraries are your pantry of pre-made ingr..."
+    }
+  ],
+  "total_time": 1.43,
+  "api_keys_required": [],
+  "metrics": {
+    "lines_of_code": 220,
+    "api_calls": 0
+  }
+}

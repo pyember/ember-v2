@@ -30,7 +30,8 @@ from typing import (
     Optional,
     Protocol,
     TypeVar,
-    runtime_checkable)
+    runtime_checkable,
+)
 
 # Setup logger
 logger = logging.getLogger(__name__)
@@ -446,7 +447,8 @@ def execute_graph(
     graph: MockXCSGraph,
     global_input: Dict[str, Any] = None,
     concurrency: bool = False,
-    **options) -> Dict[str, Any]:
+    **options,
+) -> Dict[str, Any]:
     """Execute a graph with a global input.
 
     This is an alternative interface for execute() that supports a global input object
@@ -569,4 +571,5 @@ __all__ = [
     "XCSExecutionOptions",
     "JITOptions",
     "TransformOptions",
-    "ExecutionResult"]
+    "ExecutionResult",
+]

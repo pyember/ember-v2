@@ -27,7 +27,8 @@ class ComposedEvaluator(IEvaluator[T_out, T_truth], Generic[T_out, T_truth]):
     def __init__(
         self,
         extractor: Any,  # Expecting an extractor with an `extract` method.
-        base_evaluator: IEvaluator[Any, Any]) -> None:
+        base_evaluator: IEvaluator[Any, Any],
+    ) -> None:
         self.extractor = extractor
         self.base_evaluator = base_evaluator
 
@@ -61,7 +62,8 @@ class ExactMatchEvaluator(IEvaluator[str, str]):
 
     Args:
         compare_fn (Optional[Callable[[str, str], bool]]): Optional custom comparison function.
-            If not provided, strings are normalized (whitespace removed, lowercase) before comparison.
+            If not provided, strings are normalized (whitespace removed, lowercase) 
+            before comparison.
 
     Returns:
         EvaluationResult: The result containing a correctness flag and a score.
@@ -82,9 +84,7 @@ class ExactMatchEvaluator(IEvaluator[str, str]):
         """
         return str1.strip().lower() == str2.strip().lower()
 
-    def evaluate(
-        self, system_output: str, correct_answer: str, **kwargs: Any
-    ) -> EvaluationResult:
+    def evaluate(self, system_output: str, correct_answer: str, **kwargs: Any) -> EvaluationResult:
         """Evaluates whether a system output exactly matches the correct answer.
 
         Args:
@@ -93,7 +93,8 @@ class ExactMatchEvaluator(IEvaluator[str, str]):
             **kwargs: Additional keyword arguments (unused).
 
         Returns:
-            EvaluationResult: An object with `is_correct` set to True if the normalized strings match,
+            EvaluationResult: An object with `is_correct` set to True if the normalized 
+            strings match,
                               along with a corresponding score.
         """
         is_correct = self.compare_fn(system_output, correct_answer)
@@ -118,7 +119,8 @@ class NumericToleranceEvaluator(IEvaluator[float, float]):
     def evaluate(
         self, system_output: float, correct_answer: float, **kwargs: Any
     ) -> EvaluationResult:
-        """Evaluates the numeric system output against the correct value within a specified tolerance.
+        """Evaluates the numeric system output against the correct value within a 
+        specified tolerance.
 
         Args:
             system_output (float): The numeric output from the system.
@@ -126,7 +128,8 @@ class NumericToleranceEvaluator(IEvaluator[float, float]):
             **kwargs: Additional keyword arguments (unused).
 
         Returns:
-            EvaluationResult: The result including a correctness flag, score, and metadata about the difference.
+            EvaluationResult: The result including a correctness flag, score, and 
+            metadata about the difference.
         """
         difference = abs(system_output - correct_answer)
         # Round to handle floating point precision issues
@@ -134,9 +137,7 @@ class NumericToleranceEvaluator(IEvaluator[float, float]):
         is_correct = rounded_diff <= self.tolerance
         base = abs(correct_answer) if correct_answer != 0 else 1.0
         score = max(0.0, 1.0 - rounded_diff / base)
-        return EvaluationResult(
-            is_correct=is_correct, score=score, metadata={"diff": rounded_diff}
-        )
+        return EvaluationResult(is_correct=is_correct, score=score, metadata={"diff": rounded_diff})
 
 
 class CodeExecutionEvaluator(IEvaluator[str, str]):
@@ -152,10 +153,9 @@ class CodeExecutionEvaluator(IEvaluator[str, str]):
     def __init__(self, timeout: float = 5.0) -> None:
         self.timeout = timeout
 
-    def evaluate(
-        self, system_output: str, correct_answer: str, **kwargs: Any
-    ) -> EvaluationResult:
-        """Executes the provided Python code and compares its standard output to the expected result.
+    def evaluate(self, system_output: str, correct_answer: str, **kwargs: Any) -> EvaluationResult:
+        """Executes the provided Python code and compares its standard output to the 
+        expected result.
 
         Args:
             system_output (str): A Python code string to be executed.
@@ -163,14 +163,16 @@ class CodeExecutionEvaluator(IEvaluator[str, str]):
             **kwargs: Additional keyword arguments (unused).
 
         Returns:
-            EvaluationResult: The result of execution, including stdout, stderr, and exit code in metadata.
+            EvaluationResult: The result of execution, including stdout, stderr, and 
+            exit code in metadata.
         """
         try:
             process_result: subprocess.CompletedProcess = subprocess.run(
                 args=["python", "-c", system_output],
                 capture_output=True,
                 text=True,
-                timeout=self.timeout)
+                timeout=self.timeout,
+            )
             stdout_str = process_result.stdout.strip()
             expected_str = correct_answer.strip()
             is_correct = stdout_str == expected_str
@@ -181,17 +183,20 @@ class CodeExecutionEvaluator(IEvaluator[str, str]):
                     "stdout": process_result.stdout,
                     "stderr": process_result.stderr,
                     "exit_code": process_result.returncode,
-                })
+                },
+            )
         except subprocess.TimeoutExpired as timeout_error:
             return EvaluationResult(
                 is_correct=False,
                 score=0.0,
-                metadata={"error": f"TimeoutExpired: {str(timeout_error)}"})
+                metadata={"error": f"TimeoutExpired: {str(timeout_error)}"},
+            )
         except Exception as error:
             return EvaluationResult(
                 is_correct=False,
                 score=0.0,
-                metadata={"error": f"{type(error).__name__}: {str(error)}"})
+                metadata={"error": f"{type(error).__name__}: {str(error)}"},
+            )
 
 
 # Composite Evaluator Example
@@ -209,9 +214,7 @@ class MultipleChoiceEvaluator(IEvaluator[str, str]):
         result = evaluator.evaluate("I think the answer is C because...", "C")
     """
 
-    def evaluate(
-        self, system_output: str, correct_answer: str, **kwargs: Any
-    ) -> EvaluationResult:
+    def evaluate(self, system_output: str, correct_answer: str, **kwargs: Any) -> EvaluationResult:
         """Evaluates whether the system output contains the correct multiple-choice answer.
 
         Args:

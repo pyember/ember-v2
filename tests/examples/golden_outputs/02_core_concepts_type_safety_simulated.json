@@ -1,0 +1,49 @@
+{
+  "version": "1.0",
+  "example": "02_core_concepts/type_safety.py",
+  "execution_mode": "simulated",
+  "sections": [
+    {
+      "header": "\ud83c\udfaf Why Type Safety Matters:",
+      "output": "\u2022 Catch errors before runtime\n\u2022 Better IDE support and autocomplete\n\u2022 Self-documenting code\n\u2022 Easier refactoring\n\u2022 Clearer interfaces between components"
+    },
+    {
+      "header": "Without type hints:",
+      "output": "def process_data(data):\n  \u2192 Unclear what 'data' should be\n\nWith type hints:\n  def process_data(data: List[str]) -> int:\n  \u2192 Clear: expects list of strings, returns int\n\nProcessing ['Hello', 'World', 'From', 'Ember']\nResult: 4 messages"
+    },
+    {
+      "header": "Complex function signature:",
+      "output": "analyze_responses(\n      responses: List[str],\n      weights: Optional[List[float]] = None,\n      threshold: float = 0.5\n  ) -> Dict[str, Union[float, int, List[str]]]\n\nResult: {'count': 4, 'threshold': 0.5, 'items': ['Good', 'Excellent', 'Fair'], 'avg_weight': 0.7}"
+    },
+    {
+      "header": "Using dataclasses for type safety:",
+      "output": "@dataclass\n  class ModelResponse:\n      text: str\n      confidence: float\n      tokens_used: int\n\nAnalysis: Analyzed 3 responses\nAverage confidence: 0.84\nHigh confidence responses: 2"
+    },
+    {
+      "header": "Using function protocols:",
+      "output": "class TextProcessor(Protocol):\n      def __call__(self, text: str) -> str: ...\n\nOriginal: '  Hello   World  '\n  clean_processor: 'Hello World'\n  uppercase_processor: '  HELLO   WORLD  '\n  reverse_processor: '  dlroW   olleH  '"
+    },
+    {
+      "header": "Generic batch result:",
+      "output": "class BatchResult(Generic[T]):\n      items: List[T]\n      successful: List[T]\n      failed: List[Tuple[int, str]]\n\nProcessed 5 items\nSuccess rate: 60.0%\nSuccessful: ['HELLO', 'WORLD', 'EMBER']\nFailed indices: [2, 4]"
+    },
+    {
+      "header": "Runtime validation example:",
+      "output": "\u2705 Valid input processed: {'count': 3, 'first': 'a', 'types_valid': True}\n\u274c Type error caught: data[1] must be str, got int"
+    },
+    {
+      "header": "\u2705 Type Safety Best Practices",
+      "output": ""
+    },
+    {
+      "header": "1. Start simple - add types gradually",
+      "output": "2. Use dataclasses for structured data\n3. Leverage Optional for nullable values\n4. Create type aliases for complex types\n5. Use protocols for duck typing\n6. Add runtime validation for external data\n7. Run mypy for static type checking\n\n\ud83d\udd27 Tools for Type Safety:\n\u2022 mypy - Static type checker\n\u2022 pydantic - Runtime validation\n\u2022 dataclasses - Structured data\n\u2022 typing - Type hints library\n\nNext: Learn about context management in 'context_management.py'"
+    }
+  ],
+  "total_time": 0.03,
+  "api_keys_required": [],
+  "metrics": {
+    "lines_of_code": 252,
+    "api_calls": 0
+  }
+}

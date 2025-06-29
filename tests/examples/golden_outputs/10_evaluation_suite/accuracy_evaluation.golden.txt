@@ -1,0 +1,95 @@
+
+==================================================
+  Accuracy Evaluation Framework
+==================================================
+
+📊 Part 1: Creating Evaluation Datasets
+
+Created classification dataset: 10 cases
+Difficulty: {'easy': 5, 'medium': 3, 'hard': 2}
+
+Created math dataset: 8 cases
+Difficulty: {'easy': 2, 'medium': 4, 'hard': 2}
+
+==================================================
+🤖 Part 2: Systems to Evaluate
+==================================================
+
+Testing sentiment classifier:
+Text: 'This product is amazing but has some issues.'
+Prediction: positive (confidence: 0.50)
+
+Testing math solver:
+Question: 'What is 15 + 27?'
+Answer: None (method: guessed)
+
+==================================================
+📏 Part 3: Evaluation Metrics
+==================================================
+
+
+==================================================
+🔬 Part 4: Complete Evaluation Pipeline
+==================================================
+
+Running Classification Evaluation:
+Starting: Running predictions
+Completed: Running predictions (took 0.00s)
+
+Overall Accuracy: 100.00%
+Correct: 10/10
+
+Per-difficulty accuracy:
+  easy: 100.00%
+  medium: 100.00%
+  hard: 100.00%
+
+Per-class metrics:
+  positive: F1=1.00, Precision=1.00, Recall=1.00
+  negative: F1=1.00, Precision=1.00, Recall=1.00
+  neutral: F1=1.00, Precision=1.00, Recall=1.00
+
+------------------------------
+
+Running Math Evaluation:
+Starting: Running predictions
+Completed: Running predictions (took 0.00s)
+
+Overall Accuracy: 0.00%
+Correct: 0/8
+
+Per-difficulty accuracy:
+  easy: 0.00%
+  medium: 0.00%
+  hard: 0.00%
+
+==================================================
+⚖️ Part 5: System Comparison
+==================================================
+
+Starting: Running predictions
+Completed: Running predictions (took 0.00s)
+Starting: Running predictions
+Completed: Running predictions (took 0.00s)
+System Comparison Results:
+
+Rankings:
+1. rule_based: 100.00%
+2. random_baseline: 30.00%
+
+Winner: rule_based
+Statistically significant: Yes
+
+==================================================
+✅ Key Takeaways
+==================================================
+
+1. Always evaluate on representative test sets
+2. Use multiple metrics (accuracy, F1, precision, recall)
+3. Consider difficulty stratification
+4. Compare against baselines
+5. Check statistical significance
+6. Track performance over time
+7. Automate evaluation pipelines
+
+Next: Explore consistency_testing.py for reliability metrics!

@@ -158,4 +158,5 @@ __all__ = [
     "MinimalModelRegistry",
     "MinimalAnthropicModel",
     "MinimalOpenAIModel",
-    "MinimalModelFactory"]
+    "MinimalModelFactory",
+]

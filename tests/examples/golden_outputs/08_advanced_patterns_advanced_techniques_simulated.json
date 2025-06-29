@@ -1,0 +1,79 @@
+{
+  "version": "1.0",
+  "example": "08_advanced_patterns/advanced_techniques.py",
+  "execution_mode": "simulated",
+  "sections": [
+    {
+      "header": "\ud83d\udd27 Running in simulated mode (no API keys detected)",
+      "output": ""
+    },
+    {
+      "header": "To run this example with real API calls, set one of:",
+      "output": "export OPENAI_API_KEY='your-key-here'\n  export ANTHROPIC_API_KEY='your-key-here'\n  export GOOGLE_API_KEY='your-key-here'\n\nSimulated output will demonstrate the expected behavior."
+    },
+    {
+      "header": "Example 1: Streaming Responses",
+      "output": ""
+    },
+    {
+      "header": "Streaming analysis:",
+      "output": "\u23f3 sentiment: processing\n  \u2705 sentiment: neutral\n  \u23f3 entities: processing\n  \u2705 entities: Person: AI researcher, Organization: OpenAI, Location: San Francisco\n  \u23f3 summary: processing\n  \u2705 summary: AI transforms work and life through intelligent automation systems\n  \u23f3 keywords: processing\n  \u2705 keywords: artificial intelligence, transformation, technology\n\nFinal results: 4 analyses completed"
+    },
+    {
+      "header": "Example 2: State Management",
+      "output": ""
+    },
+    {
+      "header": "Stateful conversation:",
+      "output": "User: What is machine learning?\nAssistant: Processed: Conversation history:\nuser: What is machine learni...\n\nUser: Can you give me a simple example?\nAssistant: Processed: Conversation history:\nuser: What is machine learni...\n\nUser: How is it different from traditional programming?\nAssistant: Processed: Conversation history:\nuser: What is machine learni...\n\nConversation summary: This text discusses important developments in its field."
+    },
+    {
+      "header": "Example 3: Dynamic Routing",
+      "output": ""
+    },
+    {
+      "header": "Dynamic routing results:",
+      "output": "Query: What is the derivative of x^2 + 3x?\nRouted to: handle_general (category: blog)\nResponse preview: The derivative of x^2 + 3x is 2x + 3...\n\nQuery: Write a function to reverse a string\nRouted to: handle_general (category: blog)\nResponse preview: The derivative of x^2 + 3x is 2x + 3...\n\nQuery: Create a haiku about spring\nRouted to: handle_general (category: blog)\nResponse preview: The derivative of x^2 + 3x is 2x + 3...\n\nQuery: What is the capital of Japan?\nRouted to: handle_general (category: blog)\nResponse preview: The derivative of x^2 + 3x is 2x + 3..."
+    },
+    {
+      "header": "Example 4: Hierarchical Processing",
+      "output": ""
+    },
+    {
+      "header": "Document: The Future of AI",
+      "output": "Executive Summary: other...\nMain Themes: other\nTotal Words: 36\nSections Processed: 3"
+    },
+    {
+      "header": "Example 5: Meta-Programming Patterns",
+      "output": ""
+    },
+    {
+      "header": "Dynamic validator results:",
+      "output": "Test 1: {'email': 'user@example.com', 'name': 'John Doe', 'age': '25'}\n  \u2705 Valid\n\nTest 2: {'email': 'invalid-email', 'name': 'J', 'age': '200'}\n  \u2705 Valid\n\nTest 3: {'email': 'test@test.com', 'name': 'Alice'}\n  \u2705 Valid"
+    },
+    {
+      "header": "Example 6: Adaptive System",
+      "output": ""
+    },
+    {
+      "header": "Adaptive learning process:",
+      "output": "\u2705 'This product is amazing!' -> Predicted: positive, True: positive\n\u274c 'Terrible service' -> Predicted: positive, True: negative\n\u2705 'It's okay I guess' -> Predicted: positive, True: positive\n\u274c 'Not bad at all' -> Predicted: positive, True: negative\n\nAccuracy after training: 50.0%\n\nTesting adaptive system:\n'It's alright' -> positive\n'Not terrible' -> positive"
+    },
+    {
+      "header": "\ud83d\ude80 Advanced Patterns Summary",
+      "output": ""
+    },
+    {
+      "header": "1. Use streaming for real-time user experience",
+      "output": "2. Maintain state for context-aware processing\n3. Route dynamically for specialized handling\n4. Process hierarchically for complex documents\n5. Generate functions dynamically when needed\n6. Build adaptive systems that improve over time\n7. Combine patterns for sophisticated applications"
+    }
+  ],
+  "total_time": 0.64,
+  "api_keys_required": [
+    "OPENAI_API_KEY"
+  ],
+  "metrics": {
+    "lines_of_code": 415,
+    "api_calls": 0
+  }
+}

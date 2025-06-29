@@ -9,9 +9,11 @@ from ember.xcs import jit, vmap, pmap, trace, optimize, export, get_graph, visua
 # Example 1: Basic JIT compilation
 print("=== Example 1: Basic JIT ===")
 
+
 @jit
 def add(x, y):
     return x + y
+
 
 result = add(5, 3)
 print(f"add(5, 3) = {result}")
@@ -23,16 +25,18 @@ print(f"add(5, 3) = {result}")
 # Example 2: Automatic parallelism discovery
 print("\n=== Example 2: Automatic Parallelism ===")
 
+
 @jit
 def parallel_compute(x, y, z):
     # These operations are independent and will run in parallel
     a = x * 2
     b = y + 10
-    c = z ** 2
-    
+    c = z**2
+
     # This runs after the parallel operations complete
     result = a + b + c
     return result
+
 
 result = parallel_compute(5, 3, 4)
 print(f"parallel_compute(5, 3, 4) = {result}")
@@ -45,9 +49,11 @@ print(graph.visualize())
 # Example 3: Vectorization with vmap
 print("\n=== Example 3: Vectorization ===")
 
+
 @vmap
 def square(x):
     return x * x
+
 
 numbers = [1, 2, 3, 4, 5]
 squares = square(numbers)
@@ -57,14 +63,16 @@ print(f"square({numbers}) = {squares}")
 # Example 4: Combining JIT and vmap
 print("\n=== Example 4: JIT + vmap ===")
 
+
 @jit
 @vmap
 def process_item(item):
     # Complex processing that benefits from both JIT and vectorization
     score = item * 2
     adjusted = score + 0.5
-    final = adjusted ** 0.5
+    final = adjusted**0.5
     return final
+
 
 items = [10, 20, 30, 40, 50]
 results = process_item(items)
@@ -74,11 +82,13 @@ print(f"Processed items: {results}")
 # Example 5: Direct graph manipulation
 print("\n=== Example 5: Direct Graph API ===")
 
+
 def my_computation(x, y):
     a = x + y
     b = x * y
     c = a / b
     return c
+
 
 # Trace the function to build a graph
 graph = trace(my_computation, x=5, y=3)
@@ -87,24 +97,26 @@ graph = trace(my_computation, x=5, y=3)
 optimized = optimize(graph)
 
 # Execute with different inputs
-result1 = graph.execute({'x': 10, 'y': 2})
-result2 = optimized.execute({'x': 10, 'y': 2})
+result1 = graph.execute({"x": 10, "y": 2})
+result2 = optimized.execute({"x": 10, "y": 2})
 print(f"Original: {result1}, Optimized: {result2}")
 
 
 # Example 6: Export for remote execution
 print("\n=== Example 6: Export for Remote ===")
 
+
 @jit
 def remote_compute(data):
     # Preprocessing
     cleaned = [d * 0.9 for d in data]
-    
+
     # Main computation
-    results = [c ** 2 + 1 for c in cleaned]
-    
+    results = [c**2 + 1 for c in cleaned]
+
     # Aggregation
     return sum(results) / len(results)
+
 
 # Compile the function
 remote_compute([1, 2, 3])
@@ -120,6 +132,7 @@ print(f"Parallelism waves: {len(export_data['parallelism'])}")
 # Example 7: Real-world ensemble model
 print("\n=== Example 7: Ensemble Model ===")
 
+
 @jit
 def ensemble_predict(x, models, weights):
     """Run multiple models in parallel and combine results."""
@@ -128,16 +141,17 @@ def ensemble_predict(x, models, weights):
     for model in models:
         pred = model(x)
         predictions.append(pred)
-    
+
     # Weighted average
     weighted_sum = sum(p * w for p, w in zip(predictions, weights))
     total_weight = sum(weights)
-    
+
     return weighted_sum / total_weight
+
 
 # Mock models
 model1 = lambda x: x * 2
-model2 = lambda x: x * 2.1  
+model2 = lambda x: x * 2.1
 model3 = lambda x: x * 1.9
 
 models = [model1, model2, model3]
@@ -152,6 +166,7 @@ print("\n=== Example 8: Performance Demo ===")
 
 import time
 
+
 def expensive_computation(x):
     """Simulate expensive parallel computations."""
     # Multiple independent expensive operations
@@ -159,9 +174,10 @@ def expensive_computation(x):
     b = sum(x[i] * 0.9999 for i in range(len(x)))
     c = sum(x[i] * 1.0002 for i in range(len(x)))
     d = sum(x[i] * 0.9998 for i in range(len(x)))
-    
+
     # Combine results
     return (a + b) * (c + d)
+
 
 # JIT compile
 jit_version = jit(expensive_computation)
@@ -191,30 +207,36 @@ print("\n=== Example 9: Complex Pipeline ===")
 
 from ember.xcs import make_parallel
 
+
 # Define pipeline stages
 def stage1(x):
     return x * 2
 
+
 def stage2(x):
     return x + 10
 
+
 def stage3(x):
-    return x ** 0.5
+    return x**0.5
+
 
 # Create parallel stage
 parallel_stage = make_parallel(stage1, stage2, stage3)
+
 
 # Use in pipeline
 @jit
 def pipeline(x):
     # Run three operations in parallel
     r1, r2, r3 = parallel_stage(x)
-    
+
     # Combine results
     combined = r1 + r2 + r3
-    
+
     # Final processing
     return combined / 3
+
 
 result = pipeline(16)
 print(f"Pipeline result: {result}")
@@ -223,12 +245,14 @@ print(f"Pipeline result: {result}")
 # Example 10: Debugging and inspection
 print("\n=== Example 10: Debugging ===")
 
+
 @jit
 def debug_me(x, y):
     a = x + 1
     b = y * 2
     c = a * b
     return c
+
 
 # Execute
 result = debug_me(5, 3)
@@ -245,7 +269,7 @@ print(graph.visualize())
 # Export for analysis
 exported = export(graph)
 print(f"\nExported operations:")
-for op in exported['ops']:
+for op in exported["ops"]:
     print(f"  {op['id']}: {op['func']}({', '.join(op['inputs'])}) -> {op['output']}")
 
 

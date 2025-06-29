@@ -1,0 +1,37 @@
+{
+  "version": "1.0",
+  "example": "03_simplified_apis/natural_api_showcase.py",
+  "execution_mode": "simulated",
+  "sections": [
+    {
+      "header": "\ud83d\udd27 Running in simulated mode (no API keys detected)",
+      "output": ""
+    },
+    {
+      "header": "To run this example with real API calls, set one of:",
+      "output": "export OPENAI_API_KEY='your-key-here'\n  export ANTHROPIC_API_KEY='your-key-here'\n  export GOOGLE_API_KEY='your-key-here'\n\nSimulated output will demonstrate the expected behavior."
+    },
+    {
+      "header": "Direct call: {'urgency': 'high', 'intent': 'info', 'actions': 'Investigate server issue immediately'}",
+      "output": "JIT optimized: {'urgency': 'low', 'intent': 'question', 'actions': 'Schedule meeting at convenient time'}\nBatch processing: [\n  {'urgency': 'low', 'intent': 'info', 'actions': 'None'},\n  {'urgency': 'medium', 'intent': 'request', 'actions': 'Review PR'},\n  {'urgency': 'high', 'intent': 'info', 'actions': 'Monitor CPU usage'}\n]"
+    },
+    {
+      "header": "Pipeline result: {'original': 'The new product launch was successful. Sales exceeded expectations by 200%.', 'summary': 'Product launch achieved 200% sales target.', 'spanish': 'El lanzamiento del producto logr\u00f3 el 200% del objetivo de ventas.', 'professional': 'The product launch demonstrated exceptional performance, surpassing projected sales targets by 200%.'}",
+      "output": ""
+    },
+    {
+      "header": "Creative: Artificial intelligence dances at the intersection of human dreams and silicon possibilities, weaving tapestries of logic that mirror our own consciousness in ways both beautiful and bewildering.",
+      "output": "Precise: Artificial intelligence is a field of computer science focused on creating systems that can perform tasks typically requiring human intelligence, including pattern recognition, decision-making, and natural language processing.\n\nBalanced: Artificial intelligence represents a transformative field that combines rigorous computer science with the ambitious goal of replicating human cognitive abilities, enabling machines to learn, reason, and interact in increasingly sophisticated ways."
+    },
+    {
+      "header": "Dataset example - would process data naturally in loops",
+      "output": "No special dataset classes needed - just Python iteration\n\n\u2728 Key takeaway: Just write Python - Ember handles the rest!"
+    }
+  ],
+  "total_time": 1.27,
+  "api_keys_required": [],
+  "metrics": {
+    "lines_of_code": 170,
+    "api_calls": 0
+  }
+}

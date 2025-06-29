@@ -1,0 +1,61 @@
+{
+  "version": "1.0",
+  "example": "08_advanced_patterns/jax_xcs_integration.py",
+  "execution_mode": "simulated",
+  "sections": [
+    {
+      "header": "Part 1: Static vs Dynamic Detection",
+      "output": ""
+    },
+    {
+      "header": "Ember's automatic detection rules:",
+      "output": "\u2022 JAX arrays (jnp.ndarray) \u2192 Dynamic (learnable)\n  \u2022 Everything else \u2192 Static (not learnable)\n  \u2022 No decorators needed - it just works!\n\nMixed operator results:\n  Dynamic score: 1.90\n  Static action: accept\n  Static model: gpt-4"
+    },
+    {
+      "header": "Part 2: Gradients Through Mixed Operations",
+      "output": ""
+    },
+    {
+      "header": "Gradient computation:",
+      "output": "Input: [0.1 0.2 0.3]\n  Target: 5.0\n  Weight gradients: [-0.62 -1.24 -1.86]\n  Bias gradient: -6.199999809265137\n\nNote: Static parameters (config, model) don't get gradients!"
+    },
+    {
+      "header": "Part 3: Real-World Example - Learned Prompt Router",
+      "output": ""
+    },
+    {
+      "header": "Learned routing results:",
+      "output": "'Explain the theory of relativity...'\n  \u2192 analytical (100.0%)\n  Model: gpt-4\n\n'Write a haiku about mountains...'\n  \u2192 analytical (100.0%)\n  Model: gpt-4\n\n'Debug this Python code: def f(x): return...'\n  \u2192 analytical (100.0%)\n  Model: gpt-4\n\n'What is 2+2?...'\n  \u2192 analytical (100.0%)\n  Model: gpt-4"
+    },
+    {
+      "header": "Part 4: Training via Gradients",
+      "output": ""
+    },
+    {
+      "header": "Training demonstration:",
+      "output": "Training prompt: Write elegant Python code\n  Target route: coding\n  Embedding gradients shape: (4, 16)\n  Projection gradients shape: (16, 16)\n\nComplete optimization example with optax:\n```python\nimport optax\n\n# Initialize optimizer\noptimizer = optax.adam(learning_rate=0.01)\nopt_state = optimizer.init(router)\n\n# Training loop\nfor epoch in range(100):\n    # Compute loss and gradients\n    loss_val = routing_loss(params, prompt, target_idx)\n    grads = grad_fn(params, prompt, target_idx)\n    \n    # Update parameters with optax\n    updates, opt_state = optimizer.update(grads, opt_state)\n    \n    # Apply updates to router using update_params\n    router = router.update_params(\n        route_embeddings=router.route_embeddings + updates[0],\n        projection=router.projection + updates[1]\n    )\n```\n\n\u2713 Running actual optimization example:\n  Step 0: loss = 16.1181\n  Step 1: loss = 16.1181\n  Step 2: loss = 16.1181"
+    },
+    {
+      "header": "Part 5: XCS JIT with Mixed Operations",
+      "output": ""
+    },
+    {
+      "header": "JIT-compiled batch processing:",
+      "output": "'Explain the theory of relativi...' \u2192 score: 5.29\n  'Write a haiku about mountains...' \u2192 score: 5.29"
+    },
+    {
+      "header": "\u2705 JAX-XCS Integration Summary",
+      "output": ""
+    },
+    {
+      "header": "\ud83d\udd11 Key Principles:",
+      "output": "1. JAX arrays are automatically learnable\n  2. Everything else is automatically static\n  3. Gradients flow only through JAX operations\n  4. Static operations (models, tools) work seamlessly\n  5. XCS JIT handles mixed static/dynamic efficiently\n\n\ud83d\udca1 Practical Benefits:\n  \u2022 No manual static/dynamic annotations\n  \u2022 Models and tools integrate naturally\n  \u2022 Full differentiability where needed\n  \u2022 Optimal performance via XCS\n  \u2022 Clean separation of concerns\n\n\ud83c\udfaf Use Cases:\n  \u2022 Learned routing between models\n  \u2022 Prompt optimization with model feedback\n  \u2022 Hybrid symbolic-neural systems\n  \u2022 Differentiable programming with LLMs\n  \u2022 Neural architecture search over operators\n\n\ud83d\udcda Example Pattern:\n```python\nclass HybridOperator(operators.Operator):\n    def __init__(self):\n        # Learnable parameters\n        self.weights = jnp.array([...])\n        \n        # Static components\n        self.model = models.instance('gpt-4')\n        self.tool = MyTool()\n    \n    def forward(self, x):\n        # Mix learnable and static freely\n        score = jnp.dot(self.weights, x)\n        if score > threshold:\n            return self.model(prompt)\n        else:\n            return self.tool.process(x)\n```"
+    }
+  ],
+  "total_time": 1.47,
+  "api_keys_required": [],
+  "metrics": {
+    "lines_of_code": 333,
+    "api_calls": 0
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "version": "1.0",
+  "example": "04_compound_ai/judge_synthesis.py",
+  "execution_mode": "simulated",
+  "sections": [
+    {
+      "header": "\ud83c\udfaf Judge & Synthesis in Compound AI:",
+      "output": "\u2022 Judges evaluate and select best outputs\n\u2022 Synthesis combines multiple perspectives\n\u2022 Iterative refinement improves quality\n\u2022 Consensus building increases reliability"
+    },
+    {
+      "header": "Judge pattern components:",
+      "output": "1. Multiple candidate responses\n  2. Judge criteria/rubric\n  3. Evaluation and selection\n  4. Final decision"
+    },
+    {
+      "header": "Synthesis combines multiple perspectives:",
+      "output": "Individual perspectives (simulated):\n  Technical: Python uses dynamic typing and automatic memory management.\n  Practical: Python excels at web development, data science, and automation.\n  Historical: Python was created by Guido van Rossum in 1991.\n\nSynthesized response (simulated):\n  Python, created in 1991, is a dynamically-typed language\n  that excels at web development, data science, and automation\n  through its automatic memory management and vast ecosystem."
+    },
+    {
+      "header": "Using multiple judges for robust evaluation:",
+      "output": "Judge evaluations:\n  Accuracy Judge:\n    Option A: 0.8\n    Option B: 0.9\n    Option C: 0.7\n  Clarity Judge:\n    Option A: 0.9\n    Option B: 0.7\n    Option C: 0.8\n  Relevance Judge:\n    Option A: 0.7\n    Option B: 0.8\n    Option C: 0.9\n\nConsensus calculation:\n  Option A: Avg = 0.80\n  Option B: Avg = 0.80\n  Option C: Avg = 0.80\n  \u2192 Tie! Use weighted scoring or additional criteria"
+    },
+    {
+      "header": "Improving responses through iteration:",
+      "output": "Initial:\n  Python is good for programming.\n\nAfter Judge 1:\n  Python is excellent for rapid development and prototyping.\n\nAfter Judge 2:\n  Python excels at rapid development with its clean syntax, extensive libraries, and strong community support.\n\nFinal:\n  Python is ideal for rapid development due to its readable syntax, comprehensive standard library, vast third-party packages, and supportive community, making it perfect for beginners and experts alike.\n\nEach iteration incorporates judge feedback to improve quality."
+    },
+    {
+      "header": "Using judges to guide generation:",
+      "output": "1. Generate with constraints:\n   Prompt: 'Explain recursion to a beginner'\n   Constraint: Must use an analogy\n\n2. Judge checks constraint:\n   \u2717 Response 1: 'Recursion is when a function calls itself.'\n   \u2713 Response 2: 'Recursion is like Russian dolls - each contains a smaller version.'\n\n3. Continue until judge approves or max attempts reached"
+    },
+    {
+      "header": "1. Extractive Synthesis:",
+      "output": "Take best parts from each response\n   Response A: 'Python is interpreted...'\n   Response B: '...with dynamic typing...'\n   Synthesis: 'Python is interpreted with dynamic typing'\n\n2. Abstractive Synthesis:\n   Generate new text combining ideas\n   Responses discuss: speed, ease, libraries\n   Synthesis: 'Python balances performance with developer productivity'\n\n3. Hierarchical Synthesis:\n   Organize information by importance\n   Primary: Core language features\n   Secondary: Ecosystem and tools\n   Tertiary: Community and resources"
+    },
+    {
+      "header": "Building a code review judge:",
+      "output": "Code Review Judge Results:\n  Correctness: 0.9 - Logic is sound\n  Efficiency: 0.7 - Could optimize loops\n  Readability: 0.8 - Good naming, needs comments\n  Security: 0.9 - No obvious vulnerabilities\n\nOverall Score: 0.83/1.0\nRecommendation: Approved with minor revisions"
+    },
+    {
+      "header": "Combining diverse model outputs:",
+      "output": "Individual model outputs:\n  Creative Model: Python slithers through your code like a serpent of simplicity\n  Technical Model: Python is an interpreted, object-oriented, high-level language\n  Practical Model: Python gets things done quickly with minimal boilerplate\n\nSynthesis approaches:\n  1. Voting: Select most common themes\n  2. Blending: Combine complementary aspects\n  3. Ranking: Use best output per criteria\n  4. Meta-model: Train synthesizer on outputs"
+    },
+    {
+      "header": "\u2705 Judge & Synthesis Best Practices",
+      "output": ""
+    },
+    {
+      "header": "1. Define clear judging criteria upfront",
+      "output": "2. Use multiple judges for important decisions\n3. Balance different synthesis strategies\n4. Implement iterative refinement loops\n5. Monitor judge agreement/disagreement\n6. Cache synthesis results for efficiency\n7. Version judge criteria and track changes\n\n\ud83d\udd27 Implementation Tips:\n\u2022 Start simple with binary judges\n\u2022 Use rubrics for consistent evaluation\n\u2022 Combine statistical and semantic judges\n\u2022 Build synthesis pipelines incrementally\n\u2022 Test judge calibration regularly\n\nNext: Explore data processing in '../05_data_processing/'"
+    }
+  ],
+  "total_time": 0.03,
+  "api_keys_required": [],
+  "metrics": {
+    "lines_of_code": 249,
+    "api_calls": 0
+  }
+}

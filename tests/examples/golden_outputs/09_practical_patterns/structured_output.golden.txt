@@ -1,0 +1,69 @@
+
+==================================================
+  Structured Output Patterns
+==================================================
+
+📋 Part 1: Defining Structured Output Models
+
+Defined structured models:
+- ProductInfo: name, price, category, in_stock, tags
+- AnalysisResult: summary, sentiment, key_points, confidence, metadata
+
+==================================================
+🔧 Part 2: JSON Parsing with Validation
+==================================================
+
+Testing JSON parser:
+✓ Parsed: {'name': 'Widget', 'price': 19.99}
+✓ Parsed: {'category': 'tools', 'in_stock': True}
+✓ Parsed: {'tags': ['new', 'featured'], 'confidence': 0.95}
+
+==================================================
+🔄 Part 3: Validation with Retry Logic
+==================================================
+
+Testing validated output with retry:
+✓ Success on attempt 1: Laptop
+✓ Success on attempt 1: Laptop
+✓ Success on attempt 2: Laptop
+
+==================================================
+🏗️ Part 4: Complete Structured Output Pipeline
+==================================================
+
+Using Structured LLM Operators:
+
+Product Extraction Success:
+  Name: Laptop
+  Price: $999.99
+  Category: Electronics
+  In Stock: True
+  Tags: computers, portable
+
+
+Analysis Extraction Success:
+  Sentiment: positive
+  Confidence: 87.00%
+  Key Points: High quality, Good value...
+
+==================================================
+🛡️ Part 5: Error Recovery Patterns
+==================================================
+
+Robust Extraction:
+  Method: primary
+  Confidence: 100%
+  Data: positive
+
+==================================================
+✅ Key Takeaways
+==================================================
+
+1. Always validate LLM outputs against expected schema
+2. Implement retry logic for reliability
+3. Use type-safe models (EmberModel) for structure
+4. Provide clear schemas in prompts
+5. Have fallback strategies for production
+6. Consider partial extraction when full parsing fails
+
+Next: Explore chain_of_thought.py for reasoning patterns!
