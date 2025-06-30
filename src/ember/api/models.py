@@ -168,12 +168,11 @@ class ModelBinding:
                 )
             raise
     
-    def __call__(self, prompt: str, original_prompt: Optional[str] = None, **override_params) -> Response:
+    def __call__(self, prompt: str, **override_params) -> Response:
         """Invoke the bound model.
         
         Args:
             prompt: The prompt to send to the model.
-            original_prompt: The original prompt / question. Used to comply with operator interface but unused.
             **override_params: Parameters that override the bound parameters.
             
         Returns:
@@ -185,7 +184,6 @@ class ModelBinding:
             >>> print(response.text)
         """
         merged_params = {**self.params, **override_params}
-        print(merged_params, flush=True)
         raw_response = self.registry.invoke_model(self.model_id, prompt, **merged_params)
         return Response(raw_response)
     
@@ -219,13 +217,12 @@ class ModelsAPI:
         # Get registry from context (lazy initialization)
         self._registry = self._context.model_registry
     
-    def __call__(self, model: str, prompt: str, original_prompt: Optional[str] = None, **params) -> Response:
+    def __call__(self, model: str, prompt: str, **params) -> Response:
         """Call a model.
         
         Args:
             model: Model ID (e.g., "gpt-4", "claude-3-opus").
             prompt: Text prompt.
-            original_prompt: The original prompt / question. Used to comply with operator interface but unused.
             **params: Optional parameters (temperature, max_tokens, etc.).
             
         Returns:
@@ -318,7 +315,7 @@ class ModelsAPI:
 _global_models_api = ModelsAPI()
 
 
-def models(model: str, prompt: str, original_prompt: Optional[str] = None, **params) -> Response:
+def models(model: str, prompt: str, **params) -> Response:
     """Invoke a language model directly.
     
     This is the simplest way to use Ember - just import and call.
@@ -326,7 +323,6 @@ def models(model: str, prompt: str, original_prompt: Optional[str] = None, **par
     Args:
         model: Model identifier (e.g., "gpt-4", "claude-3").
         prompt: The prompt to send to the model.
-        original_prompt: The original prompt / question. Used to comply with operator interface but unused.
         **params: Optional parameters like temperature, max_tokens.
         
     Returns:
@@ -337,7 +333,7 @@ def models(model: str, prompt: str, original_prompt: Optional[str] = None, **par
         >>> response = models("gpt-4", "Hello world")
         >>> print(response.text)
     """
-    return _global_models_api(model, prompt, original_prompt, **params)
+    return _global_models_api(model, prompt, **params)
 
 
 # Expose the instance methods for creating bindings

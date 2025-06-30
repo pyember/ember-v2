@@ -154,7 +154,7 @@ class Operator(Module):
             input: The input to process. If input_spec is defined, this will
                 be a validated instance of that type. Otherwise, it's the raw
                 input passed to __call__.
-
+                
         Returns:
             The processed output. Should match output_spec if defined.
             
@@ -187,7 +187,7 @@ class Operator(Module):
                 - Raw input of any type (if no input_spec)
                 - Dict that can be validated to input_spec
                 - Instance of input_spec type
-
+                
         Returns:
             The processed output. Will be:
                 - Raw output from forward() (if no output_spec)

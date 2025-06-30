@@ -91,12 +91,12 @@ class Ensemble(Operator):
         Simple ensemble returning all results:
         
         >>> ensemble = Ensemble([
-        ...     ModelCall("gpt-4"),
-        ...     ModelCall("claude-3"),
-        ...     ModelCall("gemini")
+        ...     Classifier("gpt-4"),
+        ...     Classifier("claude-3"),
+        ...     Classifier("gemini")
         ... ])
         >>> results = ensemble("Is this text positive?")
-        >>> # results = [Response1, Response2, Response3]
+        >>> # results = ["positive", "positive", "neutral"]
         
         Ensemble with custom aggregation:
         
@@ -469,15 +469,15 @@ class Cache(Operator):
     
     Examples:
         >>> # Simple in-memory cache
-        >>> cached_model = Cache(
-        ...     operator=ModelCall("gpt-4"),
+        >>> cached_classifier = Cache(
+        ...     operator=ExpensiveClassifier("gpt-4"),
         ...     max_size=1000
         ... )
         >>> 
         >>> # First call computes result
-        >>> result1 = cached_model("test input")
+        >>> result1 = cached_classifier("test input")
         >>> # Second call returns cached result
-        >>> result2 = cached_model("test input")
+        >>> result2 = cached_classifier("test input")
     """
     
     operator: Operator
