@@ -1,9 +1,10 @@
-"""Test configuration and fixtures.
+"""Test configuration and fixtures - REFACTORED.
 
 Following CLAUDE.md principles:
 - Explicit fixtures (no magic)
 - Deterministic behavior
 - Clear, reusable test utilities
+- NO PRIVATE ATTRIBUTE ACCESS
 """
 
 import json
@@ -12,6 +13,17 @@ from pathlib import Path
 from unittest.mock import Mock
 
 import pytest
+
+# Import our new test infrastructure
+try:
+    from .test_constants import APIKeys, Models, TestData
+    from .test_doubles import FakeProvider, FakeModelRegistry, FakeContext
+    from .fixtures import *
+except ImportError:
+    # Fallback for when running pytest from different locations
+    from test_constants import APIKeys, Models, TestData
+    from test_doubles import FakeProvider, FakeModelRegistry, FakeContext
+    from fixtures import *
 
 # Setup paths
 PROJECT_ROOT = Path(__file__).parent.parent.absolute()
@@ -29,7 +41,7 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "integration: marks tests as integration tests")
 
 
-# Core test fixtures
+# Core test fixtures - REFACTORED without private access
 @pytest.fixture
 def tmp_ctx(tmp_path, monkeypatch):
     """Isolated EmberContext with temporary home directory.
@@ -37,26 +49,36 @@ def tmp_ctx(tmp_path, monkeypatch):
     Provides complete isolation from user's real ~/.ember directory.
     All tests using this fixture are hermetic and parallelizable.
     """
-    from ember._internal.context import EmberContext
-
-    # Create fake home
-    home = tmp_path / "home"
-    home.mkdir()
-    monkeypatch.setattr(Path, "home", lambda: home)
-
-    # Clear any existing context
-    if hasattr(EmberContext._thread_local, "context"):
-        delattr(EmberContext._thread_local, "context")
-    EmberContext._context_var.set(None)
-
-    # Create fresh context
-    ctx = EmberContext.current()
-    yield ctx
-
-    # Cleanup
-    if hasattr(EmberContext._thread_local, "context"):
-        delattr(EmberContext._thread_local, "context")
-    EmberContext._context_var.set(None)
+    # Import only if we need the real context
+    try:
+        from ember._internal.context import EmberContext
+        
+        # Create fake home
+        home = tmp_path / "home"
+        home.mkdir()
+        ember_dir = home / ".ember"
+        ember_dir.mkdir()
+        
+        # Set environment to use temp directory
+        monkeypatch.setenv("HOME", str(home))
+        monkeypatch.setenv("EMBER_HOME", str(ember_dir))
+        
+        # Try to use public API for context reset if available
+        if hasattr(EmberContext, 'reset'):
+            EmberContext.reset()
+            
+        # Create fresh context
+        ctx = EmberContext(isolated=True)
+        yield ctx
+        
+        # Cleanup via public API if available
+        if hasattr(EmberContext, 'reset'):
+            EmberContext.reset()
+            
+    except ImportError:
+        # If real context not available, use fake
+        ctx = FakeContext(isolated=True)
+        yield ctx
 
 
 @pytest.fixture
@@ -69,37 +91,31 @@ def mock_cli_args(monkeypatch):
     return _mock_args
 
 
-# Model API fixtures
+# Model API fixtures - REFACTORED to use test doubles
 @pytest.fixture
 def mock_model_response():
     """Standard mock response for model tests."""
-    from ember.models.schemas import ChatResponse, UsageStats
-
-    usage = UsageStats(
-        prompt_tokens=10, completion_tokens=20, total_tokens=30, cost_usd=0.0006
+    from tests.fixtures import create_api_response
+    
+    return create_api_response(
+        content="Test response",
+        model=Models.GPT4,
+        prompt_tokens=10,
+        completion_tokens=20
     )
-
-    return ChatResponse(data="Test response", usage=usage, model_id="gpt-4")
 
 
 @pytest.fixture
 def mock_registry():
     """Mock model registry for testing."""
-    registry = Mock()
-    registry._models = {}
-    registry._lock = Mock()
-    return registry
+    return FakeModelRegistry()
 
 
-# Data API fixtures
+# Data API fixtures - REFACTORED to use constants
 @pytest.fixture
 def temp_data_file(tmp_path):
     """Create temporary JSON data file."""
-    data = [
-        {"text": "Hello", "label": "greeting"},
-        {"text": "World", "label": "noun"},
-        {"text": "Test", "label": "verb"},
-    ]
+    data = TestData.SAMPLE_JSON_DATA.copy()
     file_path = tmp_path / "test_data.json"
     file_path.write_text(json.dumps(data))
     return file_path
@@ -151,21 +167,20 @@ def slow_function():
     return slow_op
 
 
-# Environment fixtures
+# Environment fixtures - using new constants
 @pytest.fixture
 def clean_env(monkeypatch):
     """Clean environment without API keys."""
-    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
-    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
-    monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
+    for key in [APIKeys.ENV_OPENAI, APIKeys.ENV_ANTHROPIC, APIKeys.ENV_GOOGLE]:
+        monkeypatch.delenv(key, raising=False)
 
 
 @pytest.fixture
 def mock_api_keys(monkeypatch):
     """Set mock API keys for testing."""
-    monkeypatch.setenv("OPENAI_API_KEY", "test-openai-key")
-    monkeypatch.setenv("ANTHROPIC_API_KEY", "test-anthropic-key")
-    monkeypatch.setenv("GOOGLE_API_KEY", "test-google-key")
+    monkeypatch.setenv(APIKeys.ENV_OPENAI, APIKeys.OPENAI)
+    monkeypatch.setenv(APIKeys.ENV_ANTHROPIC, APIKeys.ANTHROPIC)
+    monkeypatch.setenv(APIKeys.ENV_GOOGLE, APIKeys.GOOGLE)
 
 
 # Seed fixtures for determinism
@@ -187,3 +202,18 @@ def fixed_seed():
         return key
     except ImportError:
         return None
+
+
+# Add fixture to check for API key availability
+@pytest.fixture
+def no_api_keys():
+    """Check if any real API keys are available."""
+    import os
+    
+    real_keys = [
+        os.environ.get(APIKeys.ENV_OPENAI, "").startswith("sk-"),
+        os.environ.get(APIKeys.ENV_ANTHROPIC, "").startswith("ant-"),
+        os.environ.get(APIKeys.ENV_GOOGLE, "").startswith("goog-")
+    ]
+    
+    return not any(real_keys)

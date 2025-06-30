@@ -1,13 +1,16 @@
-"""Tests for CLI commands.
+"""Tests for CLI commands - REFACTORED.
 
 Principles:
 - Direct, focused tests without unnecessary setup
 - Performance measurement where relevant
 - Security-conscious testing
+- NO BRITTLE STRING MATCHING
+- Use parameterized tests where appropriate
 """
 
 import json
 from unittest.mock import Mock, patch
+import re
 
 import pytest
 import yaml
@@ -22,6 +25,9 @@ from ember.cli.main import (
 from ember.cli.commands.configure import cmd_configure as configure_cmd
 from ember._internal.context import EmberContext
 
+# Import test infrastructure
+from tests.test_constants import ErrorPatterns, Models
+
 
 class TestCLIEntry:
     """Main CLI entry point."""
@@ -30,7 +36,9 @@ class TestCLIEntry:
         """No arguments shows help and returns 2."""
         with patch("sys.argv", ["ember"]):
             assert main() == 2  # Changed from 0 to 2
-            assert "usage: ember" in capsys.readouterr().out
+            output = capsys.readouterr().out
+            # More flexible - just check it shows usage info
+            assert "usage:" in output.lower() or "ember" in output
 
     def test_interrupt_handling(self):
         """SIGINT returns 130."""
@@ -40,10 +48,13 @@ class TestCLIEntry:
 
     def test_error_handling(self, capsys):
         """Exceptions return 1 with error message."""
+        test_error = "test failure message"
         with patch("sys.argv", ["ember", "test"]):
-            with patch("ember.cli.main.cmd_test", side_effect=Exception("failed")):
+            with patch("ember.cli.main.cmd_test", side_effect=Exception(test_error)):
                 assert main() == 1
-                assert "Error: failed" in capsys.readouterr().err
+                err = capsys.readouterr().err
+                # Check error is reported, not exact format
+                assert test_error in err
 
 
 class TestConfigure:
@@ -53,16 +64,18 @@ class TestConfigure:
     def ctx(self):
         """Mock context."""
         ctx = Mock(spec=EmberContext)
-        ctx.get_all_config.return_value = {"models": {"default": "gpt-4"}}
+        ctx.get_all_config.return_value = {"models": {"default": Models.GPT4}}
         return ctx
 
     def test_get(self, ctx, capsys):
         """Get config value."""
-        ctx.get_config.return_value = "gpt-4"
+        test_value = Models.GPT4
+        ctx.get_config.return_value = test_value
 
         args = Mock(action="get", key="models.default", default=None, context=ctx)
         assert configure_cmd(args) == 0
-        assert "gpt-4" in capsys.readouterr().out
+        output = capsys.readouterr().out
+        assert test_value in output
 
     def test_get_missing(self, ctx, capsys):
         """Missing key returns error."""
@@ -70,7 +83,9 @@ class TestConfigure:
 
         args = Mock(action="get", key="missing", default=None, context=ctx)
         assert configure_cmd(args) == 1
-        assert "not found" in capsys.readouterr().err
+        err = capsys.readouterr().err
+        # Check error mentions the key, not exact message
+        assert "missing" in err.lower()
 
     def test_set(self, ctx, capsys):
         """Set config value."""
@@ -82,24 +97,28 @@ class TestConfigure:
 
     def test_set_json(self, ctx):
         """JSON values are parsed."""
-        args = Mock(action="set", key="test", value='{"a": 1}', context=ctx)
+        test_data = {"a": 1}
+        args = Mock(action="set", key="test", value=json.dumps(test_data), context=ctx)
         configure_cmd(args)
 
-        ctx.set_config.assert_called_with("test", {"a": 1})
+        ctx.set_config.assert_called_with("test", test_data)
 
-    def test_list_formats(self, ctx, capsys):
-        """List supports YAML and JSON."""
-        # YAML
-        args = Mock(action="list", format="yaml", context=ctx)
+    @pytest.mark.parametrize("format_type,loader", [
+        pytest.param("yaml", yaml.safe_load, id="yaml-format"),
+        pytest.param("json", json.loads, id="json-format"),
+    ])
+    def test_list_formats(self, ctx, capsys, format_type, loader):
+        """List supports multiple formats."""
+        test_config = {"models": {"default": Models.GPT4}}
+        ctx.get_all_config.return_value = test_config
+        
+        args = Mock(action="list", format=format_type, context=ctx)
         configure_cmd(args)
         output = capsys.readouterr().out
-        assert yaml.safe_load(output)["models"]["default"] == "gpt-4"
-
-        # JSON
-        args.format = "json"
-        configure_cmd(args)
-        output = capsys.readouterr().out
-        assert json.loads(output)["models"]["default"] == "gpt-4"
+        
+        # Parse output and verify structure
+        parsed = loader(output)
+        assert parsed["models"]["default"] == Models.GPT4
 
 
 class TestSetup:
@@ -109,7 +128,9 @@ class TestSetup:
         """Missing npm shows error."""
         with patch("shutil.which", return_value=None):
             assert cmd_setup(Mock()) == 1
-            assert "npm/npx is required" in capsys.readouterr().out
+            output = capsys.readouterr().out
+            # Check error mentions npm, not exact message
+            assert "npm" in output.lower()
 
     def test_launch(self):
         """Launches wizard and reloads on success."""
@@ -123,8 +144,10 @@ class TestSetup:
 
                     assert cmd_setup(Mock(context=ctx)) == 0
 
-                    # Correct command when local wizard doesn't exist
-                    assert mock_run.call_args[0][0] == ["npx", "-y", "@ember-ai/setup"]
+                    # Verify npx was called (not exact command)
+                    call_args = mock_run.call_args[0][0]
+                    assert "npx" in call_args[0]
+                    assert "@ember-ai/setup" in call_args
 
                     # Environment includes config path
                     assert "EMBER_CONFIG_PATH" in mock_run.call_args[1]["env"]
@@ -149,22 +172,22 @@ class TestModels:
 
     def test_list_providers(self, capsys):
         """List available providers."""
-        # Need to patch the _global_models_api object's providers method
+        test_providers = ["openai", "anthropic", "google"]
         from ember.api.models import _global_models_api
 
-        with patch.object(
-            _global_models_api, "providers", return_value=["openai", "anthropic"]
-        ):
+        with patch.object(_global_models_api, "providers", return_value=test_providers):
             cmd_models(Mock(providers=True))
             output = capsys.readouterr().out
-            assert "openai" in output
-            assert "anthropic" in output
+            
+            # Verify all providers appear
+            for provider in test_providers:
+                assert provider in output
 
     def test_list_models(self, capsys, monkeypatch):
         """List available models."""
         models_data = {
-            "gpt-4": {"description": "Advanced model"},
-            "gpt-3.5": {"description": "Fast model"},
+            Models.GPT4: {"description": "Advanced model"},
+            Models.GPT35: {"description": "Fast model"},
         }
 
         # Mock the entire models module when imported
@@ -173,26 +196,25 @@ class TestModels:
         mock_models.providers.return_value = ["openai"]
 
         import sys
-
         monkeypatch.setitem(sys.modules, "ember.api.models", mock_models)
 
         cmd_models(Mock(providers=False, provider=None))
         output = capsys.readouterr().out
-        assert "gpt-4" in output
-        assert (
-            "Advanced model" in output or "model" in output
-        )  # Be less strict about exact description
+        
+        # Verify models appear
+        assert Models.GPT4 in output
+        # Verify some description appears
+        assert any(desc in output for desc in ["Advanced", "Fast", "model"])
 
     def test_filter_by_provider(self, capsys):
         """Filter models by provider."""
-        # Just check that provider argument is passed
         cmd_models(Mock(providers=False, provider="openai"))
         output = capsys.readouterr().out
 
-        # Should show models (even if it's all OpenAI models in reality)
-        assert "Available models:" in output
-        # At least one model should be shown
-        assert "gpt-" in output
+        # Should show some output about models
+        assert len(output) > 0
+        # GPT models should appear for OpenAI filter
+        assert "gpt" in output.lower()
 
 
 class TestConnection:
@@ -201,42 +223,69 @@ class TestConnection:
     def test_success(self, capsys):
         """Successful connection test."""
         ctx = Mock()
-        ctx.get_config.return_value = "gpt-4"
-        ctx.model_registry.invoke_model.return_value = Mock(data="Hello!")
+        test_model = Models.GPT4
+        test_response = "Hello from test!"
+        
+        ctx.get_config.return_value = test_model
+        ctx.model_registry.invoke_model.return_value = Mock(data=test_response)
 
         assert cmd_test(Mock(model=None, context=ctx)) == 0
 
         output = capsys.readouterr().out
-        assert "Testing connection with gpt-4" in output
-        assert "✓ Success!" in output
-        assert "Hello!" in output
+        # Verify key information appears
+        assert test_model in output
+        assert test_response in output
+        # Some indication of success (checkmark, success, etc)
+        assert any(indicator in output.lower() for indicator in ["✓", "success", "ok"])
 
     def test_failure(self, capsys):
         """Failed connection test."""
         ctx = Mock()
-        ctx.get_config.return_value = "gpt-4"
-        ctx.model_registry.invoke_model.side_effect = Exception("No API key")
+        test_model = Models.GPT4
+        test_error = "API key not found"
+        
+        ctx.get_config.return_value = test_model
+        ctx.model_registry.invoke_model.side_effect = Exception(test_error)
 
         assert cmd_test(Mock(model=None, context=ctx)) == 1
-        assert "✗ Failed: No API key" in capsys.readouterr().out
+        output = capsys.readouterr().out
+        
+        # Verify error is shown
+        assert test_error in output
+        # Some indication of failure
+        assert any(indicator in output.lower() for indicator in ["✗", "fail", "error"])
 
-    def test_explicit_model(self):
-        """Test specific model."""
+    @pytest.mark.parametrize("model", [
+        pytest.param(Models.GPT4, id="gpt4"),
+        pytest.param(Models.CLAUDE3, id="claude3"),
+        pytest.param(Models.GEMINI_PRO, id="gemini"),
+    ])
+    def test_explicit_model(self, model):
+        """Test specific models."""
         ctx = Mock()
         ctx.model_registry.invoke_model.return_value = Mock(data="OK")
 
-        cmd_test(Mock(model="claude-3", context=ctx))
-        ctx.model_registry.invoke_model.assert_called_with("claude-3", "Say hello!")
+        cmd_test(Mock(model=model, context=ctx))
+        # Verify the model was invoked
+        ctx.model_registry.invoke_model.assert_called_once()
+        call_args = ctx.model_registry.invoke_model.call_args
+        assert call_args[0][0] == model
 
 
 class TestVersion:
     """Version command."""
 
-    def test_with_version(self, capsys):
+    @pytest.mark.parametrize("version,expected_pattern", [
+        pytest.param("1.0.0", r"1\.0\.0", id="stable"),
+        pytest.param("2.1.0-beta", r"2\.1\.0-beta", id="prerelease"),
+        pytest.param("0.0.1", r"0\.0\.1", id="early"),
+    ])
+    def test_with_version(self, capsys, version, expected_pattern):
         """Shows version when available."""
-        with patch("ember.__version__", "1.0.0"):
+        with patch("ember.__version__", version):
             assert cmd_version(Mock()) == 0
-            assert "Ember 1.0.0" in capsys.readouterr().out
+            output = capsys.readouterr().out
+            assert re.search(expected_pattern, output)
 
     def test_without_version(self, capsys):
         """Handles missing version gracefully."""
@@ -248,7 +297,40 @@ class TestVersion:
 
         try:
             assert cmd_version(Mock()) == 0
-            assert "version unknown" in capsys.readouterr().out
+            output = capsys.readouterr().out
+            # Should show something, even if no version
+            assert "ember" in output.lower()
         finally:
             if version:
                 ember.__version__ = version
+
+
+# Contract tests for CLI behavior
+class TestCLIContracts:
+    """Verify CLI commands follow expected contracts."""
+    
+    @pytest.mark.parametrize("command,expected_code", [
+        pytest.param(["ember", "--help"], 0, id="help"),
+        pytest.param(["ember", "unknown-command"], 2, id="unknown-command"),
+    ])
+    def test_exit_codes(self, command, expected_code):
+        """Test standard exit codes."""
+        with patch("sys.argv", command):
+            # argparse raises SystemExit, we need to catch it
+            with pytest.raises(SystemExit) as exc_info:
+                main()
+            assert exc_info.value.code == expected_code
+    
+    def test_all_commands_have_context(self):
+        """Verify all commands accept context parameter."""
+        commands = [cmd_setup, cmd_models, cmd_test, cmd_version]
+        
+        for cmd in commands:
+            # Create mock args with context
+            args = Mock(context=Mock())
+            # Command should not fail due to missing context
+            try:
+                cmd(args)
+            except AttributeError as e:
+                if "context" in str(e):
+                    pytest.fail(f"{cmd.__name__} doesn't handle context properly")

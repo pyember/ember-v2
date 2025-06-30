@@ -100,3 +100,16 @@ target/
 cython_debug/
 # Deprecated code moved during cleanup
 .deprecated/
+
+# Documentation backup
+.docs_backup/
+
+# Backup and temporary files
+.backup/
+*.backup
+*_backup.py
+*_refactored.py
+diagnostic_*.json
+test_diagnostics.log
+test_*.md
+*.orig

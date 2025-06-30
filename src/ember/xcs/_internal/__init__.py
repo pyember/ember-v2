@@ -9,7 +9,6 @@ Architecture Notes:
 
     - analysis.py: Static analysis to identify pure vs impure code paths
     - ir.py: Intermediate representation for hybrid computation graphs
-    - lowering.py: Conversion from IR to executable JAX/Python code
     - pytree_registration.py: JAX pytree support for Ember types
 
 Design Philosophy:
@@ -17,7 +16,7 @@ Design Philosophy:
     1. Analysis: Understand code structure and dependencies
     2. IR Construction: Build computation graph with mixed nodes
     3. Optimization: Apply transformations (batching, caching)
-    4. Lowering: Generate optimized executable code
+    4. Execution: Run optimized computation graphs
 
     This separation enables sophisticated optimizations while maintaining
     a simple user interface (@jit decorator).

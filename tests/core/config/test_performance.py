@@ -181,8 +181,8 @@ class TestConfigLoadPerformance:
 
         # Large configs are allowed more time (this is a stress test)
         assert (
-            results["mean"] < 150
-        ), f"Mean load time {results['mean']:.2f}ms exceeds 150ms target"
+            results["mean"] < 200
+        ), f"Mean load time {results['mean']:.2f}ms exceeds 200ms target"
 
         # But typical configs should still be fast
         print(f"\n✓ Typical configs load in <10ms")

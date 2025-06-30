@@ -182,7 +182,10 @@ def cmd_test(args):
 
     try:
         print(f"Testing connection with {model}...")
-        # Use context's model registry
+        # Get model instance to check if it exists and has API key
+        model_instance = ctx.model_registry.get_model(model)
+        
+        # Now invoke it
         response = ctx.model_registry.invoke_model(model, "Say hello!")
         print(f"✓ Success! Response: {response.data}")
         return 0

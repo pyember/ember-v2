@@ -455,6 +455,7 @@ class UsageStats:
         completion_tokens: Number of tokens in the generated response.
         total_tokens: Total tokens (auto-calculated if not provided).
         cost_usd: Total cost in USD (calculated by registry).
+        actual_cost_usd: Actual cost reported by provider (if available).
 
     Examples:
         Track single request:
@@ -485,6 +486,7 @@ class UsageStats:
     completion_tokens: int = 0
     total_tokens: int = 0
     cost_usd: Optional[float] = None
+    actual_cost_usd: Optional[float] = None
 
     def __post_init__(self):
         """Ensure total_tokens is consistent.

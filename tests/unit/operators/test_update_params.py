@@ -17,8 +17,8 @@ class SimpleOperator(operators.Operator):
     config: dict
 
     def __init__(self, dim: int):
-        self.weights = jnp.ones(dim)
-        self.bias = jnp.zeros(())
+        self.weights = jnp.ones(dim, dtype=jnp.float32)
+        self.bias = jnp.zeros((), dtype=jnp.float32)
         self.name = "test_op"
         self.config = {"dim": dim}
 

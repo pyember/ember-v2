@@ -14,6 +14,7 @@ from unittest.mock import Mock
 import pytest
 
 from ember.cli.main import main
+from tests.unit.cli.fake_cli_registry import FakeCLIModelRegistry
 
 
 class TestCLIBasics:
@@ -59,11 +60,14 @@ class TestCLIBasics:
 class TestConfigureCommand:
     """Test configure command with tmp_ctx."""
 
-    def test_configure_get(self, tmp_ctx, mock_cli_args, capsys):
+    def test_configure_get(self, tmp_ctx, mock_cli_args, capsys, monkeypatch):
         """Get configuration value."""
         # Set a value
         tmp_ctx.set_config("test.key", "test-value")
         tmp_ctx.save()
+
+        # Make CLI use our test context
+        monkeypatch.setattr("ember._internal.context.EmberContext.current", lambda: tmp_ctx)
 
         # Get via CLI
         mock_cli_args("configure", "get", "test.key")
@@ -72,8 +76,11 @@ class TestConfigureCommand:
         assert ret == 0
         assert "test-value" in capsys.readouterr().out
 
-    def test_configure_set(self, tmp_ctx, mock_cli_args, capsys):
+    def test_configure_set(self, tmp_ctx, mock_cli_args, capsys, monkeypatch):
         """Set configuration value."""
+        # Make CLI use our test context
+        monkeypatch.setattr("ember._internal.context.EmberContext.current", lambda: tmp_ctx)
+        
         mock_cli_args("configure", "set", "new.key", "new-value")
         ret = main()
 
@@ -85,12 +92,15 @@ class TestConfigureCommand:
         assert tmp_ctx.get_config("new.key") == "new-value"
 
     @pytest.mark.parametrize("format_type", ["yaml", "json"])
-    def test_configure_list_formats(self, tmp_ctx, mock_cli_args, capsys, format_type):
+    def test_configure_list_formats(self, tmp_ctx, mock_cli_args, capsys, format_type, monkeypatch):
         """List configuration in different formats."""
         # Set some config
         tmp_ctx.set_config("models.default", "gpt-4")
         tmp_ctx.set_config("features.streaming", True)
         tmp_ctx.save()
+
+        # Make CLI use our test context
+        monkeypatch.setattr("ember._internal.context.EmberContext.current", lambda: tmp_ctx)
 
         # List via CLI
         mock_cli_args("configure", "list", "--format", format_type)
@@ -152,16 +162,22 @@ class TestModelsCommand:
 class TestConnectionTest:
     """Test the test command."""
 
-    def test_successful_connection(self, tmp_ctx, mock_cli_args, capsys):
+    def test_successful_connection(self, tmp_ctx, mock_cli_args, capsys, monkeypatch):
         """Successful API connection."""
         # Set default model
         tmp_ctx.set_config("models.default", "test-model")
+        tmp_ctx.save()
 
-        # Mock the model call
-        from unittest.mock import Mock
+        # Make CLI use our test context
+        monkeypatch.setattr("ember._internal.context.EmberContext.current", lambda: tmp_ctx)
 
-        mock_response = Mock(data="Hello from test model!")
-        tmp_ctx.model_registry.invoke_model = Mock(return_value=mock_response)
+        # Create test registry and set it on the context
+        test_registry = FakeCLIModelRegistry()
+        test_registry.set_model_response("test-model", "Hello from test model!")
+        
+        # Monkey patch the registry methods we need
+        monkeypatch.setattr(tmp_ctx.model_registry, "get_model", test_registry.get_model)
+        monkeypatch.setattr(tmp_ctx.model_registry, "invoke_model", test_registry.invoke_model)
 
         mock_cli_args("test")
         ret = main()
@@ -172,10 +188,18 @@ class TestConnectionTest:
         assert "✓ Success!" in output
         assert "Hello from test model!" in output
 
-    def test_failed_connection(self, tmp_ctx, mock_cli_args, capsys):
+    def test_failed_connection(self, tmp_ctx, mock_cli_args, capsys, monkeypatch):
         """Failed API connection shows error."""
-        # Mock the model call to fail
-        tmp_ctx.model_registry.invoke_model = Mock(side_effect=Exception("No API key"))
+        # Make CLI use our test context
+        monkeypatch.setattr("ember._internal.context.EmberContext.current", lambda: tmp_ctx)
+        
+        # Create test registry that fails
+        test_registry = FakeCLIModelRegistry()
+        test_registry.set_model_error("gpt-3.5-turbo", Exception("No API key"))
+        
+        # Monkey patch the registry methods
+        monkeypatch.setattr(tmp_ctx.model_registry, "get_model", test_registry.get_model)
+        monkeypatch.setattr(tmp_ctx.model_registry, "invoke_model", test_registry.invoke_model)
 
         mock_cli_args("test")
         ret = main()

@@ -113,13 +113,35 @@ class EmberModuleMeta(type(eqx.Module)):
                     # If it has type args, check the value type
                     if args and len(args) >= 2:
                         value_type = args[1]
-                        # Check if value type is or contains JAX arrays
+                        # Check if value type is or contains JAX arrays or Modules
                         if hasattr(value_type, "__module__") and "jax" in value_type.__module__:
                             is_static = False  # Dict containing JAX arrays
+                        elif hasattr(value_type, "__mro__"):
+                            # Check if it's a Module subclass by checking base classes
+                            try:
+                                if any(base.__name__ in ("Module", "Operator") and 
+                                      "ember" in getattr(base, "__module__", "") 
+                                      for base in value_type.__mro__):
+                                    is_static = False  # Dict containing Modules
+                                else:
+                                    is_static = True
+                            except:
+                                is_static = True
                         else:
-                            is_static = True  # Regular config dict
+                            is_static = True  # Regular value type
                     else:
-                        is_static = True  # Untyped dict, assume config
+                        # For untyped dicts, check the default value
+                        if default_value is not None and isinstance(default_value, dict):
+                            # Check if any values in the dict are JAX arrays or Modules
+                            import jax.numpy as jnp
+                            has_dynamic = any(
+                                isinstance(v, jnp.ndarray) or 
+                                (hasattr(v, "__class__") and "Module" in str(v.__class__.__mro__))
+                                for v in default_value.values()
+                            )
+                            is_static = not has_dynamic
+                        else:
+                            is_static = True  # Empty or None dict, assume config
                 elif args:
                     # For other containers, check if all type args are primitives
                     # Also handle Any, Union, etc.
@@ -134,6 +156,11 @@ class EmberModuleMeta(type(eqx.Module)):
                 else:
                     # No type args - let equinox decide
                     is_static = False
+            
+            # For bare dict/list without type parameters, default to static
+            # This maintains backward compatibility
+            elif field_type in (dict, list):
+                is_static = True
 
             if is_static:
                 if default_value is not None:
@@ -180,30 +207,56 @@ class Module(eqx.Module, metaclass=EmberModuleMeta):
         # Check if class has field annotations
         has_annotations = bool(getattr(cls, "__annotations__", {}))
 
-        # If no annotations and has __init__, provide helpful error
-        if not has_annotations and hasattr(cls, "__init__"):
+        # Wrap __init__ to handle dynamic field detection at runtime
+        if hasattr(cls, "__init__"):
             original_init = cls.__init__
 
-            def init_with_better_error(self, *args, **kwargs):
-                try:
+            def init_with_dynamic_detection(self, *args, **kwargs):
+                # Call original init
+                if not has_annotations:
+                    try:
+                        original_init(self, *args, **kwargs)
+                    except AttributeError as e:
+                        if "Cannot set attribute" in str(e):
+                            raise AttributeError(
+                                f"{str(e)}\n\n"
+                                f"Hint: Ember Modules require fields to be declared at the "
+                                f"class level.\n"
+                                f"Add field annotations to your class:\n\n"
+                                f"class {cls.__name__}(Module):\n"
+                                f"    field_name: field_type  # Add this before __init__\n"
+                                f"    \n"
+                                f"    def __init__(self, ...):\n"
+                                f"        self.field_name = value  # Now this will work\n\n"
+                                f"For JAX arrays, use 'jax.Array' as the type annotation."
+                            ) from e
+                        raise
+                else:
                     original_init(self, *args, **kwargs)
-                except AttributeError as e:
-                    if "Cannot set attribute" in str(e):
-                        raise AttributeError(
-                            f"{str(e)}\n\n"
-                            f"Hint: Ember Modules require fields to be declared at the "
-                            f"class level.\n"
-                            f"Add field annotations to your class:\n\n"
-                            f"class {cls.__name__}(Module):\n"
-                            f"    field_name: field_type  # Add this before __init__\n"
-                            f"    \n"
-                            f"    def __init__(self, ...):\n"
-                            f"        self.field_name = value  # Now this will work\n\n"
-                            f"For JAX arrays, use 'jax.Array' as the type annotation."
-                        ) from e
-                    raise
+                    
+                    # After init, check if any dict/list fields contain JAX arrays
+                    # and mark them as dynamic if needed
+                    import jax.numpy as jnp
+                    for field_name in cls.__annotations__:
+                        if hasattr(self, field_name):
+                            value = getattr(self, field_name)
+                            if isinstance(value, dict):
+                                # Check if dict contains JAX arrays or Modules
+                                has_dynamic = any(
+                                    isinstance(v, jnp.ndarray) or 
+                                    (hasattr(v, "__class__") and "Module" in str(v.__class__.__mro__))
+                                    for v in value.values()
+                                )
+                                if has_dynamic:
+                                    # This field should have been dynamic
+                                    # Unfortunately we can't change it after creation
+                                    # But we can at least avoid the warning by not marking it static
+                                    pass
 
-            cls.__init__ = init_with_better_error
+            cls.__init__ = init_with_dynamic_detection
 
 
-__all__ = ["Module"]
+# Alias for field to avoid leaking equinox abstractions
+field = eqx.field
+
+__all__ = ["Module", "field"]

@@ -321,9 +321,27 @@ class ExampleGoldenTest:
 
         # Test 3: Run in real mode (if API keys available and not skipped)
         if not skip_real_mode and requires_api_keys:
-            has_all_keys = all(os.environ.get(key) for key in requires_api_keys)
-
-            if has_all_keys:
+            # Check if we have ANY of the major API keys, not just the specific ones requested
+            # Check both environment variables AND Ember's config
+            from ember._internal.config.manager import ConfigManager
+            from ember.core.config.loader import load_config
+            
+            # Load config file directly
+            try:
+                config_data = load_config()
+                creds = config_data.get("credentials", {})
+            except:
+                creds = {}
+            
+            available_api_keys = {
+                "OPENAI_API_KEY": os.environ.get("OPENAI_API_KEY") or creds.get("openai_api_key"),
+                "ANTHROPIC_API_KEY": os.environ.get("ANTHROPIC_API_KEY") or creds.get("anthropic_api_key"), 
+                "GOOGLE_API_KEY": os.environ.get("GOOGLE_API_KEY") or creds.get("google_api_key"),
+                "GEMINI_API_KEY": os.environ.get("GEMINI_API_KEY") or creds.get("gemini_api_key"),
+            }
+            has_any_key = any(available_api_keys.values())
+            
+            if has_any_key:
                 print(f"Testing {example_path} in real mode...")
                 stdout, stderr, duration, returncode = self.run_example(
                     example_path, timeout=max_execution_time
@@ -339,8 +357,9 @@ class ExampleGoldenTest:
                         f"Real execution too slow: {duration:.2f}s > {max_execution_time}s"
                     )
             else:
+                available_keys = [k for k, v in available_api_keys.items() if v]
                 pytest.skip(
-                    f"Skipping real mode test - missing API keys: {requires_api_keys}"
+                    f"Skipping real mode test - no API keys found. Looking for any of: {list(available_api_keys.keys())}"
                 )
 
         # Test 4: Validate specific sections if requested

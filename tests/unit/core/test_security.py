@@ -67,4 +67,7 @@ class TestCredentialSecurity:
                     mgr.save_api_key("test2", "test-key-5678")
 
                 # Original data intact
-                assert mgr.get("test1") == "test-key-1234"
+                import warnings
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore", DeprecationWarning)
+                    assert mgr.get("test1") == "test-key-1234"

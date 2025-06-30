@@ -350,6 +350,10 @@ class ModelRegistry:
 
                 # Track usage for summaries
                 self._track_usage(model_id, response.usage)
+                
+                # Track cost accuracy if we have actual costs
+                from ember.models.cost_tracker import track_usage
+                track_usage(response.usage, model_id)
 
             # Ensure model_id is in response
             if not response.model_id:

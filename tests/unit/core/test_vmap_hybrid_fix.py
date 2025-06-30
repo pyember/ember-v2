@@ -3,7 +3,7 @@
 import jax
 import jax.numpy as jnp
 import pytest
-from typing import Tuple
+from typing import List, Tuple
 
 from ember._internal.module import Module
 from ember.xcs import vmap
@@ -91,7 +91,7 @@ def test_vmap_nested_operators():
 
     class OuterOp(Module):
         name: str
-        inner_ops: list
+        inner_ops: List[HybridOperator]  # Properly typed
 
         def __init__(
             self, name: str, num_inner: int, dim: int, key: jax.random.PRNGKey

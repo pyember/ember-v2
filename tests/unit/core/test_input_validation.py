@@ -106,15 +106,20 @@ class TestCredentialValidation:
 
     def test_save_api_key_accepts_valid_keys(self, tmp_path):
         """Valid API keys are accepted."""
-        cred_mgr = CredentialManager(tmp_path)
+        import warnings
+        
+        # Suppress deprecation warnings for this test since we're testing the deprecated system
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            cred_mgr = CredentialManager(tmp_path)
 
-        # Normal key
-        cred_mgr.save_api_key("openai", "sk-abcdef1234567890")
-        assert cred_mgr.get("openai") == "sk-abcdef1234567890"
+            # Normal key
+            cred_mgr.save_api_key("openai", "sk-abcdef1234567890")
+            assert cred_mgr.get("openai") == "sk-abcdef1234567890"
 
-        # Key with trailing whitespace (should be stripped)
-        cred_mgr.save_api_key("anthropic", "  claude-key-123456  ")
-        assert cred_mgr.get("anthropic") == "claude-key-123456"
+            # Key with trailing whitespace (should be stripped)
+            cred_mgr.save_api_key("anthropic", "  claude-key-123456  ")
+            assert cred_mgr.get("anthropic") == "claude-key-123456"
 
 
 class TestPathValidation:

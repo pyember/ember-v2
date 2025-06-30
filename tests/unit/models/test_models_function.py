@@ -64,7 +64,9 @@ class TestModelsFunction:
             assert usage["prompt_tokens"] == 10
             assert usage["completion_tokens"] == 20
             assert usage["total_tokens"] == 30
-            assert usage["cost"] == 0.0006
+            # Cost should match actual GPT-4 pricing: 
+            # 10 tokens @ $0.03/1k input + 20 tokens @ $0.06/1k output = $0.0015
+            assert usage["cost"] == 0.0015
 
     def test_response_model_id(self, mock_model_response):
         """Test Response.model_id returns the model identifier."""

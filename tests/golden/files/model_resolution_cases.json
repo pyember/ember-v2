@@ -1,0 +1,37 @@
+[
+  {
+    "input": "gpt-4",
+    "model": "gpt-4",
+    "provider": "openai"
+  },
+  {
+    "input": "claude-3-opus",
+    "model": "claude-3-opus",
+    "provider": "anthropic"
+  },
+  {
+    "input": "gemini-pro",
+    "model": "gemini-pro",
+    "provider": "google"
+  },
+  {
+    "input": "openai/gpt-4",
+    "model": "gpt-4",
+    "provider": "openai"
+  },
+  {
+    "input": "custom/model",
+    "model": "model",
+    "provider": "custom"
+  },
+  {
+    "input": "unknown-model",
+    "model": "unknown-model",
+    "provider": "unknown"
+  },
+  {
+    "input": "special/chars/in/model",
+    "model": "chars/in/model",
+    "provider": "special"
+  }
+]
