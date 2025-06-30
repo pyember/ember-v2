@@ -18,259 +18,63 @@ from ember.api.models import ModelBinding
 from ember._internal.types import EmberModel
 
 
-class ContextualInput(EmberModel):
-    """Input wrapper that carries arbitrary context through operator chains.
-    
-    This model allows operators to preserve any kind of contextual information
-    while processing data. Unlike rigid schemas, the context is a flexible
-    dictionary that can hold any metadata needed by downstream operators.
-    
-    Attributes:
-        context: Dictionary containing arbitrary contextual information.
-        data: The actual input data for processing.
-    
-    Examples:       
-        Multi-step processing with context:
-        
-        >>> # Context flows through processing pipeline
-        >>> preprocessing_result = ContextualInput(
-        ...     context={
-        ...         "original_query": "Analyze this sentiment",
-        ...         "preprocessing_steps": ["tokenize", "normalize"],
-        ...         "confidence_threshold": 0.8
-        ...     },
-        ...     data="This product is amazing!"
-        ... )
-        
-        Ensemble verification with rich context:
-        
-        >>> # Context helps verifier understand the full picture
-        >>> verification_input = ContextualInput(
-        ...     context={
-        ...         "original_query": "Is this review positive?",
-        ...         "models_used": ["gpt-4", "claude-3", "gemini"],
-        ...         "ensemble_agreement": 0.95,
-        ...         "processing_time": 1.2
-        ...     },
-        ...     data=["positive", "positive", "positive"]
-        ... )
-    """
-    context: Dict[str, Any]
-    data: Any
-
-
-class ContextualOutput(EmberModel):
-    """Output wrapper that preserves context through operator chains.
-    
-    This model maintains contextual information alongside operator outputs,
-    enabling sophisticated downstream processing, debugging, and analysis.
-    The context can be augmented by each operator in the chain.
-    
-    Attributes:
-        context: Dictionary containing contextual information, potentially
-            augmented by the operator that produced this output.
-        data: The actual output data from the operator.
-    
-    Examples:
-        Basic context preservation:
-        
-        >>> @operator.op
-        >>> def my_operator_with_context(input: ContextualInput) -> ContextualOutput:
-        ...     processed = process_data(input.data)
-        ...     
-        ...     # Augment context with processing metadata
-        ...     new_context = input.context.copy()
-        ...     new_context.update({
-        ...         "processing_time": 0.5,
-        ...         "confidence": 0.92,
-        ...         "model_version": "v2.1"
-        ...     })
-        ...     
-        ...     return ContextualOutput(
-        ...         context=new_context,
-        ...         data=processed
-        ...     )
-        
-        Context-aware result analysis:
-        
-        >>> # Downstream operator can use rich context
-        >>> @operator.op
-        >>> def context_aware_analyzer(output: ContextualOutput):
-        ...     if output.context.get("confidence", 0) < 0.8:
-        ...         return "Low confidence result needs review"
-        ...     
-        ...     if "original_query" in output.context:
-        ...         # Verify result against original intent
-        ...         return verify_against_query(
-        ...             output.context["original_query"], 
-        ...             output.data
-        ...         )
-        ...     
-        ...     return output.data
-    """
-    context: Dict[str, Any]
-    data: Any
-
-
-class WithContext(Operator):
-    """Wrapper operator that automatically preserves context through any operator.
-    
-    This operator wraps another operator and ensures that contextual information
-    flows through the computation. It automatically handles the extraction of
-    data for the wrapped operator and re-wrapping of results with preserved
-    and optionally augmented context.
-    
-    This operator can carry arbitrary metadata and can be composed with any operator without
-    requiring them to be context-aware.
-    
-    Attributes:
-        operator: The operator to wrap with context preservation.
-        context_augmenter: Optional function to augment context based on
-            input, output, and existing context.
-        preserve_keys: Optional list of context keys to preserve. If None,
-            all context is preserved.
-    
-    Examples:
-        Basic context preservation:
-        
-        >>> # Wrap any operator to preserve context
-        >>> base_classifier = TextClassifier()
-        >>> contextual_classifier = WithContext(base_classifier)
-        >>> 
-        >>> # Context flows through automatically
-        >>> input_with_context = ContextualInput(
-        ...     context={"user_id": "123", "original_query": "Classify this"},
-        ...     data="This movie is great!"
-        ... )
-        >>> result = contextual_classifier(input_with_context)
-        >>> # result.context == {"user_id": "123", "original_query": "Classify this"}
-        >>> # result.data == "positive"
-        
-        Context augmentation:
-        
-        >>> def add_processing_metadata(input_ctx, input_data, output_data):
-        ...     return {
-        ...         **input_ctx,
-        ...         "processing_time": time.time() - start_time,
-        ...         "input_length": len(str(input_data)),
-        ...         "output_length": len(str(output_data))
-        ...     }
-        >>> 
-        >>> enriched_classifier = WithContext(
-        ...     TextClassifier(),
-        ...     context_augmenter=add_processing_metadata
-        ... )
-        
-        Ensemble-verifier pattern with rich context:
-        
-        >>> # Verifier that uses context for better decisions
-        >>> class ContextualVerifier(Operator):
-        ...     def forward(self, input: ContextualInput) -> ContextualOutput:
-        ...         original_query = input.context.get("original_query")
-        ...         model_results = input.data
-        ...         
-        ...         # Use original query to better verify results
-        ...         verification_score = self.verify_with_query(
-        ...             original_query, model_results
-        ...         )
-        ...         
-        ...         return ContextualOutput(
-        ...             context={
-        ...                 **input.context,
-        ...                 "verification_score": verification_score,
-        ...                 "verified_at": datetime.now().isoformat()
-        ...             },
-        ...             data=self.select_best_result(model_results, verification_score)
-        ...         )
-        >>> 
-        >>> # Chain with automatic context flow
-        >>> pipeline = Chain([
-        ...     WithContext(ensemble),
-        ...     ContextualVerifier()
-        ... ])
-        
-        Selective context preservation:
-        
-        >>> # Only preserve specific context keys for privacy/performance
-        >>> privacy_aware_op = WithContext(
-        ...     SensitiveDataProcessor(),
-        ...     preserve_keys=["session_id", "processing_version"]
-        ... )
-        >>> 
-        >>> # Context filtering for performance
-        >>> lightweight_op = WithContext(
-        ...     FastOperator(),
-        ...     preserve_keys=["original_query"]  # Only keep essential context
-        ... )
-    """
-    
-    operator: Operator
-    context_augmenter: Optional[Callable[[Dict[str, Any], Any, Any], Dict[str, Any]]]
-    preserve_keys: Optional[List[str]]
-    
-    def __init__(self, 
-                 operator: Operator,
-                 context_augmenter: Optional[Callable[[Dict[str, Any], Any, Any], Dict[str, Any]]] = None,
-                 preserve_keys: Optional[List[str]] = None):
-        """Initialize context preservation wrapper.
-        
-        Args:
-            operator: The operator to wrap with context preservation.
-            context_augmenter: Optional function to augment context. Should take
-                (input_context, input_data, output_data) and return new context dict.
-            preserve_keys: Optional list of context keys to preserve. If None,
-                all context is preserved.
-        """
-        self.operator = operator
-        self.context_augmenter = context_augmenter
-        self.preserve_keys = preserve_keys
-    
-    def forward(self, input: ContextualInput) -> ContextualOutput:
-        """Execute wrapped operator while preserving and optionally augmenting context.
-        
-        Args:
-            input: Input with context and data.
-            
-        Returns:
-            Output with preserved/augmented context and operator result.
-        """
-        # Execute wrapped operator with just the data
-        result = self.operator(input.data)
-        
-        # Determine which context to preserve
-        if self.preserve_keys is not None:
-            preserved_context = {
-                key: input.context[key] 
-                for key in self.preserve_keys 
-                if key in input.context
-            }
-        else:
-            preserved_context = input.context.copy()
-        
-        # Optionally augment context
-        if self.context_augmenter:
-            final_context = self.context_augmenter(
-                preserved_context, input.data, result
-            )
-        else:
-            final_context = preserved_context
-        
-        return ContextualOutput(
-            context=final_context,
-            data=result
-        )
-
-
 class ModelCall(Operator):
-    """Operator that calls a model."""
+    """Operator that calls a language model and returns the full response.
+    
+    This operator wraps a model binding and provides a consistent interface
+    for calling language models. It returns the complete response object,
+    preserving metadata like token counts, costs, and model information.
+    
+    Attributes:
+        model: The bound model instance to call.
+    
+    Examples:
+        Basic model calling:
+        
+        >>> # Create operator with default model
+        >>> model_op = ModelCall()
+        >>> response = model_op("What is the capital of France?")
+        >>> print(response.text)  # "Paris is the capital of France."
+        >>> print(response.usage.total_tokens)  # 25
+        
+        >>> # Use specific model
+        >>> claude_op = ModelCall("claude-3-sonnet")
+        >>> response = claude_op("Explain quantum computing")
+        >>> print(f"Cost: ${response.cost:.4f}")
+        
+        >>> # Chain with text extraction
+        >>> @operator.op
+        >>> def extract_text(response):
+        ...     return response.text
+        >>> 
+        >>> pipeline = Chain([
+        ...     ModelCall("gpt-4"),
+        ...     extract_text
+        ... ])
+        >>> result = pipeline("Summarize this article")
+    """
+    
     model: ModelBinding
 
     def __init__(self, model_name: str = "gpt-4o", **kwargs):
+        """Initialize model call operator.
+        
+        Args:
+            model_name: Name of the model to use (e.g., "gpt-4", "claude-3").
+            **kwargs: Additional arguments passed to model initialization.
+        """
         self.model = models.instance(model_name, **kwargs)
     
     def forward(self, input: Any) -> Any:
-        """Call the model with the input."""
-        return self.model(input).text
+        """Call the model with the input and return full response.
+        
+        Args:
+            input: The input to send to the model.
+            
+        Returns:
+            Complete response object with text, metadata, usage, and costs.
+        """
+        return self.model(input)
 
 class Ensemble(Operator):
     """Ensemble operator that combines multiple operators.
@@ -348,8 +152,8 @@ class Chain(Operator):
     Examples:
         >>> chain = Chain([
         ...     Preprocessor(),      # Clean and normalize text
-        ...     Classifier(),        # Classify cleaned text
-        ...     Postprocessor()      # Format classification result
+        ...     ModelCall("gpt-4"),  # Call model on cleaned text
+        ...     Postprocessor()      # Format model response
         ... ])
         >>> result = chain(raw_input)
     """
@@ -731,6 +535,249 @@ class Cache(Operator):
             del self.cache[oldest_key]
         
         return result
+
+
+class ContextualInput(EmberModel):
+    """Input wrapper that carries arbitrary context through operator chains.
+    
+    This model allows operators to preserve any kind of contextual information
+    while processing data. Unlike rigid schemas, the context is a flexible
+    dictionary that can hold any metadata needed by downstream operators.
+    
+    Attributes:
+        context: Dictionary containing arbitrary contextual information.
+        data: The actual input data for processing.
+    
+    Examples:       
+        Multi-step processing with context:
+        
+        >>> # Context flows through processing pipeline
+        >>> preprocessing_result = ContextualInput(
+        ...     context={
+        ...         "original_query": "Analyze this sentiment",
+        ...         "preprocessing_steps": ["tokenize", "normalize"],
+        ...         "confidence_threshold": 0.8
+        ...     },
+        ...     data="This product is amazing!"
+        ... )
+        
+        Ensemble verification with rich context:
+        
+        >>> # Context helps verifier understand the full picture
+        >>> verification_input = ContextualInput(
+        ...     context={
+        ...         "original_query": "Is this review positive?",
+        ...         "models_used": ["gpt-4", "claude-3", "gemini"],
+        ...         "ensemble_agreement": 0.95,
+        ...         "processing_time": 1.2
+        ...     },
+        ...     data=["positive", "positive", "positive"]
+        ... )
+    """
+    context: Dict[str, Any]
+    data: Any
+
+
+class ContextualOutput(EmberModel):
+    """Output wrapper that preserves context through operator chains.
+    
+    This model maintains contextual information alongside operator outputs,
+    enabling sophisticated downstream processing, debugging, and analysis.
+    The context can be augmented by each operator in the chain.
+    
+    Attributes:
+        context: Dictionary containing contextual information, potentially
+            augmented by the operator that produced this output.
+        data: The actual output data from the operator.
+    
+    Examples:
+        Basic context preservation:
+        
+        >>> @operator.op
+        >>> def my_operator_with_context(input: ContextualInput) -> ContextualOutput:
+        ...     processed = process_data(input.data)
+        ...     
+        ...     # Augment context with processing metadata
+        ...     new_context = input.context.copy()
+        ...     new_context.update({
+        ...         "processing_time": 0.5,
+        ...         "confidence": 0.92,
+        ...         "model_version": "v2.1"
+        ...     })
+        ...     
+        ...     return ContextualOutput(
+        ...         context=new_context,
+        ...         data=processed
+        ...     )
+        
+        Context-aware result analysis:
+        
+        >>> # Downstream operator can use rich context
+        >>> @operator.op
+        >>> def context_aware_analyzer(output: ContextualOutput):
+        ...     if output.context.get("confidence", 0) < 0.8:
+        ...         return "Low confidence result needs review"
+        ...     
+        ...     if "original_query" in output.context:
+        ...         # Verify result against original intent
+        ...         return verify_against_query(
+        ...             output.context["original_query"], 
+        ...             output.data
+        ...         )
+        ...     
+        ...     return output.data
+    """
+    context: Dict[str, Any]
+    data: Any
+
+
+class WithContext(Operator):
+    """Wrapper operator that automatically preserves context through any operator.
+    
+    This operator wraps another operator and ensures that contextual information
+    flows through the computation. It automatically handles the extraction of
+    data for the wrapped operator and re-wrapping of results with preserved
+    and optionally augmented context.
+    
+    This operator can carry arbitrary metadata and can be composed with any operator without
+    requiring them to be context-aware.
+    
+    Attributes:
+        operator: The operator to wrap with context preservation.
+        context_augmenter: Optional function to augment context based on
+            input, output, and existing context.
+        preserve_keys: Optional list of context keys to preserve. If None,
+            all context is preserved.
+    
+    Examples:
+        Basic context preservation:
+        
+        >>> # Wrap any operator to preserve context
+        >>> base_classifier = TextClassifier()
+        >>> contextual_classifier = WithContext(base_classifier)
+        >>> 
+        >>> # Context flows through automatically
+        >>> input_with_context = ContextualInput(
+        ...     context={"user_id": "123", "original_query": "Classify this"},
+        ...     data="This movie is great!"
+        ... )
+        >>> result = contextual_classifier(input_with_context)
+        >>> # result.context == {"user_id": "123", "original_query": "Classify this"}
+        >>> # result.data == "positive"
+        
+        Context augmentation:
+        
+        >>> def add_processing_metadata(input_ctx, input_data, output_data):
+        ...     return {
+        ...         **input_ctx,
+        ...         "processing_time": time.time() - start_time,
+        ...         "input_length": len(str(input_data)),
+        ...         "output_length": len(str(output_data))
+        ...     }
+        >>> 
+        >>> enriched_classifier = WithContext(
+        ...     TextClassifier(),
+        ...     context_augmenter=add_processing_metadata
+        ... )
+        
+        Ensemble-verifier pattern with rich context:
+        
+        >>> # Verifier that uses context for better decisions
+        >>> class ContextualVerifier(Operator):
+        ...     def forward(self, input: ContextualInput) -> ContextualOutput:
+        ...         original_query = input.context.get("original_query")
+        ...         model_results = input.data
+        ...         
+        ...         # Use original query to better verify results
+        ...         verification_score = self.verify_with_query(
+        ...             original_query, model_results
+        ...         )
+        ...         
+        ...         return ContextualOutput(
+        ...             context={
+        ...                 **input.context,
+        ...                 "verification_score": verification_score,
+        ...                 "verified_at": datetime.now().isoformat()
+        ...             },
+        ...             data=self.select_best_result(model_results, verification_score)
+        ...         )
+        >>> 
+        >>> # Chain with automatic context flow
+        >>> pipeline = Chain([
+        ...     WithContext(ensemble),
+        ...     ContextualVerifier()
+        ... ])
+        
+        Selective context preservation:
+        
+        >>> # Only preserve specific context keys for privacy/performance
+        >>> privacy_aware_op = WithContext(
+        ...     SensitiveDataProcessor(),
+        ...     preserve_keys=["session_id", "processing_version"]
+        ... )
+        >>> 
+        >>> # Context filtering for performance
+        >>> lightweight_op = WithContext(
+        ...     FastOperator(),
+        ...     preserve_keys=["original_query"]  # Only keep essential context
+        ... )
+    """
+    
+    operator: Operator
+    context_augmenter: Optional[Callable[[Dict[str, Any], Any, Any], Dict[str, Any]]]
+    preserve_keys: Optional[List[str]]
+    
+    def __init__(self, 
+                 operator: Operator,
+                 context_augmenter: Optional[Callable[[Dict[str, Any], Any, Any], Dict[str, Any]]] = None,
+                 preserve_keys: Optional[List[str]] = None):
+        """Initialize context preservation wrapper.
+        
+        Args:
+            operator: The operator to wrap with context preservation.
+            context_augmenter: Optional function to augment context. Should take
+                (input_context, input_data, output_data) and return new context dict.
+            preserve_keys: Optional list of context keys to preserve. If None,
+                all context is preserved.
+        """
+        self.operator = operator
+        self.context_augmenter = context_augmenter
+        self.preserve_keys = preserve_keys
+    
+    def forward(self, input: ContextualInput) -> ContextualOutput:
+        """Execute wrapped operator while preserving and optionally augmenting context.
+        
+        Args:
+            input: Input with context and data.
+            
+        Returns:
+            Output with preserved/augmented context and operator result.
+        """
+        # Execute wrapped operator with just the data
+        result = self.operator(input.data)
+        
+        # Determine which context to preserve
+        if self.preserve_keys is not None:
+            preserved_context = {
+                key: input.context[key] 
+                for key in self.preserve_keys 
+                if key in input.context
+            }
+        else:
+            preserved_context = input.context.copy()
+        
+        # Optionally augment context
+        if self.context_augmenter:
+            final_context = self.context_augmenter(
+                preserved_context, input.data, result
+            )
+        else:
+            final_context = preserved_context
+        
+        return ContextualOutput(
+            context=final_context,
+            data=result
+        )
 
 
 # Convenience functions for creating common patterns
