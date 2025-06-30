@@ -12,10 +12,8 @@ from typing import List, Dict, Any, Callable, Optional
 import jax
 import jax.numpy as jnp
 
-from ember.api import operators
 from ember.operators.base import Operator
-from ember.api import models
-from ember.api.models import ModelBinding, Response
+from ember.api.models import models, ModelBinding, Response
 
 
 class ModelCall(Operator):
@@ -538,25 +536,24 @@ class Cache(Operator):
 
 # Convenience operators for common model calling tasks
 
-@operators.op
-def extract_text(response: Response) -> str:
-    """Extract text from a response.
-
-    Args:
-        response: Model response object containing text.
-        
-    Returns:
-        Text from the response.
+class ExtractText(Operator):
+    """Operator that extracts text from a model response.
+    
+    This operator takes a Response object and returns just the text content;
+    useful for chaining after model calls when you only need the text output.
     """
-    return response.text
+    
+    def forward(self, response: Response) -> str:
+        """Return the text from the response object."""
+        return response.text
 
 class ModelText(Operator):
     """Operator that calls a model and returns the text from the response."""
     model_text: Operator
 
-    def __init__(self, model: ModelCall):
+    def __init__(self, model_name: str, **kwargs):
         """Initialize the model text operator."""
-        self.model_text = Chain([model, extract_text])
+        self.model_text = Chain([ModelCall(model_name, **kwargs), ExtractText()])
 
     def forward(self, input: Any) -> Any:
         """Call the model and return the text from the response."""

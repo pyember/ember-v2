@@ -13,22 +13,25 @@ from ember.operators.base import Operator
 from ember._internal.types import EmberModel
 
 
-class ContextualInput(EmberModel):
-    """Input wrapper that carries arbitrary context through operator chains.
+class ContextualData(EmberModel):
+    """Data wrapper that carries arbitrary context through operator chains.
     
     This model allows operators to preserve any kind of contextual information
     while processing data. Unlike rigid schemas, the context is a flexible
     dictionary that can hold any metadata needed by downstream operators.
     
+    The same type is used for both input and output, enabling seamless chaining
+    of context-aware operators without validation issues.
+    
     Attributes:
         context: Dictionary containing arbitrary contextual information.
-        data: The actual input data for processing.
+        data: The actual data being processed.
     
     Examples:       
         Multi-step processing with context:
         
         >>> # Context flows through processing pipeline
-        >>> preprocessing_result = ContextualInput(
+        >>> preprocessing_result = ContextualData(
         ...     context={
         ...         "original_query": "Analyze this sentiment",
         ...         "preprocessing_steps": ["tokenize", "normalize"],
@@ -40,7 +43,7 @@ class ContextualInput(EmberModel):
         Ensemble verification with rich context:
         
         >>> # Context helps verifier understand the full picture
-        >>> verification_input = ContextualInput(
+        >>> verification_input = ContextualData(
         ...     context={
         ...         "original_query": "Is this review positive?",
         ...         "models_used": ["gpt-4", "claude-3", "gemini"],
@@ -49,28 +52,11 @@ class ContextualInput(EmberModel):
         ...     },
         ...     data=["positive", "positive", "positive"]
         ... )
-    """
-    context: Dict[str, Any]
-    data: Any
-
-
-class ContextualOutput(EmberModel):
-    """Output wrapper that preserves context through operator chains.
-    
-    This model maintains contextual information alongside operator outputs,
-    enabling sophisticated downstream processing, debugging, and analysis.
-    The context can be augmented by each operator in the chain.
-    
-    Attributes:
-        context: Dictionary containing contextual information, potentially
-            augmented by the operator that produced this output.
-        data: The actual output data from the operator.
-    
-    Examples:
-        Basic context preservation:
+        
+        Context augmentation during processing:
         
         >>> @operator.op
-        >>> def my_operator_with_context(input: ContextualInput) -> ContextualOutput:
+        >>> def my_contextual_operator(input: ContextualData) -> ContextualData:
         ...     processed = process_data(input.data)
         ...     
         ...     # Augment context with processing metadata
@@ -81,27 +67,31 @@ class ContextualOutput(EmberModel):
         ...         "model_version": "v2.1"
         ...     })
         ...     
-        ...     return ContextualOutput(
+        ...     return ContextualData(
         ...         context=new_context,
         ...         data=processed
         ...     )
         
-        Context-aware result analysis:
+        Context-aware analysis:
         
         >>> # Downstream operator can use rich context
         >>> @operator.op
-        >>> def context_aware_analyzer(output: ContextualOutput):
-        ...     if output.context.get("confidence", 0) < 0.8:
-        ...         return "Low confidence result needs review"
-        ...     
-        ...     if "original_query" in output.context:
+        >>> def context_aware_analyzer(input: ContextualData) -> ContextualData:
+        ...     if input.context.get("confidence", 0) < 0.8:
+        ...         result = "Low confidence result needs review"
+        ...     elif "original_query" in input.context:
         ...         # Verify result against original intent
-        ...         return verify_against_query(
-        ...             output.context["original_query"], 
-        ...             output.data
+        ...         result = verify_against_query(
+        ...             input.context["original_query"], 
+        ...             input.data
         ...         )
+        ...     else:
+        ...         result = input.data
         ...     
-        ...     return output.data
+        ...     return ContextualData(
+        ...         context=input.context,
+        ...         data=result
+        ...     )
     """
     context: Dict[str, Any]
     data: Any
@@ -110,9 +100,9 @@ class ContextualOutput(EmberModel):
 class ContextAgnostic(Operator):
     """Wrapper that lets context-unaware operators work in contextual chains.
     
-    This operator extracts data from ContextualInput, passes it to a wrapped
+    This operator extracts data from ContextualData, passes it to a wrapped
     operator that doesn't care about context, then wraps the result back in
-    ContextualOutput with preserved/transformed context.
+    ContextualData with preserved/transformed context.
     
     Attributes:
         operator: The context-unaware operator to wrap.
@@ -125,7 +115,7 @@ class ContextAgnostic(Operator):
         >>> contextual_model = ContextAgnostic(ModelCall("gpt-4"))
         >>> 
         >>> # Context flows through automatically
-        >>> input_with_context = ContextualInput(
+        >>> input_with_context = ContextualData(
         ...     context={"user_id": "123", "original_query": "Classify this"},
         ...     data="This movie is great!"
         ... )
@@ -157,8 +147,8 @@ class ContextAgnostic(Operator):
         ... ])
     """
     
-    input_spec = ContextualInput
-    output_spec = ContextualOutput
+    input_spec = ContextualData
+    output_spec = ContextualData
     
     operator: Operator
     context_transform: Optional[Callable[[Dict[str, Any], Any, Any], Dict[str, Any]]]
@@ -176,7 +166,7 @@ class ContextAgnostic(Operator):
         self.operator = operator
         self.context_transform = context_transform
     
-    def forward(self, input: ContextualInput) -> ContextualOutput:
+    def forward(self, input: ContextualData) -> ContextualData:
         """Execute wrapped operator while managing context flow.
         
         Args:
@@ -194,7 +184,7 @@ class ContextAgnostic(Operator):
         else:
             final_context = input.context.copy()
         
-        return ContextualOutput(
+        return ContextualData(
             context=final_context,
             data=result
         )
@@ -238,8 +228,8 @@ class ContextAware(Operator):
         ... )
     """
     
-    input_spec = ContextualInput
-    output_spec = ContextualOutput
+    input_spec = ContextualData
+    output_spec = ContextualData
     
     operator: Operator
     context_transform: Optional[Callable[[Dict[str, Any], Any, Any], Dict[str, Any]]]
@@ -256,7 +246,7 @@ class ContextAware(Operator):
         self.operator = operator
         self.context_transform = context_transform
     
-    def forward(self, input: ContextualInput) -> ContextualOutput:
+    def forward(self, input: ContextualData) -> ContextualData:
         """Execute wrapped operator with full contextual input.
         
         Args:
@@ -271,7 +261,7 @@ class ContextAware(Operator):
         # Transform context if function provided
         if self.context_transform:
             final_context = self.context_transform(input.context, input.data, result.data)
-            return ContextualOutput(
+            return ContextualData(
                 context=final_context,
                 data=result.data
             )
@@ -317,7 +307,9 @@ class InitialContext(Operator):
         >>> # Verifier can access original_query and metadata
     """
     
-    output_spec = ContextualOutput
+    output_spec = ContextualData
+
+    context_defaults: Dict[str, Any]
     
     def __init__(self, **context_defaults: Any):
         """Initialize context bootstrapper.
@@ -327,7 +319,7 @@ class InitialContext(Operator):
         """
         self.context_defaults = context_defaults
 
-    def forward(self, input: Any) -> ContextualOutput:
+    def forward(self, input: Any) -> ContextualData:
         """Convert regular input to ContextualOutput with initialized context.
         
         Args:
@@ -339,7 +331,7 @@ class InitialContext(Operator):
         context = self.context_defaults.copy()
         context["original_query"] = input
 
-        return ContextualOutput(context=context, data=input)
+        return ContextualData(context=context, data=input)
 
 
 # Convenience functions for creating context operators
