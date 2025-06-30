@@ -13,6 +13,264 @@ import jax
 import jax.numpy as jnp
 
 from ember.operators.base import Operator
+from ember.api import models
+from ember.api.models import ModelBinding
+from ember._internal.types import EmberModel
+
+
+class ContextualInput(EmberModel):
+    """Input wrapper that carries arbitrary context through operator chains.
+    
+    This model allows operators to preserve any kind of contextual information
+    while processing data. Unlike rigid schemas, the context is a flexible
+    dictionary that can hold any metadata needed by downstream operators.
+    
+    Attributes:
+        context: Dictionary containing arbitrary contextual information.
+        data: The actual input data for processing.
+    
+    Examples:       
+        Multi-step processing with context:
+        
+        >>> # Context flows through processing pipeline
+        >>> preprocessing_result = ContextualInput(
+        ...     context={
+        ...         "original_query": "Analyze this sentiment",
+        ...         "preprocessing_steps": ["tokenize", "normalize"],
+        ...         "confidence_threshold": 0.8
+        ...     },
+        ...     data="This product is amazing!"
+        ... )
+        
+        Ensemble verification with rich context:
+        
+        >>> # Context helps verifier understand the full picture
+        >>> verification_input = ContextualInput(
+        ...     context={
+        ...         "original_query": "Is this review positive?",
+        ...         "models_used": ["gpt-4", "claude-3", "gemini"],
+        ...         "ensemble_agreement": 0.95,
+        ...         "processing_time": 1.2
+        ...     },
+        ...     data=["positive", "positive", "positive"]
+        ... )
+    """
+    context: Dict[str, Any]
+    data: Any
+
+
+class ContextualOutput(EmberModel):
+    """Output wrapper that preserves context through operator chains.
+    
+    This model maintains contextual information alongside operator outputs,
+    enabling sophisticated downstream processing, debugging, and analysis.
+    The context can be augmented by each operator in the chain.
+    
+    Attributes:
+        context: Dictionary containing contextual information, potentially
+            augmented by the operator that produced this output.
+        data: The actual output data from the operator.
+    
+    Examples:
+        Basic context preservation:
+        
+        >>> @operator.op
+        >>> def my_operator_with_context(input: ContextualInput) -> ContextualOutput:
+        ...     processed = process_data(input.data)
+        ...     
+        ...     # Augment context with processing metadata
+        ...     new_context = input.context.copy()
+        ...     new_context.update({
+        ...         "processing_time": 0.5,
+        ...         "confidence": 0.92,
+        ...         "model_version": "v2.1"
+        ...     })
+        ...     
+        ...     return ContextualOutput(
+        ...         context=new_context,
+        ...         data=processed
+        ...     )
+        
+        Context-aware result analysis:
+        
+        >>> # Downstream operator can use rich context
+        >>> @operator.op
+        >>> def context_aware_analyzer(output: ContextualOutput):
+        ...     if output.context.get("confidence", 0) < 0.8:
+        ...         return "Low confidence result needs review"
+        ...     
+        ...     if "original_query" in output.context:
+        ...         # Verify result against original intent
+        ...         return verify_against_query(
+        ...             output.context["original_query"], 
+        ...             output.data
+        ...         )
+        ...     
+        ...     return output.data
+    """
+    context: Dict[str, Any]
+    data: Any
+
+
+class WithContext(Operator):
+    """Wrapper operator that automatically preserves context through any operator.
+    
+    This operator wraps another operator and ensures that contextual information
+    flows through the computation. It automatically handles the extraction of
+    data for the wrapped operator and re-wrapping of results with preserved
+    and optionally augmented context.
+    
+    This operator can carry arbitrary metadata and can be composed with any operator without
+    requiring them to be context-aware.
+    
+    Attributes:
+        operator: The operator to wrap with context preservation.
+        context_augmenter: Optional function to augment context based on
+            input, output, and existing context.
+        preserve_keys: Optional list of context keys to preserve. If None,
+            all context is preserved.
+    
+    Examples:
+        Basic context preservation:
+        
+        >>> # Wrap any operator to preserve context
+        >>> base_classifier = TextClassifier()
+        >>> contextual_classifier = WithContext(base_classifier)
+        >>> 
+        >>> # Context flows through automatically
+        >>> input_with_context = ContextualInput(
+        ...     context={"user_id": "123", "original_query": "Classify this"},
+        ...     data="This movie is great!"
+        ... )
+        >>> result = contextual_classifier(input_with_context)
+        >>> # result.context == {"user_id": "123", "original_query": "Classify this"}
+        >>> # result.data == "positive"
+        
+        Context augmentation:
+        
+        >>> def add_processing_metadata(input_ctx, input_data, output_data):
+        ...     return {
+        ...         **input_ctx,
+        ...         "processing_time": time.time() - start_time,
+        ...         "input_length": len(str(input_data)),
+        ...         "output_length": len(str(output_data))
+        ...     }
+        >>> 
+        >>> enriched_classifier = WithContext(
+        ...     TextClassifier(),
+        ...     context_augmenter=add_processing_metadata
+        ... )
+        
+        Ensemble-verifier pattern with rich context:
+        
+        >>> # Verifier that uses context for better decisions
+        >>> class ContextualVerifier(Operator):
+        ...     def forward(self, input: ContextualInput) -> ContextualOutput:
+        ...         original_query = input.context.get("original_query")
+        ...         model_results = input.data
+        ...         
+        ...         # Use original query to better verify results
+        ...         verification_score = self.verify_with_query(
+        ...             original_query, model_results
+        ...         )
+        ...         
+        ...         return ContextualOutput(
+        ...             context={
+        ...                 **input.context,
+        ...                 "verification_score": verification_score,
+        ...                 "verified_at": datetime.now().isoformat()
+        ...             },
+        ...             data=self.select_best_result(model_results, verification_score)
+        ...         )
+        >>> 
+        >>> # Chain with automatic context flow
+        >>> pipeline = Chain([
+        ...     WithContext(ensemble),
+        ...     ContextualVerifier()
+        ... ])
+        
+        Selective context preservation:
+        
+        >>> # Only preserve specific context keys for privacy/performance
+        >>> privacy_aware_op = WithContext(
+        ...     SensitiveDataProcessor(),
+        ...     preserve_keys=["session_id", "processing_version"]
+        ... )
+        >>> 
+        >>> # Context filtering for performance
+        >>> lightweight_op = WithContext(
+        ...     FastOperator(),
+        ...     preserve_keys=["original_query"]  # Only keep essential context
+        ... )
+    """
+    
+    operator: Operator
+    context_augmenter: Optional[Callable[[Dict[str, Any], Any, Any], Dict[str, Any]]]
+    preserve_keys: Optional[List[str]]
+    
+    def __init__(self, 
+                 operator: Operator,
+                 context_augmenter: Optional[Callable[[Dict[str, Any], Any, Any], Dict[str, Any]]] = None,
+                 preserve_keys: Optional[List[str]] = None):
+        """Initialize context preservation wrapper.
+        
+        Args:
+            operator: The operator to wrap with context preservation.
+            context_augmenter: Optional function to augment context. Should take
+                (input_context, input_data, output_data) and return new context dict.
+            preserve_keys: Optional list of context keys to preserve. If None,
+                all context is preserved.
+        """
+        self.operator = operator
+        self.context_augmenter = context_augmenter
+        self.preserve_keys = preserve_keys
+    
+    def forward(self, input: ContextualInput) -> ContextualOutput:
+        """Execute wrapped operator while preserving and optionally augmenting context.
+        
+        Args:
+            input: Input with context and data.
+            
+        Returns:
+            Output with preserved/augmented context and operator result.
+        """
+        # Execute wrapped operator with just the data
+        result = self.operator(input.data)
+        
+        # Determine which context to preserve
+        if self.preserve_keys is not None:
+            preserved_context = {
+                key: input.context[key] 
+                for key in self.preserve_keys 
+                if key in input.context
+            }
+        else:
+            preserved_context = input.context.copy()
+        
+        # Optionally augment context
+        if self.context_augmenter:
+            final_context = self.context_augmenter(
+                preserved_context, input.data, result
+            )
+        else:
+            final_context = preserved_context
+        
+        return ContextualOutput(
+            context=final_context,
+            data=result
+        )
+
+
+class ModelCall(Operator):
+    """Operator that calls a model."""
+    model: ModelBinding
+
+    def __init__(self, model_name: str = "gpt-4o", **kwargs):
+        self.model = models.instance(model_name, **kwargs)
+    
+    def forward(self, input: Any) -> Any:
+        """Call the model with the input."""
+        return self.model(input).text
 
 class Ensemble(Operator):
     """Ensemble operator that combines multiple operators.
@@ -50,11 +308,11 @@ class Ensemble(Operator):
     """
     
     operators: List[Operator]
-    aggregator: Optional[Callable[[List[Any], Any], Any]]
+    aggregator: Optional[Callable[[List[Any]], Any]]
     
     def __init__(self, 
                  operators: List[Operator],
-                 aggregator: Optional[Callable[[List[Any], Any], Any]] = None):
+                 aggregator: Optional[Callable[[List[Any]], Any]] = None):
         """Initialize ensemble with operators and optional aggregator.
         
         Args:
@@ -65,20 +323,19 @@ class Ensemble(Operator):
         self.operators = operators
         self.aggregator = aggregator
     
-    def forward(self, input: Any, original_prompt: Any) -> Any:
+    def forward(self, input: Any) -> Any:
         """Run all operators and aggregate results.
         
         Args:
             input: Input to pass to all operators.
-            original_prompt: Original prompt / question.
 
         Returns:
             List of results if no aggregator, otherwise aggregated result.
         """
-        results = [op(input, original_prompt) for op in self.operators]
+        results = [op(input) for op in self.operators]
         
         if self.aggregator:
-            return self.aggregator(results, original_prompt)
+            return self.aggregator(results)
         return results
 
 
@@ -107,19 +364,18 @@ class Chain(Operator):
         """
         self.operators = operators
     
-    def forward(self, input: Any, original_prompt: Any) -> Any:
+    def forward(self, input: Any) -> Any:
         """Pass input through all operators sequentially.
         
         Args:
             input: Initial input to the chain.
-            original_prompt: Original prompt / question.
 
         Returns:
             Output from the final operator.
         """
         result = input
         for op in self.operators:
-            result = op(result, original_prompt)
+            result = op(result)
         return result
 
 
@@ -182,12 +438,11 @@ class Router(Operator):
         self.router_fn = router_fn
         self.default_route = default_route
     
-    def forward(self, input: Any, original_prompt: Any) -> Any:
+    def forward(self, input: Any) -> Any:
         """Route input to appropriate operator.
         
         Args:
             input: Input to route.
-            original_prompt: Original prompt / question.
             
         Returns:
             Result from the selected operator.
@@ -203,7 +458,7 @@ class Router(Operator):
             else:
                 raise KeyError(f"No operator for route '{route}'")
         
-        return self.routes[route](input, original_prompt)
+        return self.routes[route](input)
 
 
 class LearnableRouter(Operator):
@@ -294,13 +549,12 @@ class LearnableRouter(Operator):
         logits = embedding @ self.routing_weights
         return jax.nn.softmax(logits / self.temperature)
     
-    def forward(self, input: Any, original_prompt: Any) -> Any:
+    def forward(self, input: Any) -> Any:
         """Route input based on learned weights.
         
         Args:
             input: If embedding_fn is provided, this is the raw input to process.
                 If embedding_fn is None, expects input with 'data' and 'embedding' attributes.
-            original_prompt: Original prompt / question.
 
         Returns:
             Result from the selected operator.
@@ -328,7 +582,7 @@ class LearnableRouter(Operator):
         route_name = self.route_names[route_idx]
         
         # Route the data
-        return self.routes[route_name](data, original_prompt)
+        return self.routes[route_name](data)
 
 
 
@@ -375,12 +629,11 @@ class Retry(Operator):
         self.max_attempts = max_attempts
         self.should_retry = should_retry or (lambda e, n: n < max_attempts)
     
-    def forward(self, input: Any, original_prompt: Any) -> Any:
+    def forward(self, input: Any) -> Any:
         """Execute operator with retry logic.
         
         Args:
             input: Input to pass to wrapped operator.
-            original_prompt: Original prompt / question.
 
         Returns:
             Result from successful execution.
@@ -392,7 +645,7 @@ class Retry(Operator):
         
         for attempt in range(self.max_attempts):
             try:
-                return self.operator(input, original_prompt)
+                return self.operator(input)
             except Exception as e:
                 last_error = e
                 if not self.should_retry(e, attempt + 1):
@@ -447,12 +700,11 @@ class Cache(Operator):
         self.cache = {}
         self.access_order = []
     
-    def forward(self, input: Any, original_prompt: Any) -> Any:
+    def forward(self, input: Any) -> Any:
         """Execute operator with caching.
         
         Args:
             input: Input to pass to wrapped operator.
-            original_prompt: Original prompt / question.
             
         Returns:
             Cached result if available, otherwise computed result.
@@ -467,7 +719,7 @@ class Cache(Operator):
             return self.cache[key]
         
         # Compute result
-        result = self.operator(input, original_prompt)
+        result = self.operator(input)
         
         # Add to cache
         self.cache[key] = result
@@ -519,3 +771,16 @@ def router(routes: Dict[str, Operator], **kwargs) -> Router:
         Router operator.
     """
     return Router(routes, **kwargs)
+
+
+def with_context(operator: Operator, **kwargs) -> WithContext:
+    """Create a context-preserving wrapper for an operator.
+    
+    Args:
+        operator: The operator to wrap with context preservation.
+        **kwargs: Additional arguments for WithContext constructor.
+        
+    Returns:
+        WithContext operator.
+    """
+    return WithContext(operator, **kwargs)

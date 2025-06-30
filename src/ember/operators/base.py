@@ -142,8 +142,8 @@ class Operator(Module):
     input_spec: Optional[Type] = None
     output_spec: Optional[Type] = None
     
-    def forward(self, input, original_prompt):
-        """Process input and original_prompt to produce output.
+    def forward(self, input):
+        """Process input to produce output.
         
         This method contains the core logic of the operator and must be
         implemented by subclasses. It receives validated input (if input_spec
@@ -154,8 +154,6 @@ class Operator(Module):
             input: The input to process. If input_spec is defined, this will
                 be a validated instance of that type. Otherwise, it's the raw
                 input passed to __call__.
-            original_prompt: In the case of chained operators, this is the original
-                prompt / question. Otherwise, this is the same as input.
 
         Returns:
             The processed output. Should match output_spec if defined.
@@ -171,8 +169,8 @@ class Operator(Module):
         """
         raise NotImplementedError("Subclasses must implement forward()")
     
-    def __call__(self, input, original_prompt):
-        """Process input and original_prompt through the operator with optional validation.
+    def __call__(self, input):
+        """Process input through the operator with optional validation.
         
         This method handles the complete operator execution pipeline:
         1. Validates input against input_spec (if provided)
@@ -189,19 +187,11 @@ class Operator(Module):
                 - Raw input of any type (if no input_spec)
                 - Dict that can be validated to input_spec
                 - Instance of input_spec type
-            original_prompt: The original prompt / question. In the case of chained
-                operators, this is distinct from input:
-                - input refers to the output of the previous operator
-                - original_prompt refers to the input of the start of the chain.
-                - This is useful for operators that need to know the original prompt
-                    for context, such as a summarizer that needs to know the original
-                    question to summarize.
 
         Returns:
             The processed output. Will be:
                 - Raw output from forward() (if no output_spec)
                 - Validated instance of output_spec type
-            original_prompt: This is passed through without modification.
                 
         Raises:
             ValidationError: If input doesn't match input_spec or output
@@ -245,7 +235,7 @@ class Operator(Module):
             elif not isinstance(input, input_validator):
                 input = input_validator.model_validate(input)
         
-        output = self.forward(input, original_prompt)
+        output = self.forward(input)
         
         # Apply output validation
         if output_validator and hasattr(output_validator, 'model_validate'):
@@ -254,7 +244,7 @@ class Operator(Module):
             elif not isinstance(output, output_validator):
                 output = output_validator.model_validate(output)
             
-        return output, original_prompt
+        return output
 
 
 __all__ = ["Operator"]
