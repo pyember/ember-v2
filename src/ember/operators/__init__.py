@@ -34,6 +34,7 @@ from ember.operators.common_context import (
     ContextAgnostic,
     ContextAware,
     ContextualData,
+    InitialContext,
 )
 
 __all__ = [
@@ -60,4 +61,5 @@ __all__ = [
     "ContextAgnostic",
     "ContextAware",
     "ContextualData",
+    "InitialContext",
 ]
