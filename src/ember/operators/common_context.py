@@ -40,19 +40,6 @@ class ContextualData(EmberModel):
         ...     data="This product is amazing!"
         ... )
         
-        Ensemble verification with rich context:
-        
-        >>> # Context helps verifier understand the full picture
-        >>> verification_input = ContextualData(
-        ...     context={
-        ...         "original_query": "Is this review positive?",
-        ...         "models_used": ["gpt-4", "claude-3", "gemini"],
-        ...         "ensemble_agreement": 0.95,
-        ...         "processing_time": 1.2
-        ...     },
-        ...     data=["positive", "positive", "positive"]
-        ... )
-        
         Context augmentation during processing:
         
         >>> @operator.op
