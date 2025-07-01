@@ -39,23 +39,63 @@ import os
 from typing import Dict, Any
 
 
-# Default model costs per 1000 tokens in USD.
-# These reflect reasonable estimates as of 2024. The structure prioritizes
+# Default model costs per 1,000,000 tokens in USD.
+# These reflect current pricing as of 2025. The structure prioritizes
 # clarity over configuration - every cost is visible and predictable.
 #
 # Structure:
-#   - input: Cost per 1000 input tokens in USD
-#   - output: Cost per 1000 output tokens in USD  
+#   - input: Cost per 1,000,000 input tokens in USD
+#   - output: Cost per 1,000,000 output tokens in USD  
 #   - context: Maximum context window in tokens
 #
 # The constants are intentionally hardcoded rather than loaded from files,
 # following the principle that configuration should be code when possible.
 DEFAULT_MODEL_COSTS: Dict[str, Dict[str, float]] = {
-    # OpenAI Models
+    # OpenAI Models - Updated pricing as of 2025
     "gpt-4": {
-        "input": 30.0,
-        "output": 60.0,
+        "input": 2.00,  # $2.00 per 1M tokens
+        "output": 8.00,  # $8.00 per 1M tokens
         "context": 8192
+    },
+    "gpt-4.1": {
+        "input": 2.00,  # $2.00 per 1M tokens
+        "output": 8.00,  # $8.00 per 1M tokens
+        "context": 128000
+    },
+    "gpt-4.1-2025-04-14": {
+        "input": 2.00,  # $2.00 per 1M tokens
+        "output": 8.00,  # $8.00 per 1M tokens
+        "context": 128000
+    },
+    "gpt-4.1-mini": {
+        "input": 0.40,  # $0.40 per 1M tokens
+        "output": 1.60,  # $1.60 per 1M tokens
+        "context": 128000
+    },
+    "gpt-4.1-mini-2025-04-14": {
+        "input": 0.40,  # $0.40 per 1M tokens
+        "output": 1.60,  # $1.60 per 1M tokens
+        "context": 128000
+    },
+    "gpt-4.1-nano": {
+        "input": 0.10,  # $0.10 per 1M tokens
+        "output": 0.40,  # $0.40 per 1M tokens
+        "context": 128000
+    },
+    "gpt-4.1-nano-2025-04-14": {
+        "input": 0.10,  # $0.10 per 1M tokens
+        "output": 0.40,  # $0.40 per 1M tokens
+        "context": 128000
+    },
+    "gpt-4.5-preview": {
+        "input": 75.00,  # $75.00 per 1M tokens
+        "output": 150.00,  # $150.00 per 1M tokens
+        "context": 128000
+    },
+    "gpt-4.5-preview-2025-02-27": {
+        "input": 75.00,  # $75.00 per 1M tokens
+        "output": 150.00,  # $150.00 per 1M tokens
+        "context": 128000
     },
     "gpt-4-turbo": {
         "input": 10.0,
@@ -63,8 +103,83 @@ DEFAULT_MODEL_COSTS: Dict[str, Dict[str, float]] = {
         "context": 128000
     },
     "gpt-4o": {
-        "input": 5.0,
-        "output": 15.0,
+        "input": 2.50,  # $2.50 per 1M tokens
+        "output": 10.00,  # $10.00 per 1M tokens
+        "context": 128000
+    },
+    "gpt-4o-2024-08-06": {
+        "input": 2.50,  # $2.50 per 1M tokens
+        "output": 10.00,  # $10.00 per 1M tokens
+        "context": 128000
+    },
+    "gpt-4o-audio-preview": {
+        "input": 2.50,  # $2.50 per 1M tokens
+        "output": 10.00,  # $10.00 per 1M tokens
+        "context": 128000
+    },
+    "gpt-4o-audio-preview-2024-12-17": {
+        "input": 2.50,  # $2.50 per 1M tokens
+        "output": 10.00,  # $10.00 per 1M tokens
+        "context": 128000
+    },
+    "gpt-4o-realtime-preview": {
+        "input": 5.00,  # $5.00 per 1M tokens
+        "output": 20.00,  # $20.00 per 1M tokens
+        "context": 128000
+    },
+    "gpt-4o-realtime-preview-2025-06-03": {
+        "input": 5.00,  # $5.00 per 1M tokens
+        "output": 20.00,  # $20.00 per 1M tokens
+        "context": 128000
+    },
+    "gpt-4o-mini": {
+        "input": 0.15,  # $0.15 per 1M tokens
+        "output": 0.60,  # $0.60 per 1M tokens
+        "context": 128000
+    },
+    "gpt-4o-mini-2024-07-18": {
+        "input": 0.15,  # $0.15 per 1M tokens
+        "output": 0.60,  # $0.60 per 1M tokens
+        "context": 128000
+    },
+    "gpt-4o-mini-audio-preview": {
+        "input": 0.15,  # $0.15 per 1M tokens
+        "output": 0.60,  # $0.60 per 1M tokens
+        "context": 128000
+    },
+    "gpt-4o-mini-audio-preview-2024-12-17": {
+        "input": 0.15,  # $0.15 per 1M tokens
+        "output": 0.60,  # $0.60 per 1M tokens
+        "context": 128000
+    },
+    "gpt-4o-mini-realtime-preview": {
+        "input": 0.60,  # $0.60 per 1M tokens
+        "output": 2.40,  # $2.40 per 1M tokens
+        "context": 128000
+    },
+    "gpt-4o-mini-realtime-preview-2024-12-17": {
+        "input": 0.60,  # $0.60 per 1M tokens
+        "output": 2.40,  # $2.40 per 1M tokens
+        "context": 128000
+    },
+    "gpt-4o-mini-search-preview": {
+        "input": 0.15,  # $0.15 per 1M tokens
+        "output": 0.60,  # $0.60 per 1M tokens
+        "context": 128000
+    },
+    "gpt-4o-mini-search-preview-2025-03-11": {
+        "input": 0.15,  # $0.15 per 1M tokens
+        "output": 0.60,  # $0.60 per 1M tokens
+        "context": 128000
+    },
+    "gpt-4o-search-preview": {
+        "input": 2.50,  # $2.50 per 1M tokens
+        "output": 10.00,  # $10.00 per 1M tokens
+        "context": 128000
+    },
+    "gpt-4o-search-preview-2025-03-11": {
+        "input": 2.50,  # $2.50 per 1M tokens
+        "output": 10.00,  # $10.00 per 1M tokens
         "context": 128000
     },
     "gpt-3.5-turbo": {
@@ -76,6 +191,98 @@ DEFAULT_MODEL_COSTS: Dict[str, Dict[str, float]] = {
         "input": 3.0,
         "output": 4.0,
         "context": 16385
+    },
+    
+    # OpenAI o-series models
+    "o1": {
+        "input": 15.00,  # $15.00 per 1M tokens
+        "output": 60.00,  # $60.00 per 1M tokens
+        "context": 128000
+    },
+    "o1-2024-12-17": {
+        "input": 15.00,  # $15.00 per 1M tokens
+        "output": 60.00,  # $60.00 per 1M tokens
+        "context": 128000
+    },
+    "o1-pro": {
+        "input": 150.00,  # $150.00 per 1M tokens
+        "output": 600.00,  # $600.00 per 1M tokens
+        "context": 128000
+    },
+    "o1-pro-2025-03-19": {
+        "input": 150.00,  # $150.00 per 1M tokens
+        "output": 600.00,  # $600.00 per 1M tokens
+        "context": 128000
+    },
+    "o1-mini": {
+        "input": 1.10,  # $1.10 per 1M tokens
+        "output": 4.40,  # $4.40 per 1M tokens
+        "context": 128000
+    },
+    "o1-mini-2024-09-12": {
+        "input": 1.10,  # $1.10 per 1M tokens
+        "output": 4.40,  # $4.40 per 1M tokens
+        "context": 128000
+    },
+    "o3": {
+        "input": 2.00,  # $2.00 per 1M tokens
+        "output": 8.00,  # $8.00 per 1M tokens
+        "context": 128000
+    },
+    "o3-2025-04-16": {
+        "input": 2.00,  # $2.00 per 1M tokens
+        "output": 8.00,  # $8.00 per 1M tokens
+        "context": 128000
+    },
+    "o3-pro": {
+        "input": 20.00,  # $20.00 per 1M tokens
+        "output": 80.00,  # $80.00 per 1M tokens
+        "context": 128000
+    },
+    "o3-pro-2025-06-10": {
+        "input": 20.00,  # $20.00 per 1M tokens
+        "output": 80.00,  # $80.00 per 1M tokens
+        "context": 128000
+    },
+    "o3-mini": {
+        "input": 1.10,  # $1.10 per 1M tokens
+        "output": 4.40,  # $4.40 per 1M tokens
+        "context": 128000
+    },
+    "o3-mini-2025-01-31": {
+        "input": 1.10,  # $1.10 per 1M tokens
+        "output": 4.40,  # $4.40 per 1M tokens
+        "context": 128000
+    },
+    "o3-deep-research": {
+        "input": 10.00,  # $10.00 per 1M tokens
+        "output": 40.00,  # $40.00 per 1M tokens
+        "context": 128000
+    },
+    "o3-deep-research-2025-06-26": {
+        "input": 10.00,  # $10.00 per 1M tokens
+        "output": 40.00,  # $40.00 per 1M tokens
+        "context": 128000
+    },
+    "o4-mini": {
+        "input": 1.10,  # $1.10 per 1M tokens
+        "output": 4.40,  # $4.40 per 1M tokens
+        "context": 128000
+    },
+    "o4-mini-2025-04-16": {
+        "input": 1.10,  # $1.10 per 1M tokens
+        "output": 4.40,  # $4.40 per 1M tokens
+        "context": 128000
+    },
+    "o4-mini-deep-research": {
+        "input": 2.00,  # $2.00 per 1M tokens
+        "output": 8.00,  # $8.00 per 1M tokens
+        "context": 128000
+    },
+    "o4-mini-deep-research-2025-06-26": {
+        "input": 2.00,  # $2.00 per 1M tokens
+        "output": 8.00,  # $8.00 per 1M tokens
+        "context": 128000
     },
     
     # Anthropic Models
@@ -159,8 +366,8 @@ def get_model_costs() -> Dict[str, Dict[str, float]]:
         Dictionary mapping model names to cost information with structure:
             {
                 "model-name": {
-                    "input": float,   # Cost per 1k input tokens
-                    "output": float,  # Cost per 1k output tokens  
+                    "input": float,   # Cost per 1M input tokens
+                    "output": float,  # Cost per 1M output tokens  
                     "context": int    # Max context window
                 }
             }
@@ -170,8 +377,8 @@ def get_model_costs() -> Dict[str, Dict[str, float]]:
         
         >>> costs = get_model_costs()
         >>> gpt4_cost = costs["gpt-4"]
-        >>> print(f"Input: ${gpt4_cost['input']}/1k tokens")
-        Input: $30.0/1k tokens
+        >>> print(f"Input: ${gpt4_cost['input']}/1M tokens")
+        Input: $2.0/1M tokens
         
         Production override for specific field:
         
@@ -196,7 +403,7 @@ def get_model_costs() -> Dict[str, Dict[str, float]]:
         - Model names are normalized: gpt-4, gpt_4, and gpt4 all work
         - Invalid overrides are logged but don't cause failures
         - Context must be an integer (token count)
-        - Costs are in USD per 1000 tokens
+        - Costs are in USD per 1,000,000 tokens
     """
     costs = DEFAULT_MODEL_COSTS.copy()
     
@@ -264,8 +471,8 @@ def get_model_cost(model_id: str) -> Dict[str, float]:
     Returns:
         Dictionary with cost information:
             {
-                "input": float,   # USD per 1k input tokens
-                "output": float,  # USD per 1k output tokens
+                "input": float,   # USD per 1M input tokens
+                "output": float,  # USD per 1M output tokens
                 "context": int    # Maximum context window
             }
         
@@ -275,8 +482,8 @@ def get_model_cost(model_id: str) -> Dict[str, float]:
         Known model:
         
         >>> cost = get_model_cost("gpt-4")
-        >>> print(f"GPT-4 input: ${cost['input']}/1k tokens")
-        GPT-4 input: $30.0/1k tokens
+        >>> print(f"GPT-4 input: ${cost['input']}/1M tokens")
+        GPT-4 input: $2.0/1M tokens
         
         Unknown model with override:
         
@@ -290,10 +497,10 @@ def get_model_cost(model_id: str) -> Dict[str, float]:
         >>> prompt_tokens = 1500
         >>> completion_tokens = 500
         >>> total_cost = (
-        ...     (prompt_tokens / 1000) * cost["input"] +
-        ...     (completion_tokens / 1000) * cost["output"]
+        ...     (prompt_tokens / 1_000_000) * cost["input"] +
+        ...     (completion_tokens / 1_000_000) * cost["output"]
         ... )
-        >>> print(f"Request cost: ${total_cost:.4f}")
+        >>> print(f"Request cost: ${total_cost:.6f}")
     """
     costs = get_model_costs()
     
@@ -338,21 +545,21 @@ def get_model_pricing(model_id: str) -> tuple[float, float]:
         model_id: Model identifier (e.g., "gpt-4", "claude-3-opus").
         
     Returns:
-        Tuple of (input_cost_per_1k, output_cost_per_1k) in USD.
+        Tuple of (input_cost_per_1M, output_cost_per_1M) in USD.
         
     Examples:
         Basic usage:
         
         >>> input_cost, output_cost = get_model_pricing("gpt-4")
-        >>> print(f"GPT-4: ${input_cost}/${output_cost} per 1k tokens")
-        GPT-4: $30.0/$60.0 per 1k tokens
+        >>> print(f"GPT-4: ${input_cost}/${output_cost} per 1M tokens")
+        GPT-4: $2.0/$8.0 per 1M tokens
         
         Cost calculation:
         
         >>> input_cost, output_cost = get_model_pricing("claude-3-haiku")
-        >>> total = (1000/1000) * input_cost + (500/1000) * output_cost
-        >>> print(f"1k input + 500 output = ${total:.3f}")
-        1k input + 500 output = $0.875
+        >>> total = (1000/1_000_000) * input_cost + (500/1_000_000) * output_cost
+        >>> print(f"1k input + 500 output = ${total:.6f}")
+        1k input + 500 output = $0.000875
     """
     cost = get_model_cost(model_id)
     return cost["input"], cost["output"]
