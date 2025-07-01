@@ -10,6 +10,7 @@ from .evaluators import (
     ComposedEvaluator,
     ExactMatchEvaluator,
     NumericToleranceEvaluator,
+    MultipleChoiceEvaluator,
     PartialRegexEvaluator)
 from .pipeline import (
     BatchEvaluationSummary,
