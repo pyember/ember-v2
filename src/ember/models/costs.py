@@ -62,17 +62,7 @@ DEFAULT_MODEL_COSTS: Dict[str, Dict[str, float]] = {
         "output": 8.00,  # $8.00 per 1M tokens
         "context": 128000
     },
-    "gpt-4.1-2025-04-14": {
-        "input": 2.00,  # $2.00 per 1M tokens
-        "output": 8.00,  # $8.00 per 1M tokens
-        "context": 128000
-    },
     "gpt-4.1-mini": {
-        "input": 0.40,  # $0.40 per 1M tokens
-        "output": 1.60,  # $1.60 per 1M tokens
-        "context": 128000
-    },
-    "gpt-4.1-mini-2025-04-14": {
         "input": 0.40,  # $0.40 per 1M tokens
         "output": 1.60,  # $1.60 per 1M tokens
         "context": 128000
@@ -82,17 +72,7 @@ DEFAULT_MODEL_COSTS: Dict[str, Dict[str, float]] = {
         "output": 0.40,  # $0.40 per 1M tokens
         "context": 128000
     },
-    "gpt-4.1-nano-2025-04-14": {
-        "input": 0.10,  # $0.10 per 1M tokens
-        "output": 0.40,  # $0.40 per 1M tokens
-        "context": 128000
-    },
     "gpt-4.5-preview": {
-        "input": 75.00,  # $75.00 per 1M tokens
-        "output": 150.00,  # $150.00 per 1M tokens
-        "context": 128000
-    },
-    "gpt-4.5-preview-2025-02-27": {
         "input": 75.00,  # $75.00 per 1M tokens
         "output": 150.00,  # $150.00 per 1M tokens
         "context": 128000
@@ -107,79 +87,9 @@ DEFAULT_MODEL_COSTS: Dict[str, Dict[str, float]] = {
         "output": 10.00,  # $10.00 per 1M tokens
         "context": 128000
     },
-    "gpt-4o-2024-08-06": {
-        "input": 2.50,  # $2.50 per 1M tokens
-        "output": 10.00,  # $10.00 per 1M tokens
-        "context": 128000
-    },
-    "gpt-4o-audio-preview": {
-        "input": 2.50,  # $2.50 per 1M tokens
-        "output": 10.00,  # $10.00 per 1M tokens
-        "context": 128000
-    },
-    "gpt-4o-audio-preview-2024-12-17": {
-        "input": 2.50,  # $2.50 per 1M tokens
-        "output": 10.00,  # $10.00 per 1M tokens
-        "context": 128000
-    },
-    "gpt-4o-realtime-preview": {
-        "input": 5.00,  # $5.00 per 1M tokens
-        "output": 20.00,  # $20.00 per 1M tokens
-        "context": 128000
-    },
-    "gpt-4o-realtime-preview-2025-06-03": {
-        "input": 5.00,  # $5.00 per 1M tokens
-        "output": 20.00,  # $20.00 per 1M tokens
-        "context": 128000
-    },
     "gpt-4o-mini": {
         "input": 0.15,  # $0.15 per 1M tokens
         "output": 0.60,  # $0.60 per 1M tokens
-        "context": 128000
-    },
-    "gpt-4o-mini-2024-07-18": {
-        "input": 0.15,  # $0.15 per 1M tokens
-        "output": 0.60,  # $0.60 per 1M tokens
-        "context": 128000
-    },
-    "gpt-4o-mini-audio-preview": {
-        "input": 0.15,  # $0.15 per 1M tokens
-        "output": 0.60,  # $0.60 per 1M tokens
-        "context": 128000
-    },
-    "gpt-4o-mini-audio-preview-2024-12-17": {
-        "input": 0.15,  # $0.15 per 1M tokens
-        "output": 0.60,  # $0.60 per 1M tokens
-        "context": 128000
-    },
-    "gpt-4o-mini-realtime-preview": {
-        "input": 0.60,  # $0.60 per 1M tokens
-        "output": 2.40,  # $2.40 per 1M tokens
-        "context": 128000
-    },
-    "gpt-4o-mini-realtime-preview-2024-12-17": {
-        "input": 0.60,  # $0.60 per 1M tokens
-        "output": 2.40,  # $2.40 per 1M tokens
-        "context": 128000
-    },
-    "gpt-4o-mini-search-preview": {
-        "input": 0.15,  # $0.15 per 1M tokens
-        "output": 0.60,  # $0.60 per 1M tokens
-        "context": 128000
-    },
-    "gpt-4o-mini-search-preview-2025-03-11": {
-        "input": 0.15,  # $0.15 per 1M tokens
-        "output": 0.60,  # $0.60 per 1M tokens
-        "context": 128000
-    },
-    "gpt-4o-search-preview": {
-        "input": 2.50,  # $2.50 per 1M tokens
-        "output": 10.00,  # $10.00 per 1M tokens
-        "context": 128000
-    },
-    "gpt-4o-search-preview-2025-03-11": {
-        "input": 2.50,  # $2.50 per 1M tokens
-        "output": 10.00,  # $10.00 per 1M tokens
         "context": 128000
     },
     "gpt-3.5-turbo": {
@@ -199,17 +109,7 @@ DEFAULT_MODEL_COSTS: Dict[str, Dict[str, float]] = {
         "output": 60.00,  # $60.00 per 1M tokens
         "context": 128000
     },
-    "o1-2024-12-17": {
-        "input": 15.00,  # $15.00 per 1M tokens
-        "output": 60.00,  # $60.00 per 1M tokens
-        "context": 128000
-    },
     "o1-pro": {
-        "input": 150.00,  # $150.00 per 1M tokens
-        "output": 600.00,  # $600.00 per 1M tokens
-        "context": 128000
-    },
-    "o1-pro-2025-03-19": {
         "input": 150.00,  # $150.00 per 1M tokens
         "output": 600.00,  # $600.00 per 1M tokens
         "context": 128000
@@ -219,17 +119,7 @@ DEFAULT_MODEL_COSTS: Dict[str, Dict[str, float]] = {
         "output": 4.40,  # $4.40 per 1M tokens
         "context": 128000
     },
-    "o1-mini-2024-09-12": {
-        "input": 1.10,  # $1.10 per 1M tokens
-        "output": 4.40,  # $4.40 per 1M tokens
-        "context": 128000
-    },
     "o3": {
-        "input": 2.00,  # $2.00 per 1M tokens
-        "output": 8.00,  # $8.00 per 1M tokens
-        "context": 128000
-    },
-    "o3-2025-04-16": {
         "input": 2.00,  # $2.00 per 1M tokens
         "output": 8.00,  # $8.00 per 1M tokens
         "context": 128000
@@ -239,17 +129,7 @@ DEFAULT_MODEL_COSTS: Dict[str, Dict[str, float]] = {
         "output": 80.00,  # $80.00 per 1M tokens
         "context": 128000
     },
-    "o3-pro-2025-06-10": {
-        "input": 20.00,  # $20.00 per 1M tokens
-        "output": 80.00,  # $80.00 per 1M tokens
-        "context": 128000
-    },
     "o3-mini": {
-        "input": 1.10,  # $1.10 per 1M tokens
-        "output": 4.40,  # $4.40 per 1M tokens
-        "context": 128000
-    },
-    "o3-mini-2025-01-31": {
         "input": 1.10,  # $1.10 per 1M tokens
         "output": 4.40,  # $4.40 per 1M tokens
         "context": 128000
@@ -259,27 +139,12 @@ DEFAULT_MODEL_COSTS: Dict[str, Dict[str, float]] = {
         "output": 40.00,  # $40.00 per 1M tokens
         "context": 128000
     },
-    "o3-deep-research-2025-06-26": {
-        "input": 10.00,  # $10.00 per 1M tokens
-        "output": 40.00,  # $40.00 per 1M tokens
-        "context": 128000
-    },
     "o4-mini": {
         "input": 1.10,  # $1.10 per 1M tokens
         "output": 4.40,  # $4.40 per 1M tokens
         "context": 128000
     },
-    "o4-mini-2025-04-16": {
-        "input": 1.10,  # $1.10 per 1M tokens
-        "output": 4.40,  # $4.40 per 1M tokens
-        "context": 128000
-    },
     "o4-mini-deep-research": {
-        "input": 2.00,  # $2.00 per 1M tokens
-        "output": 8.00,  # $8.00 per 1M tokens
-        "context": 128000
-    },
-    "o4-mini-deep-research-2025-06-26": {
         "input": 2.00,  # $2.00 per 1M tokens
         "output": 8.00,  # $8.00 per 1M tokens
         "context": 128000
