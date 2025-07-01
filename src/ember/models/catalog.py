@@ -57,6 +57,76 @@ MODEL_CATALOG: Dict[str, ModelInfo] = {
         context_window=16385
     ),
     
+    # New GPT-4 variants
+    "gpt-4.1": ModelInfo(
+        id="gpt-4.1",
+        provider="openai",
+        description="Enhanced GPT-4.1 model",
+        context_window=128000
+    ),
+    "gpt-4.1-mini": ModelInfo(
+        id="gpt-4.1-mini",
+        provider="openai",
+        description="Efficient GPT-4.1 mini variant",
+        context_window=128000
+    ),
+    "gpt-4.1-nano": ModelInfo(
+        id="gpt-4.1-nano",
+        provider="openai",
+        description="Smallest GPT-4.1 variant",
+        context_window=128000
+    ),
+    "gpt-4.5-preview": ModelInfo(
+        id="gpt-4.5-preview",
+        provider="openai",
+        description="Preview of advanced GPT-4.5",
+        context_window=128000
+    ),
+    
+    # OpenAI o-series (reasoning models)
+    "o1": ModelInfo(
+        id="o1",
+        provider="openai",
+        description="Advanced reasoning model",
+        context_window=128000
+    ),
+    "o1-pro": ModelInfo(
+        id="o1-pro",
+        provider="openai",
+        description="Professional reasoning model",
+        context_window=128000
+    ),
+    "o1-mini": ModelInfo(
+        id="o1-mini",
+        provider="openai",
+        description="Efficient reasoning model",
+        context_window=128000
+    ),
+    "o3": ModelInfo(
+        id="o3",
+        provider="openai",
+        description="Next-generation reasoning model",
+        context_window=128000
+    ),
+    "o3-pro": ModelInfo(
+        id="o3-pro",
+        provider="openai",
+        description="Professional o3 reasoning model",
+        context_window=128000
+    ),
+    "o3-mini": ModelInfo(
+        id="o3-mini",
+        provider="openai",
+        description="Efficient o3 reasoning model",
+        context_window=128000
+    ),
+    "o4-mini": ModelInfo(
+        id="o4-mini",
+        provider="openai",
+        description="Next-generation o4 mini model",
+        context_window=128000
+    ),
+    
     # Anthropic Models
     "claude-3-opus": ModelInfo(
         id="claude-3-opus",
@@ -181,6 +251,21 @@ class Models:
     GPT_4O_MINI = "gpt-4o-mini"
     GPT_35_TURBO = "gpt-3.5-turbo"
     GPT_35_TURBO_16K = "gpt-3.5-turbo-16k"
+    
+    # New GPT-4 variants
+    GPT_4_1 = "gpt-4.1"
+    GPT_4_1_MINI = "gpt-4.1-mini"
+    GPT_4_1_NANO = "gpt-4.1-nano"
+    GPT_4_5_PREVIEW = "gpt-4.5-preview"
+    
+    # OpenAI o-series (reasoning models)
+    O1 = "o1"
+    O1_PRO = "o1-pro"
+    O1_MINI = "o1-mini"
+    O3 = "o3"
+    O3_PRO = "o3-pro"
+    O3_MINI = "o3-mini"
+    O4_MINI = "o4-mini"
     
     # Anthropic
     CLAUDE_3_OPUS = "claude-3-opus"
