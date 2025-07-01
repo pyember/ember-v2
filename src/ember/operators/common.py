@@ -13,66 +13,6 @@ import jax
 import jax.numpy as jnp
 
 from ember.operators.base import Operator
-from ember.api.models import models, ModelBinding, Response
-
-
-class ModelCall(Operator):
-    """Operator that calls a language model and returns the full response.
-    
-    This operator wraps a model binding and provides a consistent interface
-    for calling language models. It returns the complete response object,
-    preserving metadata like token counts, costs, and model information.
-    
-    Attributes:
-        model: The bound model instance to call.
-    
-    Examples:
-        Basic model calling:
-        
-        >>> # Create operator with default model
-        >>> model_op = ModelCall()
-        >>> response = model_op("What is the capital of France?")
-        >>> print(response.text)  # "Paris is the capital of France."
-        >>> print(response.usage.total_tokens)  # 25
-        
-        >>> # Use specific model
-        >>> claude_op = ModelCall("claude-3-sonnet")
-        >>> response = claude_op("Explain quantum computing")
-        >>> print(f"Cost: ${response.cost:.4f}")
-        
-        >>> # Chain with text extraction
-        >>> @operator.op
-        >>> def extract_text(response):
-        ...     return response.text
-        >>> 
-        >>> pipeline = Chain([
-        ...     ModelCall("gpt-4"),
-        ...     extract_text
-        ... ])
-        >>> result = pipeline("Summarize this article")
-    """
-    
-    model: ModelBinding
-
-    def __init__(self, model_name: str = "gpt-4o", **kwargs):
-        """Initialize model call operator.
-        
-        Args:
-            model_name: Name of the model to use (e.g., "gpt-4", "claude-3").
-            **kwargs: Additional arguments passed to model initialization.
-        """
-        self.model = models.instance(model_name, **kwargs)
-    
-    def forward(self, input: Any) -> Any:
-        """Call the model with the input and return full response.
-        
-        Args:
-            input: The input to send to the model.
-            
-        Returns:
-            Complete response object with text, metadata, usage, and costs.
-        """
-        return self.model(input)
 
 class Ensemble(Operator):
     """Ensemble operator that combines multiple operators.
@@ -533,31 +473,6 @@ class Cache(Operator):
             del self.cache[oldest_key]
         
         return result
-
-# Convenience operators for common model calling tasks
-
-class ExtractText(Operator):
-    """Operator that extracts text from a model response.
-    
-    This operator takes a Response object and returns just the text content;
-    useful for chaining after model calls when you only need the text output.
-    """
-    
-    def forward(self, response: Response) -> str:
-        """Return the text from the response object."""
-        return response.text
-
-class ModelText(Operator):
-    """Operator that calls a model and returns the text from the response."""
-    model_text: Operator
-
-    def __init__(self, model_name: str, **kwargs):
-        """Initialize the model text operator."""
-        self.model_text = Chain([ModelCall(model_name, **kwargs), ExtractText()])
-
-    def forward(self, input: Any) -> Any:
-        """Call the model and return the text from the response."""
-        return self.model_text(input)
 
 # Convenience functions for creating common patterns
 

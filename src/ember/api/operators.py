@@ -26,7 +26,7 @@ Basic usage:
 
 from ember.api.decorators import op
 from ember.operators import (
-    Operator, ModelCall, Ensemble, Chain, Router, LearnableRouter, ModelText,
+    Operator, Ensemble, Chain, Router, LearnableRouter,
     ContextAgnostic, ContextAware, ContextualData, InitialContext,
     chain, ensemble, router
 )
@@ -35,12 +35,10 @@ __all__ = [
     "Operator",
     "op",
     # Common operators
-    "ModelCall",
     "Ensemble", 
     "Chain",
     "Router",
-    "LearnableRouter", 
-    "ModelText",
+    "LearnableRouter",
     # Context operators
     "ContextAgnostic",
     "ContextAware", 

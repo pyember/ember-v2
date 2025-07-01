@@ -15,15 +15,12 @@ from ember.operators.base import Operator
 
 # Import common operators
 from ember.operators.common import (
-    ModelCall,
     Ensemble,
     Chain,
     Router,
     LearnableRouter,
     Retry,
     Cache,
-    ExtractText,
-    ModelText,
     ensemble,
     chain,
     router,
@@ -42,15 +39,12 @@ __all__ = [
     "Operator",
     
     # Common operator classes
-    "ModelCall",
     "Ensemble",
     "Chain", 
     "Router",
     "LearnableRouter",
     "Retry",
     "Cache",
-    "ExtractText",
-    "ModelText",
 
     # Convenience functions
     "ensemble",
