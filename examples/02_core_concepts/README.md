@@ -47,8 +47,8 @@ Use Python type hints, dataclasses, protocols, and runtime validation for mainta
 ### Comprehensive Study (45 minutes)
 1. **operators_basics.py** - Operator fundamentals
 2. **type_safety.py** - Type system integration  
-3. **rich_specifications.py** - Advanced validation
 4. **context_management.py** - State management
+3. **rich_specifications.py** - Advanced validation
 5. **error_handling.py** - Production resilience
 
 ## Getting Started
