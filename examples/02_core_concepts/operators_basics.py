@@ -17,7 +17,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 from _shared.example_utils import print_section_header, print_example_output
 from ember.api import models, operators
-from ember.api.xcs import jit, vmap
+from ember.api.xcs import jit
 
 
 def main():
@@ -32,7 +32,7 @@ def main():
     print("  • Natural Python code")
     print("  • Automatic optimization with @jit")
     print("  • Easy composition")
-    print("  • Batch processing with vmap()\n")
+    print("  • Batch processing with list comprehensions\n")
     
     # Part 2: Simple Operator
     print("="*50)
@@ -216,14 +216,13 @@ def main():
         print(f"\nQ: {q}")
         print(f"   Type: {result['type']}, Complexity: {result['complexity']}")
     
-    # Batch processing with vmap
+    # Batch processing with regular Python patterns
     print("\n" + "="*50)
     print("Part 5: Batch Processing")
     print("="*50 + "\n")
     
-    # Process multiple questions at once
-    batch_analyzer = vmap(analyze_question)
-    results = batch_analyzer(questions)
+    # Process multiple questions at once using map or list comprehension
+    results = [analyze_question(q) for q in questions]
     
     print("Batch Analysis Results:")
     for i, result in enumerate(results):
@@ -260,7 +259,7 @@ def main():
     print("\n1. ANY function is an operator - no base classes!")
     print("2. Use @op decorator for extra operator features")
     print("3. Use @jit for automatic optimization")
-    print("4. Use vmap() for batch processing")
+    print("4. Use list comprehensions for batch processing")
     print("5. Compose functions naturally with Python")
     print("6. Integrate models seamlessly in any function")
     
