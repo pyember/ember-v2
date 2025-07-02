@@ -19,7 +19,8 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 from _shared.example_utils import print_section_header, print_example_output
 from ember.api import operators
-from ember.api.operators import EmberModel, Field
+from ember._internal.types import EmberModel
+from pydantic import Field
 
 
 def main():
@@ -58,7 +59,6 @@ def main():
     class JSONParserOperator(operators.Operator):
         """Parses and validates JSON from text."""
         
-        specification = operators.Specification()
         
         def extract_json(self, text: str) -> Optional[Dict]:
             """Extract JSON from text, handling common LLM quirks."""
@@ -97,7 +97,7 @@ def main():
             
             return None
         
-        def forward(self, *, inputs):
+        def forward(self, inputs):
             text = inputs.get("text", "")
             expected_type = inputs.get("expected_type", dict)
             
@@ -139,7 +139,7 @@ def main():
     
     print("Testing JSON parser:")
     for text in test_cases:
-        result = parser(text=text)
+        result = parser({"text": text})
         if result["success"]:
             print(f"✓ Parsed: {result['parsed']}")
         else:
@@ -153,7 +153,6 @@ def main():
     class ValidatedOutputOperator(operators.Operator):
         """Ensures output matches expected structure with retries."""
         
-        specification = operators.Specification()
         
         def __init__(self, *, output_model: type, max_retries: int = 3):
             self.output_model = output_model
@@ -185,7 +184,7 @@ def main():
             else:
                 return "{}"
         
-        def forward(self, *, inputs):
+        def forward(self, inputs):
             prompt = inputs.get("prompt", "")
             
             for attempt in range(self.max_retries):
@@ -193,7 +192,7 @@ def main():
                 response_text = self.simulate_llm_response(prompt, attempt)
                 
                 # Parse JSON
-                parse_result = self.parser(text=response_text)
+                parse_result = self.parser({"text": response_text})
                 
                 if not parse_result["success"]:
                     if attempt < self.max_retries - 1:
@@ -238,7 +237,7 @@ def main():
     
     print("Testing validated output with retry:")
     for i in range(3):
-        result = validator(prompt="Get product information")
+        result = validator({"prompt": "Get product information"})
         if result["success"]:
             print(f"✓ Success on attempt {result['attempts']}: {result['data'].name}")
         else:
@@ -252,7 +251,6 @@ def main():
     class StructuredLLMOperator(operators.Operator):
         """Complete operator for structured LLM outputs."""
         
-        specification = operators.Specification()
         
         def __init__(self, *, output_model: type):
             self.output_model = output_model
@@ -276,14 +274,14 @@ Please respond with valid JSON matching this schema:
 Remember to include all required fields.
 """
         
-        def forward(self, *, inputs):
+        def forward(self, inputs):
             user_prompt = inputs.get("prompt", "")
             
             # Build structured prompt
             full_prompt = self.build_prompt(user_prompt)
             
             # Get validated output
-            result = self.validator(prompt=full_prompt)
+            result = self.validator({"prompt": full_prompt})
             
             if result["success"]:
                 return {
@@ -317,7 +315,7 @@ Remember to include all required fields.
     
     # Product extraction
     product_extractor = StructuredLLMOperator(output_model=ProductInfo)
-    result = product_extractor(prompt="Extract product details from this text")
+    result = product_extractor({"prompt": "Extract product details from this text"})
     
     if result["success"]:
         product = result["data"]
@@ -331,7 +329,7 @@ Remember to include all required fields.
     # Analysis extraction
     print("\n")
     analyzer = StructuredLLMOperator(output_model=AnalysisResult)
-    result = analyzer(prompt="Analyze this customer review")
+    result = analyzer({"prompt": "Analyze this customer review"})
     
     if result["success"]:
         analysis = result["data"]
@@ -348,17 +346,16 @@ Remember to include all required fields.
     class RobustStructuredOperator(operators.Operator):
         """Robust structured output with multiple fallback strategies."""
         
-        specification = operators.Specification()
         
         def __init__(self, *, output_model: type):
             self.output_model = output_model
             self.primary = StructuredLLMOperator(output_model=output_model)
         
-        def forward(self, *, inputs):
+        def forward(self, inputs):
             prompt = inputs.get("prompt", "")
             
             # Try primary method
-            result = self.primary(prompt=prompt)
+            result = self.primary({"prompt": prompt})
             
             if result["success"]:
                 return {
@@ -369,7 +366,7 @@ Remember to include all required fields.
             
             # Fallback 1: Try with simplified prompt
             simple_prompt = f"Return JSON with these fields: {list(self.output_model.model_fields.keys())}"
-            result = self.primary(prompt=simple_prompt)
+            result = self.primary({"prompt": simple_prompt})
             
             if result["success"]:
                 return {
@@ -395,7 +392,7 @@ Remember to include all required fields.
     
     # Test robust operator
     robust = RobustStructuredOperator(output_model=AnalysisResult)
-    result = robust(prompt="Analyze sentiment")
+    result = robust({"prompt": "Analyze sentiment"})
     
     print(f"Robust Extraction:")
     print(f"  Method: {result['method']}")

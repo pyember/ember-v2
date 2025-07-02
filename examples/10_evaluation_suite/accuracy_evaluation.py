@@ -32,9 +32,7 @@ def main():
     class EvaluationDataset(operators.Operator):
         """Creates test datasets with ground truth."""
         
-        specification = operators.Specification()
-        
-        def forward(self, *, inputs):
+        def forward(self, inputs):
             task_type = inputs.get("task_type", "classification")
             
             if task_type == "classification":
@@ -80,8 +78,8 @@ def main():
     # Create datasets
     dataset_creator = EvaluationDataset()
     
-    classification_data = dataset_creator(task_type="classification")
-    math_data = dataset_creator(task_type="math")
+    classification_data = dataset_creator({"task_type": "classification"})
+    math_data = dataset_creator({"task_type": "math"})
     
     print(f"Created classification dataset: {classification_data['total_cases']} cases")
     print(f"Difficulty: {classification_data['difficulty_distribution']}")
@@ -96,9 +94,7 @@ def main():
     class SimpleSentimentClassifier(operators.Operator):
         """Simple rule-based sentiment classifier."""
         
-        specification = operators.Specification()
-        
-        def forward(self, *, inputs):
+        def forward(self, inputs):
             text = inputs.get("text", "").lower()
             
             positive_words = ["amazing", "great", "excellent", "love", "best", "exceeded", "revolutionary"]
@@ -129,9 +125,8 @@ def main():
     class SimpleMathSolver(operators.Operator):
         """Simple math problem solver."""
         
-        specification = operators.Specification()
         
-        def forward(self, *, inputs):
+        def forward(self, inputs):
             question = inputs.get("question", "")
             
             # Parse and solve (simplified for demo)
@@ -176,13 +171,13 @@ def main():
     
     print("Testing sentiment classifier:")
     test_text = "This product is amazing but has some issues."
-    result = classifier(text=test_text)
+    result = classifier({"text": test_text})
     print(f"Text: '{test_text}'")
     print(f"Prediction: {result['prediction']} (confidence: {result['confidence']:.2f})")
     
     print("\nTesting math solver:")
     test_question = "What is 15 + 27?"
-    result = math_solver(question=test_question)
+    result = math_solver({"question": test_question})
     print(f"Question: '{test_question}'")
     print(f"Answer: {result['answer']} (method: {result['method']})")
     
@@ -194,9 +189,8 @@ def main():
     class AccuracyEvaluator(operators.Operator):
         """Calculates accuracy metrics for classification."""
         
-        specification = operators.Specification()
         
-        def forward(self, *, inputs):
+        def forward(self, inputs):
             predictions = inputs.get("predictions", [])
             ground_truth = inputs.get("ground_truth", [])
             
@@ -244,13 +238,12 @@ def main():
     class EvaluationPipeline(operators.Operator):
         """Complete evaluation pipeline for any system."""
         
-        specification = operators.Specification()
         
         def __init__(self, *, system: operators.Operator, evaluator: operators.Operator):
             self.system = system
             self.evaluator = evaluator
         
-        def forward(self, *, inputs):
+        def forward(self, inputs):
             dataset = inputs.get("dataset", [])
             task_type = inputs.get("task_type", "classification")
             
@@ -263,7 +256,7 @@ def main():
                 for case in dataset:
                     # Get prediction
                     if task_type == "classification":
-                        result = self.system(text=case["text"])
+                        result = self.system({"text": case["text"]})
                         prediction = result["prediction"]
                         truth = case["label"]
                     elif task_type == "math":
@@ -283,7 +276,7 @@ def main():
             
             # Calculate metrics
             if task_type == "classification":
-                metrics = self.evaluator(predictions=predictions, ground_truth=ground_truth)
+                metrics = self.evaluator({"predictions": predictions, "ground_truth": ground_truth})
             else:
                 # For math, simple accuracy
                 correct = sum(1 for p, t in zip(predictions, ground_truth) if p == t)
@@ -357,7 +350,6 @@ def main():
     class ComparisonEvaluator(operators.Operator):
         """Compares multiple systems on same dataset."""
         
-        specification = operators.Specification()
         
         def __init__(self, *, systems: Dict[str, operators.Operator]):
             self.systems = systems
@@ -368,7 +360,7 @@ def main():
                     evaluator=AccuracyEvaluator()
                 )
         
-        def forward(self, *, inputs):
+        def forward(self, inputs):
             dataset = inputs.get("dataset", [])
             task_type = inputs.get("task_type", "classification")
             
@@ -376,7 +368,7 @@ def main():
             rankings = []
             
             for name, pipeline in self.pipeline.items():
-                result = pipeline(dataset=dataset, task_type=task_type)
+                result = pipeline({"dataset": dataset, "task_type": task_type})
                 results[name] = result
                 rankings.append((name, result['overall_metrics']['accuracy']))
             
@@ -406,9 +398,8 @@ def main():
     # Create alternative classifier
     class RandomClassifier(operators.Operator):
         """Baseline random classifier."""
-        specification = operators.Specification()
         
-        def forward(self, *, inputs):
+        def forward(self, inputs):
             return {
                 "prediction": random.choice(["positive", "negative", "neutral"]),
                 "confidence": random.random()

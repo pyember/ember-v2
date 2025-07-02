@@ -28,9 +28,9 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 from _shared.example_utils import print_section_header, print_example_output
 from ember.api import operators
-from ember._internal.types import EmberModel, Field
-from ember._internal.registry.specification import Specification
-from pydantic import field_validator, model_validator
+from ember._internal.types import EmberModel
+from pydantic import Field, field_validator, model_validator
+from typing import Any
 
 
 def main():
@@ -191,24 +191,13 @@ def main():
                 raise ValueError("At least one analysis result must be present")
             return self
     
-    # Create specification
-    class DocumentAnalysisSpec(Specification[AnalysisRequest, AnalysisResult]):
-        """Specification for document analysis."""
-        input_model = AnalysisRequest
-        structured_output = AnalysisResult
-        prompt_template = """Analyze the following document:
-        
-Document: {document}
-Analysis Type: {analysis_type}
-Language: {language}
-
-Provide structured analysis results."""
-    
-    # Operator using the specification
+    # Operator using input_spec and output_spec
     class DocumentAnalyzer(operators.Operator):
         """Analyzes documents with rich validation."""
         
-        specification = DocumentAnalysisSpec()
+        # Specify input and output types directly
+        input_spec = AnalysisRequest
+        output_spec = AnalysisResult
         
         def forward(self, inputs: AnalysisRequest) -> AnalysisResult:
             """Analyze document according to specification."""
@@ -395,9 +384,9 @@ Provide structured analysis results."""
     print("    def clean_text(cls, v):")
     print("        return v.strip()")
     print("")
-    print("class MySpec(Specification[MyInput, MyOutput]):")
-    print("    input_model = MyInput")
-    print("    structured_output = MyOutput")
+    print("class MyOperator(operators.Operator):")
+    print("    input_spec = MyInput")
+    print("    output_spec = MyOutput")
     print("```")
     
     return 0

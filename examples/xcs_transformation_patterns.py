@@ -6,7 +6,7 @@ hybrid tensor/orchestration workflows.
 """
 
 from ember.xcs import jit, vmap, pmap, scan, grad
-from ember.api import model
+from ember.api import models
 import jax.numpy as jnp
 
 
@@ -27,13 +27,13 @@ def analyze_documents(documents):
 
 def summarize_doc(doc):
     """Summarize a single document using LLM."""
-    llm = model("gpt-4")
+    llm = models.instance("gpt-4")
     return llm(f"Summarize this document in 2 sentences: {doc}")
 
 
 def synthesize_summaries(summaries):
     """Combine multiple summaries into final report."""
-    llm = model("claude-3-opus")
+    llm = models.instance("claude-3-opus")
     all_summaries = "\n".join(summaries)
     return llm(f"Synthesize these summaries into a report:\n{all_summaries}")
 
@@ -53,7 +53,7 @@ def classify_texts(text):
     embedding = embed_text(text)
     
     # Classify using LLM (orchestration operation)
-    llm = model("gpt-4")
+    llm = models.instance("gpt-4")
     classification = llm(f"Classify this text: {text}")
     
     # Post-process (tensor operation)
@@ -84,7 +84,7 @@ def iterative_refinement(draft, feedback):
     
     Each iteration improves the draft based on user feedback.
     """
-    llm = model("claude-3-opus")
+    llm = models.instance("claude-3-opus")
     
     # Improve draft based on feedback
     improved = llm(f"""
@@ -173,7 +173,7 @@ def analyze_user_documents(doc):
 
 def analyze_single_document(doc):
     """Analyze a single document."""
-    llm = model("gpt-4")
+    llm = models.instance("gpt-4")
     return llm(f"Analyze this document: {doc}")
 
 
@@ -261,7 +261,7 @@ def strict_pipeline(items):
 
 
 # Resilient: Continue on errors
-@jit(config={"on_error": "continue"})
+@jit
 def resilient_pipeline(items):
     """Pipeline that continues despite errors."""
     return [safe_process(item) for item in items]

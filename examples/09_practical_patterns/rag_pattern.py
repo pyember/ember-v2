@@ -52,16 +52,9 @@ def main():
     # Part 1: Document Chunking
     print("🔍 Part 1: Document Processing\n")
     
-    class DocumentChunker(operators.Operator):
-        """Chunks documents into smaller pieces for indexing."""
-        
-        specification = operators.Specification()
-        
-        def __init__(self, *, chunk_size: int = 100, overlap: int = 20):
-            self.chunk_size = chunk_size
-            self.overlap = overlap
-        
-        def forward(self, *, inputs):
+    def create_document_chunker(chunk_size: int = 100, overlap: int = 20):
+        """Factory to create a document chunker with specific settings."""
+        def chunk_documents(inputs):
             documents = inputs.get("documents", [])
             chunks = []
             
@@ -70,22 +63,22 @@ def main():
                 words = content.split()
                 
                 # Create overlapping chunks
-                for i in range(0, len(words), self.chunk_size - self.overlap):
-                    chunk_words = words[i:i + self.chunk_size]
+                for i in range(0, len(words), chunk_size - overlap):
+                    chunk_words = words[i:i + chunk_size]
                     if len(chunk_words) > 10:  # Minimum chunk size
                         chunks.append({
-                            "doc_id": doc["id"],
-                            "title": doc["title"],
-                            "chunk_id": f"{doc['id']}_chunk_{i // (self.chunk_size - self.overlap)}",
                             "text": " ".join(chunk_words),
+                            "source": doc["title"],
+                            "chunk_id": f"{doc['title']}_chunk_{len(chunks)}",
                             "word_count": len(chunk_words)
                         })
             
             return {"chunks": chunks, "total_chunks": len(chunks)}
+        return chunk_documents
     
     # Chunk the documents
-    chunker = DocumentChunker(chunk_size=50, overlap=10)
-    chunked = chunker(documents=documents)
+    chunker = create_document_chunker(chunk_size=50, overlap=10)
+    chunked = chunker({"documents": documents})
     
     print(f"Created {chunked['total_chunks']} chunks from {len(documents)} documents")
     print_example_output("Sample chunk", chunked['chunks'][0]['text'][:100] + "...")
@@ -98,9 +91,8 @@ def main():
     class SimpleEmbedder(operators.Operator):
         """Creates simple embeddings for demonstration."""
         
-        specification = operators.Specification()
         
-        def forward(self, *, inputs):
+        def forward(self, inputs):
             chunks = inputs.get("chunks", [])
             
             # Simple embedding: word frequency features
@@ -145,7 +137,6 @@ def main():
     class SemanticRetriever(operators.Operator):
         """Retrieves relevant chunks based on query."""
         
-        specification = operators.Specification()
         
         def __init__(self, *, top_k: int = 3):
             self.top_k = top_k
@@ -162,7 +153,7 @@ def main():
             
             return dot_product / (magnitude1 * magnitude2)
         
-        def forward(self, *, inputs):
+        def forward(self, inputs):
             query = inputs.get("query", "")
             embeddings = inputs.get("embeddings", [])
             
@@ -209,9 +200,8 @@ def main():
     class ContextualGenerator(operators.Operator):
         """Generates answers using retrieved context."""
         
-        specification = operators.Specification()
         
-        def forward(self, *, inputs):
+        def forward(self, inputs):
             query = inputs.get("query", "")
             retrieved_chunks = inputs.get("retrieved_chunks", [])
             
@@ -256,7 +246,6 @@ def main():
     class RAGPipeline(operators.Operator):
         """Complete RAG system in a single operator."""
         
-        specification = operators.Specification()
         
         def __init__(self, *, documents: List[Dict], chunk_size: int = 50, top_k: int = 3):
             self.chunker = DocumentChunker(chunk_size=chunk_size)
@@ -268,7 +257,7 @@ def main():
             chunks = self.chunker(documents=documents)
             self.index = self.embedder(chunks=chunks["chunks"])
         
-        def forward(self, *, inputs):
+        def forward(self, inputs):
             query = inputs.get("query", "")
             
             # Retrieve relevant chunks

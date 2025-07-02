@@ -13,7 +13,7 @@ This shows how Ember's specification system follows progressive disclosure:
 Level 1: No specs (just functions) - 90% of cases
 Level 2: Simple types (native Python) - 8% of cases  
 Level 3: EmberModel validation - 1.5% of cases
-Level 4: Full Specification class - 0.5% of cases
+Level 4: Input/Output specs on operators - 0.5% of cases
 """
 
 import sys
@@ -26,10 +26,9 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 from _shared.example_utils import print_section_header, print_example_output
 from ember.api import operators, models
-from ember._internal.types import EmberModel, Field
-from ember._internal.registry.specification import Specification
+from ember._internal.types import EmberModel
 from ember.api.xcs import jit
-from pydantic import field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
 
 
 def main():
@@ -59,7 +58,6 @@ def main():
     print("Level 2: Native Python Types")
     print("=" * 50 + "\n")
     
-    @operators.op
     def analyze_metrics(
         values: List[float],
         threshold: float = 0.5,
@@ -114,7 +112,6 @@ def main():
         score: float = Field(ge=0.0, le=1.0)
         metadata: Optional[Dict[str, Any]] = None
     
-    @operators.op
     def search_documents(query: SearchQuery) -> List[SearchResult]:
         """Operator with EmberModel validation."""
         # Validation happens automatically on input!
@@ -145,9 +142,9 @@ def main():
         print(f"  {r.id}: {r.title} (score: {r.score})")
     print("✓ Automatic validation on inputs and outputs")
     
-    # Level 4: Full Specification Class (0.5% of use cases)
+    # Level 4: Input/Output Specs on Operators (0.5% of use cases)
     print("\n" + "=" * 50)
-    print("Level 4: Full Specification with Prompt Templates")
+    print("Level 4: Input/Output Specs on Operators")
     print("=" * 50 + "\n")
     
     # Complex input model
@@ -201,37 +198,13 @@ def main():
                     raise ValueError("Each recommendation must have 'action' and 'reasoning'")
             return v
     
-    # Full specification with prompt template
-    class InvestmentAnalysisSpec(Specification[InvestmentAnalysisInput, InvestmentAnalysisOutput]):
-        """Complete specification with all features."""
-        input_model = InvestmentAnalysisInput
-        structured_output = InvestmentAnalysisOutput
-        prompt_template = """Analyze the investment portfolio and provide recommendations.
-
-Portfolio Holdings:
-{portfolio}
-
-Market Conditions:
-{market_conditions}
-
-Risk Tolerance: {risk_tolerance}
-Analysis Depth: {analysis_depth}
-
-Provide a comprehensive analysis including:
-1. Overall risk assessment
-2. Specific recommendations
-3. Performance projections
-4. Any warnings or concerns
-
-Format the output according to the specified structure."""
-        
-        check_all_placeholders = True  # Ensure all fields are in template
-    
-    # Operator using full specification
+    # Operator using input_spec and output_spec directly
     class InvestmentAnalyzer(operators.Operator):
-        """Complex operator with full specification."""
+        """Complex operator with input/output specifications."""
         
-        specification = InvestmentAnalysisSpec()
+        # Specify input and output types directly  
+        input_spec = InvestmentAnalysisInput
+        output_spec = InvestmentAnalysisOutput
         
         def __init__(self):
             # Could initialize model here
@@ -288,7 +261,7 @@ Format the output according to the specified structure."""
     print_example_output("Risk Score", f"{result.risk_score:.1f}/10")
     print_example_output("Recommendations", len(result.recommendations))
     print_example_output("Confidence", f"{result.confidence:.0%}")
-    print("✓ Full validation, prompt templates, structured I/O")
+    print("✓ Full validation, structured I/O with operator specs")
     
     # Progression Summary
     print("\n" + "=" * 50)
@@ -315,11 +288,11 @@ Format the output according to the specified structure."""
     print("  ✓ Reusable data models")
     print("  Example: SearchQuery → List[SearchResult]")
     
-    print("\nLevel 4 - Full Specification (0.5%):")
+    print("\nLevel 4 - Input/Output Specs (0.5%):")
     print("  ✓ Complex business logic")
-    print("  ✓ Prompt templates needed")
     print("  ✓ Strict input/output contracts")
     print("  ✓ Cross-field validation")
+    print("  ✓ Operator-level type enforcement")
     print("  Example: InvestmentAnalysis")
     
     print("\n🎯 Progressive Disclosure Benefits:")
