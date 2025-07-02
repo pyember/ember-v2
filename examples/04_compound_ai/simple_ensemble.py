@@ -31,7 +31,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 from _shared.example_utils import print_section_header, print_example_output, timer
 from ember.api import operators, models
-from ember.api.xcs import jit, vmap
+from ember.api.xcs import jit
 
 
 def main():
@@ -247,10 +247,9 @@ def main():
     ]
     
     # Batch process with vmap
-    batch_ensemble = vmap(fast_ensemble)
-    
+    # Process in batch using list comprehension
     with timer("Batch processing 5 questions"):
-        batch_results = batch_ensemble(questions)
+        batch_results = [fast_ensemble(q) for q in questions]
     
     print("\nBatch Results:")
     for i, (q, r) in enumerate(zip(questions, batch_results)):
@@ -286,7 +285,7 @@ def main():
     print("3. Use operators.ensemble() for parallel execution")
     print("4. Add custom aggregation as simple functions")
     print("5. Optimize with @jit for repeated calls")
-    print("6. Process batches with vmap()")
+    print("6. Process batches with list comprehensions")
     print("7. Same patterns work with real models")
     
     print("\nNext: Explore judge synthesis patterns!")

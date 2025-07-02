@@ -25,7 +25,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 from _shared.example_utils import print_section_header, print_example_output
 from ember.api import models
-from ember.api.xcs import jit, vmap
+from ember.api.xcs import jit
 
 
 def main():
@@ -178,8 +178,8 @@ def main():
         "Evaluate this content"
     ]
     
-    batch_process = vmap(process_item)
-    results = batch_process(items)
+    # Process multiple items using list comprehension
+    results = [process_item(item) for item in items]
     
     print("Batch Processing Results:")
     for item, result in zip(items, results):
