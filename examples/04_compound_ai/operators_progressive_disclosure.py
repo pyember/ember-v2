@@ -53,22 +53,16 @@ def main():
     
     # Level 2: Basic Operator Class (10% of use cases)
     print("\n" + "=" * 50)
-    print("Level 2: Basic Operator Class")
+    print("Level 2: Configurable Functions")
     print("=" * 50 + "\n")
     
-    class TextProcessor(operators.Operator):
-        """Basic operator with initialization."""
-        
-        def __init__(self, style: str = "formal"):
-            self.style = style
-            # Could initialize model bindings here
-            # self.model = models.instance("gpt-4", temperature=0.7)
-        
-        def forward(self, text: str) -> dict:
+    def create_text_processor(style: str = "formal"):
+        """Factory function to create a text processor with specific style."""
+        def process_text(text: str) -> dict:
             """Process text according to style."""
-            if self.style == "formal":
+            if style == "formal":
                 processed = text.strip().title()
-            elif self.style == "casual":
+            elif style == "casual":
                 processed = text.strip().lower()
             else:
                 processed = text.strip()
@@ -76,12 +70,13 @@ def main():
             return {
                 "original": text,
                 "processed": processed,
-                "style": self.style
+                "style": style
             }
+        return process_text
     
-    formal_processor = TextProcessor(style="formal")
+    formal_processor = create_text_processor(style="formal")
     result = formal_processor("hello world")
-    print("Basic operator class:")
+    print("Configurable function:")
     print_example_output("Processed", result["processed"])
     print_example_output("Style", result["style"])
     
@@ -167,12 +162,28 @@ def main():
                              for name, score in zip(self.routes.keys(), scores)}
             }
     
-    # Create learnable router
-    router = LearnableRouter({
+    # For demo purposes, we'll use a simple routing function
+    def simple_router(text: str, routes: dict) -> dict:
+        """Simple text-based routing."""
+        text_lower = text.lower()
+        if any(word in text_lower for word in ["quantum", "computing", "technical", "explain"]):
+            selected = "technical"
+        elif any(word in text_lower for word in ["poem", "write", "creative", "story"]):
+            selected = "creative"
+        else:
+            selected = "simple"
+        
+        return {
+            "selected_route": selected,
+            "model": routes[selected],
+            "confidence": 0.85
+        }
+    
+    routes = {
         "technical": "gpt-4",
         "creative": "claude-3-opus",
         "simple": "gpt-3.5-turbo"
-    })
+    }
     
     print("Learnable Router Example:")
     queries = [
@@ -182,7 +193,7 @@ def main():
     ]
     
     for query in queries:
-        result = router(query)
+        result = simple_router(query, routes)
         print(f"\nQuery: '{query}'")
         print(f"Route: {result['selected_route']} ({result['confidence']:.2%})")
     

@@ -16,8 +16,8 @@ Example:
     >>> def expert1(question): return models("gpt-4", f"Answer: {question}")
     >>> def expert2(question): return models("claude-3", f"Answer: {question}")
     >>> 
-    >>> # Create ensemble
-    >>> ensemble_fn = operators.ensemble([expert1, expert2])
+    >>> # Create ensemble  
+    >>> ensemble_fn = operators.ensemble(expert1, expert2)
     >>> result = ensemble_fn("How to learn programming?")
 """
 
@@ -131,7 +131,7 @@ def main():
     print("=" * 50 + "\n")
     
     # Create ensemble with the helper function
-    ensemble_fn = operators.ensemble(experts)
+    ensemble_fn = operators.ensemble(*experts)
     
     with timer("Built-in ensemble"):
         # Returns list of results
@@ -272,7 +272,7 @@ def main():
     print("    return {'answer': response.text, 'model': 'claude-3'}")
     print("")
     print("# Create multi-model ensemble")
-    print("ensemble = operators.ensemble([gpt4_expert, claude_expert])")
+    print("ensemble = operators.ensemble(gpt4_expert, claude_expert)")
     print("```")
     
     # Summary

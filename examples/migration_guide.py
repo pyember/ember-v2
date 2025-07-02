@@ -199,7 +199,7 @@ def expert2(question):
     return models("claude-3", question).text
 
 # Use built-in ensemble
-ensemble = operators.ensemble([expert1, expert2])
+ensemble = operators.ensemble(expert1, expert2)
 results = ensemble("What is machine learning?")
 
 # Or compose manually
