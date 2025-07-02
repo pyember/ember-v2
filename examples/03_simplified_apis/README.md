@@ -14,3 +14,4 @@ This directory contains examples showcasing Ember's simplified APIs after the ex
 - `zero_config_jit.py` - Shows how JIT "just works" without configuration
 - `natural_api_showcase.py` - Demonstrates the natural Python API
 - `simplified_workflows.py` - Complete workflows with minimal boilerplate
+- `model_binding_patterns.py` - Reuse models efficiently

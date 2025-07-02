@@ -42,20 +42,27 @@ def example_jit_with_complex_function():
     """JIT works with complex functions automatically."""
     print("\n=== Complex Function JIT ===\n")
     
+    # Mock functions for demonstration (avoiding model calls in examples)
+    def extract_points(text: str, max_points: int) -> str:
+        return f"Key point 1, Key point 2, Key point {max_points}"
+    
+    def generate_summary(text: str) -> str:
+        return f"Summary of: {text[:50]}..."
+    
+    def categorize_text(text: str) -> str:
+        return "tech" if "AI" in text else "general"
+    
     @jit  # That's it - no configuration needed!
     def analyze_and_summarize(article: str, max_points: int = 3) -> dict:
-        """Complex function with multiple LLM calls."""
+        """Complex function with multiple processing steps."""
         # Extract key points
-        points_prompt = f"Extract {max_points} key points from: {article}"
-        points = models("gpt-3.5-turbo", points_prompt).text
+        points = extract_points(article, max_points)
         
-        # Generate summary
-        summary_prompt = f"Summarize in one sentence: {article}"
-        summary = models("gpt-3.5-turbo", summary_prompt).text
+        # Generate summary  
+        summary = generate_summary(article)
         
         # Determine category
-        category_prompt = f"Categorize this article (tech/business/science/other): {article}"
-        category = models("gpt-3.5-turbo", category_prompt).text
+        category = categorize_text(article)
         
         return {
             "key_points": points,
@@ -67,58 +74,77 @@ def example_jit_with_complex_function():
     article = "Recent advances in AI have shown that simpler APIs often lead to better adoption..."
     result = analyze_and_summarize(article)
     print(f"Analysis complete: {result}")
+    print(f"Function stats: {analyze_and_summarize.stats()}")
 
 
 def example_conditional_optimization():
     """JIT handles conditional logic automatically."""
     print("\n=== Conditional Logic with JIT ===\n")
     
+    # Mock functions for demonstration
+    def classify_query(query: str) -> str:
+        if "?" in query:
+            return "question"
+        elif any(cmd in query.lower() for cmd in ["turn", "set", "start", "stop"]):
+            return "command"
+        else:
+            return "statement"
+    
+    def process_question(query: str) -> str:
+        return f"Answer to: {query}"
+    
+    def process_command(query: str) -> str:
+        return f"Executing: {query}"
+    
+    def process_statement(query: str) -> str:
+        return f"Acknowledged: {query}"
+    
     @jit
     def smart_responder(query: str, verbose: bool = False) -> str:
         """Function with conditional paths - JIT handles it all."""
         # Classify query type
-        classification = models("gpt-3.5-turbo", f"Classify as question/statement/command: {query}").text
+        classification = classify_query(query)
         
-        if "question" in classification.lower():
-            response = models("gpt-3.5-turbo", f"Answer this question: {query}").text
+        if classification == "question":
+            response = process_question(query)
             if verbose:
-                explanation = models("gpt-3.5-turbo", f"Explain the answer: {response}").text
-                return f"{response}\n\nExplanation: {explanation}"
+                response += f"\n\nExplanation: This was classified as a {classification}"
             return response
-        elif "command" in classification.lower():
-            return models("gpt-3.5-turbo", f"Respond to command: {query}").text
+        elif classification == "command":
+            return process_command(query)
         else:
-            return models("gpt-3.5-turbo", f"Acknowledge: {query}").text
+            return process_statement(query)
     
     # Different execution paths, same simple API
     print(smart_responder("What is the capital of France?"))
     print(smart_responder("Turn on the lights", verbose=True))
     print(smart_responder("The weather is nice today"))
+    print(f"Function stats: {smart_responder.stats()}")
 
 
 def main():
     """Run all zero-config JIT examples."""
     import os
-    if not any(os.environ.get(key) for key in ['OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'GOOGLE_API_KEY']):
-        print("\n⚠️  No API keys found. This example requires model API access.")
-        print("Run 'ember init' to configure your API keys.\n")
-        print("Showing example code structure instead...\n")
-        
-        # Show the code structure
-        print("Example: Basic JIT usage")
-        print("```python")
-        print("@jit  # That's all you need!")
-        print("def my_function(input):")
-        print("    # Your logic here")
-        print("    return result")
-        print("```")
-        return
     
-    example_basic_jit()
+    # Check if we have API keys for the basic example
+    has_api_keys = any(os.environ.get(key) for key in ['OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'GOOGLE_API_KEY'])
+    
+    if has_api_keys:
+        example_basic_jit()
+    else:
+        print("\n⚠️  No API keys found for model calls.")
+        print("Skipping basic model example, showing JIT with regular functions...\n")
+    
+    # These examples work without API keys since they use mock functions
     example_jit_with_complex_function()
     example_conditional_optimization()
     
     print("\n✨ Key takeaway: JIT just works - no configuration needed!")
+    
+    # Show overall stats
+    from ember.api.xcs import get_jit_stats
+    final_stats = get_jit_stats()
+    print(f"\nOverall JIT Stats: {final_stats}")
 
 
 if __name__ == "__main__":

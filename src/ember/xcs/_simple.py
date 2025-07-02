@@ -176,9 +176,8 @@ def _should_profile(config: Optional['Config']) -> bool:
     if config and hasattr(config, 'profile'):
         return config.profile
     
-    # Default: profile 1% of executions for continuous learning
-    import random
-    return random.random() < 0.01
+    # Default: always profile for now to provide stats
+    return True
 
 
 def _explain_optimization(func: Callable, optimization_cache: dict) -> str:

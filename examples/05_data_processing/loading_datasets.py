@@ -113,7 +113,7 @@ def main():
     
     # Part 4: Batch Processing
     print("\n" + "=" * 50)
-    print("Part 4: Batch Processing")
+    print("Part 4: Batch Processing using vmap()")
     print("=" * 50 + "\n")
     
     def process_batch(items: List[dict]) -> List[dict]:

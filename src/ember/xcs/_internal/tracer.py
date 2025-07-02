@@ -6,6 +6,8 @@ No AST analysis, no magic - just recording what actually happens.
 
 import sys
 import functools
+import time
+import signal
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 from dataclasses import dataclass, field
 import threading
@@ -71,13 +73,21 @@ class PythonTracer:
             self.current_dependencies = set()
             self.tracing = True
             
-        # Set up tracing
+        # Set up tracing with timeout protection
         old_trace = sys.gettrace()
         sys.settrace(self._trace_calls)
         
+        # Add timeout protection
+        start_time = time.time()
+        timeout_seconds = 5.0  # 5 second timeout for tracing
+        
         try:
-            # Execute function
+            # Execute function with timeout check
             result = func(*args, **kwargs)
+            
+            # Check if we exceeded timeout
+            if time.time() - start_time > timeout_seconds:
+                raise TracingError("Function tracing timed out - too complex for analysis")
             
             # Record the main function as an operation
             main_op = Operation(
@@ -127,8 +137,8 @@ class PythonTracer:
         elif event == 'return':
             # Skip returns from frames we didn't enter
             if frame is self.target_frame:
-                # Don't record the target frame return here - we do it in trace_function
-                return self._trace_calls
+                # Target frame is returning - stop tracing
+                return None
                 
             # Record the operation
             func_name = frame.f_code.co_name
