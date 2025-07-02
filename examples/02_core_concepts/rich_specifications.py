@@ -419,7 +419,7 @@ def main():
     print("    output_spec = MyOutput")
     print("```")
     
-    print("\nNext: Learn about simplified APIs in '03_simplified_apis'")
+    print("\nNext: Learn about simplified APIs in 'error_handling.py'")
     
     return 0
 
