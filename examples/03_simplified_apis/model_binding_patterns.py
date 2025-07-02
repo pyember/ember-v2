@@ -18,14 +18,12 @@ ModelBinding is a key innovation in Ember that:
 
 import sys
 from pathlib import Path
-from typing import List
-import time
 
 sys.path.append(str(Path(__file__).parent.parent))
 
 from _shared.example_utils import print_section_header, print_example_output
 from ember.api import models
-from ember.api.xcs import jit
+from ember.api.xcs import jit, vmap
 
 
 def main():
@@ -178,8 +176,8 @@ def main():
         "Evaluate this content"
     ]
     
-    # Process multiple items using list comprehension
-    results = [process_item(item) for item in items]
+    batch_process = vmap(process_item)
+    results = batch_process(items)
     
     print("Batch Processing Results:")
     for item, result in zip(items, results):

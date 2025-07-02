@@ -381,6 +381,7 @@ def main():
     print("        # Fallback to cheaper model")
     print("        return models('gpt-3.5-turbo', prompt).text")
     print("```")
+    print("\nNext: Explore the rich_specifications.py example!")
     
     return 0
 

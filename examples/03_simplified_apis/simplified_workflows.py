@@ -5,7 +5,7 @@ No base classes, no complex configuration - just Python that works.
 """
 
 from ember.api import models, data, eval
-from ember.api.xcs import jit
+from ember.api.xcs import jit, vmap
 import json
 
 
