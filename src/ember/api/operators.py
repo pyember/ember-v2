@@ -25,11 +25,24 @@ Basic usage:
 """
 
 from ember.api.decorators import op
-from ember.operators import Operator, chain, ensemble
+from ember.operators import (
+    Operator, ModelCall, Ensemble, Chain, Router, LearnableRouter, 
+    ModelText, ExtractText, chain, ensemble, router
+)
 
 __all__ = [
     "Operator",
-    "chain",
-    "ensemble",
     "op",
+    # Common operators
+    "ModelCall",
+    "Ensemble", 
+    "Chain",
+    "Router",
+    "LearnableRouter", 
+    "ModelText",
+    "ExtractText",
+    # Convenience functions
+    "chain",
+    "ensemble", 
+    "router",
 ]
