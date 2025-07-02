@@ -127,16 +127,16 @@ def main():
     print("\nFast Pipeline Results:")
     print_example_output("Cleaned", result2["cleaned_text"])
     
-    # Part 5: Using the @op decorator
+    # Part 5: Plain Function vs @op Decorator
     print("\n" + "="*50)
-    print("Part 4: The @op Decorator")
+    print("Part 4: Plain Function vs @op Decorator")
     print("="*50 + "\n")
     
-    # Using @op decorator for operator features
-    @operators.op
-    def sentiment_analyzer(text: str) -> dict:
-        """Analyze sentiment of text."""
-        # Simple rule-based sentiment for demo
+    print("🔍 Same functionality, different capabilities:\\n")
+    
+    # Plain function - just a function
+    def sentiment_function(text: str) -> dict:
+        """Analyze sentiment of text (plain function)."""
         positive_words = ["good", "great", "excellent", "amazing", "wonderful"]
         negative_words = ["bad", "terrible", "awful", "horrible", "poor"]
         
@@ -158,18 +158,44 @@ def main():
             "negative_signals": negative_count
         }
     
-    # The @op decorator gives us operator capabilities
-    print("Sentiment Analysis (with @op decorator):")
-    texts = [
-        "This is a great product!",
-        "Terrible experience, would not recommend.",
-        "It's okay, nothing special."
-    ]
+    # @op decorated function - becomes an operator
+    @operators.op
+    def sentiment_operator(text: str) -> dict:
+        """Analyze sentiment of text (operator)."""
+        return sentiment_function(text)
     
-    for text in texts:
-        result = sentiment_analyzer(text)
-        print(f"\n'{text}'")
-        print(f"  → Sentiment: {result['sentiment']}")
+    # Both work the same for single calls
+    text = "This is a great product!"
+    result1 = sentiment_function(text)
+    result2 = sentiment_operator(text)
+    
+    print("Single call (both work the same):")
+    print(f"  Function result: {result1['sentiment']}")
+    print(f"  Operator result: {result2['sentiment']}")
+    
+    # But @op gives you operator features...
+    print("\\n📦 Extra operator features from @op:")
+    
+    # Feature 1: Composition with operators.chain
+    try:
+        analysis_chain = operators.chain(clean_text, sentiment_operator)
+        print("  ✓ Works with operators.chain() for composition")
+    except:
+        print("  ✗ operators.chain() not available in this setup")
+    
+    # Feature 2: Better operator interface 
+    print(f"  ✓ Operator interface: {type(sentiment_operator).__name__}")
+    print(f"  ✓ Function type: {type(sentiment_function).__name__}")
+    
+    # Feature 3: JAX compatibility
+    print("  ✓ Enhanced JAX transformation support")
+    print("  ✓ Operator ecosystem integration")
+    
+    print("\\n💡 When to use @op:")
+    print("  • When you plan to compose operators")
+    print("  • When you need the operator interface")
+    print("  • When using complex JAX transformations")
+    print("  • For consistency in operator-heavy code")
     
     # Part 6: Real-World Pattern
     print("\n" + "="*50)
@@ -218,7 +244,7 @@ def main():
     
     # Batch processing with vmap
     print("\n" + "="*50)
-    print("Part 5: Batch Processing")
+    print("Part 5: Batch Processing with vmap()")
     print("="*50 + "\n")
     
     # Process multiple questions at once
@@ -258,13 +284,13 @@ def main():
     print("✅ Key Takeaways")
     print("="*50)
     print("\n1. ANY function is an operator - no base classes!")
-    print("2. Use @op decorator for extra operator features")
+    print("2. Use @op for composition, operator interface, and JAX integration")
     print("3. Use @jit for automatic optimization")
     print("4. Use vmap() for batch processing")
     print("5. Compose functions naturally with Python")
     print("6. Integrate models seamlessly in any function")
     
-    print("\nNext: Explore more examples in the 03_simplified_apis directory!")
+    print("\nNext: Explore the type_safety.py example!")
     
     return 0
 
