@@ -21,7 +21,7 @@ For the 10% who need more control:
 """
 
 # Re-export the simple API
-from ember.xcs import jit, get_jit_stats
+from ember.xcs import jit, vmap, get_jit_stats
 
 # Config for advanced users (hidden by default)
 # Users must explicitly import this
@@ -31,8 +31,9 @@ from ember.xcs.config import Config as _Config
 Config = _Config
 
 __all__ = [
-    # The 90% API - just these two functions
+    # The 90% API - core functions
     'jit',
+    'vmap',
     'get_jit_stats',
     # Config is available but not advertised in __all__
 ]
