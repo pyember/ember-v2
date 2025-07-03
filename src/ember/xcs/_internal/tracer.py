@@ -128,7 +128,7 @@ class PythonTracer:
             # Skip returns from frames we didn't enter
             if frame is self.target_frame:
                 # Don't record the target frame return here - we do it in trace_function
-                return self._trace_calls
+                return None
                 
             # Record the operation
             func_name = frame.f_code.co_name
@@ -144,7 +144,7 @@ class PythonTracer:
                 # Handle comprehensions specially
                 self._handle_comprehension_return(frame, arg)
                 
-        return self._trace_calls
+        return None
     
     def _is_in_target_frame(self, frame) -> bool:
         """Check if frame is within our target function."""
