@@ -25,7 +25,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 from _shared.example_utils import print_section_header, print_example_output
 from ember.api import models
-from ember.api.xcs import jit, get_jit_stats
+from ember.api.xcs import jit, vmap, get_jit_stats
 
 
 def main():
@@ -194,12 +194,136 @@ def main():
     print_example_output("Compiled functions", len(stats) if stats else "0")
     print("\nNote: Full statistics available with get_jit_stats()")
     
+    # Part 6: Advanced Patterns - vmap for Batching
+    print("\n" + "=" * 50)
+    print("Part 6: Batch Processing with vmap")
+    print("=" * 50 + "\n")
+    
+    def process_single_text(text: str) -> dict:
+        """Process a single text - will be batched with vmap."""
+        words = text.split()
+        return {
+            "word_count": len(words),
+            "avg_word_length": sum(len(w) for w in words) / len(words) if words else 0,
+            "has_numbers": any(c.isdigit() for c in text)
+        }
+    
+    # Create batched version using vmap
+    process_texts_batch = jit(vmap(process_single_text))
+    
+    # Test with batch of texts
+    texts = [
+        "Hello world from Ember",
+        "JIT compilation makes things fast",
+        "Batch processing with vmap is powerful",
+        "Zero-config optimization for AI systems"
+    ]
+    
+    print("Processing texts in batch:")
+    start = time.time()
+    results = process_texts_batch(texts)
+    batch_duration = time.time() - start
+    
+    print_example_output("Batch size", len(texts))
+    print_example_output("Batch time", f"{batch_duration:.4f}s")
+    print_example_output("Per item", f"{batch_duration/len(texts):.4f}s")
+    
+    # Compare with sequential processing
+    print("\nComparing with sequential processing:")
+    start = time.time()
+    sequential_results = [process_single_text(text) for text in texts]
+    sequential_duration = time.time() - start
+    
+    print_example_output("Sequential time", f"{sequential_duration:.4f}s")
+    print_example_output("Speedup", f"{sequential_duration/batch_duration:.1f}x faster")
+    
+    # Part 7: Real-world Document Processing Pipeline
+    print("\n" + "=" * 50)
+    print("Part 7: Production Pipeline Example")
+    print("=" * 50 + "\n")
+    
+    @jit
+    def production_pipeline(documents: List[str]) -> Dict[str, any]:
+        """Production-ready document processing pipeline."""
+        # Stage 1: Validate inputs
+        valid_docs = [doc for doc in documents if doc and len(doc.strip()) > 0]
+        
+        # Stage 2: Extract features from each document
+        doc_features = []
+        for doc in valid_docs:
+            words = doc.split()
+            sentences = doc.split('.')
+            
+            features = {
+                "word_count": len(words),
+                "sentence_count": len(sentences),
+                "avg_word_length": sum(len(w) for w in words) / len(words) if words else 0,
+                "complexity_score": len(words) * 0.1 + len(sentences) * 0.3
+            }
+            doc_features.append(features)
+        
+        # Stage 3: Aggregate statistics
+        if not doc_features:
+            return {"error": "No valid documents to process"}
+        
+        total_words = sum(f["word_count"] for f in doc_features)
+        total_sentences = sum(f["sentence_count"] for f in doc_features)
+        avg_complexity = sum(f["complexity_score"] for f in doc_features) / len(doc_features)
+        
+        # Stage 4: Classify document types
+        doc_types = []
+        for features in doc_features:
+            if features["complexity_score"] > 10:
+                doc_types.append("complex")
+            elif features["complexity_score"] > 5:
+                doc_types.append("medium")
+            else:
+                doc_types.append("simple")
+        
+        return {
+            "processed_docs": len(valid_docs),
+            "total_words": total_words,
+            "total_sentences": total_sentences,
+            "avg_complexity": avg_complexity,
+            "document_types": doc_types,
+            "type_distribution": {
+                "simple": doc_types.count("simple"),
+                "medium": doc_types.count("medium"),
+                "complex": doc_types.count("complex")
+            }
+        }
+    
+    # Test the pipeline
+    sample_docs = [
+        "This is a simple document with basic content.",
+        "This document contains more detailed information about various topics. It has multiple sentences and covers several concepts in depth.",
+        "A comprehensive analysis of advanced topics requires detailed explanations. This document explores complex relationships between different elements. It provides thorough coverage of intricate subjects.",
+        "",  # Empty document (will be filtered)
+        "Short doc.",
+        "Medium length document with several sentences. It contains enough content to be classified appropriately."
+    ]
+    
+    print("Running production pipeline:")
+    start = time.time()
+    pipeline_result = production_pipeline(sample_docs)
+    pipeline_duration = time.time() - start
+    
+    print_example_output("Pipeline result", pipeline_result)
+    print_example_output("Processing time", f"{pipeline_duration:.4f}s")
+    
     print("\n🎉 Key Takeaways:")
     print("  1. @jit provides zero-config optimization")
     print("  2. First call includes compilation overhead")
     print("  3. Subsequent calls are much faster")
     print("  4. Automatic caching for repeated inputs")
-    print("  5. Works with any Python function")
+    print("  5. vmap enables efficient batch processing")
+    print("  6. Complex pipelines benefit from JIT optimization")
+    print("  7. Real-world performance gains with minimal effort")
+    
+    print("\n📚 Next Steps:")
+    print("  • Explore batch_processing.py for advanced batching")
+    print("  • Check optimization_techniques.py for more patterns")
+    print("  • See ../09_practical_patterns/ for real-world examples")
     
     return 0
 

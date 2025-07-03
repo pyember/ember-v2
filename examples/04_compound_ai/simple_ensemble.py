@@ -368,7 +368,7 @@ def main():
     print("7. Process batches with vmap()")
     print("8. Graceful fallback when API keys unavailable")
 
-    print("\nNext: Explore judge synthesis patterns (operators_progressive_disclosure.py)!")
+    print("\nNext: Explore judge synthesis patterns (judge_synthesis.py)!")
 
     return 0
 
