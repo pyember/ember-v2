@@ -5,6 +5,7 @@ was only returning the last computed value.
 """
 
 import pytest
+
 from ember.xcs import jit
 
 

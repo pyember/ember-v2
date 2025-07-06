@@ -1,6 +1,7 @@
 """Tests for examples in 06_performance_optimization directory."""
 
 import pytest
+
 from .test_base import ExampleGoldenTest
 
 

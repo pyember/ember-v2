@@ -113,10 +113,7 @@ def fix_imports_in_file(file_path: Path) -> bool:
         content = re.sub(r"request\.prompt", r"prompt", content)
 
         # Add _get_api_key_from_env method where needed
-        if (
-            "class.*Provider.*BaseProvider" in content
-            and "_get_api_key_from_env" not in content
-        ):
+        if "class.*Provider.*BaseProvider" in content and "_get_api_key_from_env" not in content:
             # Find class definitions and add the method
             lines = content.split("\n")
             new_lines = []

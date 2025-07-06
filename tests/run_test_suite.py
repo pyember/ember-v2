@@ -7,8 +7,8 @@ with appropriate configurations.
 
 import argparse
 import os
-import sys
 import subprocess
+import sys
 from pathlib import Path
 
 
@@ -46,13 +46,9 @@ def main():
         help="Test category to run",
     )
     parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
-    parser.add_argument(
-        "-x", "--exitfirst", action="store_true", help="Exit on first failure"
-    )
+    parser.add_argument("-x", "--exitfirst", action="store_true", help="Exit on first failure")
     parser.add_argument("-k", "--keyword", help="Run tests matching keyword")
-    parser.add_argument(
-        "--coverage", action="store_true", help="Run with coverage reporting"
-    )
+    parser.add_argument("--coverage", action="store_true", help="Run with coverage reporting")
     parser.add_argument("--parallel", action="store_true", help="Run tests in parallel")
 
     args = parser.parse_args()

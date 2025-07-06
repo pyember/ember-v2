@@ -1,9 +1,10 @@
 """Test that PRNG key batching works correctly with operators."""
 
+from typing import List
+
 import jax
 import jax.numpy as jnp
 import pytest
-from typing import List
 
 from ember._internal.module import Module
 from ember.xcs import vmap
@@ -144,9 +145,7 @@ def test_mixed_key_and_array_batching():
         def __init__(self, scale: float = 1.0):
             self.scale = scale
 
-        def forward(
-            self, x: jnp.ndarray, key: jax.random.PRNGKey, threshold: float
-        ) -> jnp.ndarray:
+        def forward(self, x: jnp.ndarray, key: jax.random.PRNGKey, threshold: float) -> jnp.ndarray:
             # Use key for random mask
             mask = jax.random.bernoulli(key, threshold, x.shape)
             return x * mask * self.scale

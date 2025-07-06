@@ -83,9 +83,7 @@ class Operator(EmberModule, Generic[T_in, T_out]):
         """Initialize the operator."""
         super().__init__(**kwargs)
 
-    def __call__(
-        self, *, inputs: Union[T_in, Dict[str, Any]] = None, **kwargs
-    ) -> T_out:
+    def __call__(self, *, inputs: Union[T_in, Dict[str, Any]] = None, **kwargs) -> T_out:
         """Call the operator's forward method."""
         if inputs is None:
             inputs = kwargs

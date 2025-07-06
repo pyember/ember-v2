@@ -8,13 +8,14 @@ Following CLAUDE.md principles:
 """
 
 import time
-import pytest
+from typing import Any, Dict, List, Tuple
+
 import jax
 import jax.numpy as jnp
-from typing import List, Tuple, Any, Dict
+import pytest
 
-from ember.xcs import vmap, pmap, scan, grad
 from ember.operators import Operator
+from ember.xcs import grad, pmap, scan, vmap
 
 
 class TensorOperator(Operator):
@@ -128,9 +129,7 @@ class TestVmap:
     def test_vmap_hybrid_operations(self):
         """Test vmap on hybrid operations with smart batching."""
 
-        def hybrid_function(
-            tensor_x: jnp.ndarray, text_x: str, key: jax.random.PRNGKey
-        ):
+        def hybrid_function(tensor_x: jnp.ndarray, text_x: str, key: jax.random.PRNGKey):
             op = HybridOperator(tensor_x.shape[0], key)
             return op((tensor_x, text_x))
 
@@ -155,9 +154,7 @@ class TestVmap:
     def test_vmap_with_in_axes(self):
         """Test vmap with custom in_axes specification."""
 
-        def multi_arg_function(
-            x: jnp.ndarray, scale: float, bias: jnp.ndarray
-        ) -> jnp.ndarray:
+        def multi_arg_function(x: jnp.ndarray, scale: float, bias: jnp.ndarray) -> jnp.ndarray:
             return x * scale + bias
 
         batch_size = 5
@@ -186,9 +183,7 @@ class TestPmap:
     def test_pmap_tensor_operations(self):
         """Test pmap on tensor operations (single or multi device)."""
 
-        def distributed_tensor_op(
-            x: jnp.ndarray, key: jax.random.PRNGKey
-        ) -> jnp.ndarray:
+        def distributed_tensor_op(x: jnp.ndarray, key: jax.random.PRNGKey) -> jnp.ndarray:
             op = TensorOperator(x.shape[0], key)
             return op(x)
 
@@ -208,9 +203,7 @@ class TestPmap:
         if jax.device_count() == 1:
             # On single device, pmap should still work but run sequentially
             # We simulate by manually mapping
-            results = jnp.stack(
-                [distributed_tensor_op(x[i], keys[i]) for i in range(n_replicas)]
-            )
+            results = jnp.stack([distributed_tensor_op(x[i], keys[i]) for i in range(n_replicas)])
         else:
             # On multiple devices, use actual pmap
             results = pmapped_fn(x[: jax.device_count()], keys[: jax.device_count()])
@@ -286,9 +279,7 @@ class TestScan:
     def test_scan_tensor_operations(self):
         """Test scan on tensor operations uses JAX scan."""
 
-        def step_fn(
-            carry: jnp.ndarray, x: jnp.ndarray
-        ) -> Tuple[jnp.ndarray, jnp.ndarray]:
+        def step_fn(carry: jnp.ndarray, x: jnp.ndarray) -> Tuple[jnp.ndarray, jnp.ndarray]:
             # Simple RNN-like step
             new_carry = jnp.tanh(carry + x)
             output = new_carry * 2
@@ -378,9 +369,7 @@ class TestScan:
             def __init__(self, history_weight: float = 0.9):
                 self.history_weight = history_weight
 
-            def forward(
-                self, state_and_input: Tuple[jnp.ndarray, jnp.ndarray]
-            ) -> jnp.ndarray:
+            def forward(self, state_and_input: Tuple[jnp.ndarray, jnp.ndarray]) -> jnp.ndarray:
                 state, x = state_and_input
                 return state * self.history_weight + x * (1 - self.history_weight)
 
@@ -458,9 +447,7 @@ class TestGrad:
     def test_grad_with_multiple_operators(self):
         """Test grad through multiple operators."""
 
-        def multi_op_loss(
-            ops: List[TensorOperator], x: jnp.ndarray, y: jnp.ndarray
-        ) -> float:
+        def multi_op_loss(ops: List[TensorOperator], x: jnp.ndarray, y: jnp.ndarray) -> float:
             # Chain operators
             result = x
             for op in ops:
@@ -558,9 +545,7 @@ class TestTransformComposition:
             pred = op(x)
             return jnp.mean((pred - y) ** 2)
 
-        def batch_loss(
-            op: TensorOperator, x_batch: jnp.ndarray, y_batch: jnp.ndarray
-        ) -> float:
+        def batch_loss(op: TensorOperator, x_batch: jnp.ndarray, y_batch: jnp.ndarray) -> float:
             # vmap the loss computation
             losses = vmap(lambda x, y: single_loss(op, x, y))(x_batch, y_batch)
             return jnp.mean(losses)
@@ -595,9 +580,7 @@ class TestTransformComposition:
             vmapped_apply = vmap(create_and_apply)
 
             # Apply to get ensemble predictions
-            predictions = vmapped_apply(
-                keys, jnp.broadcast_to(x, (keys.shape[0], x.shape[0]))
-            )
+            predictions = vmapped_apply(keys, jnp.broadcast_to(x, (keys.shape[0], x.shape[0])))
 
             # Average predictions
             return jnp.mean(predictions, axis=0)

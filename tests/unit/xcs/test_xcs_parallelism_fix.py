@@ -4,7 +4,9 @@ Clean tests without the tracing noise.
 """
 
 import time
+
 import pytest
+
 from ember.xcs import jit
 
 
@@ -93,7 +95,7 @@ class TestXCSParallelismFix:
         diamond_pattern()
         second_time = time.time() - start
 
-        print(f"\nDiamond pattern:")
+        print("\nDiamond pattern:")
         print(f"First call: {first_time:.3f}s")
         print(f"Second call: {second_time:.3f}s")
 

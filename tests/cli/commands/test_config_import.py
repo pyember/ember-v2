@@ -2,16 +2,16 @@
 
 import json
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import yaml
 
 from ember.cli.commands.config_import import (
-    cmd_import,
+    _backup_config,
     _find_external_config,
     _migrate_config,
-    _backup_config,
     _show_required_env_vars,
+    cmd_import,
 )
 
 
@@ -101,9 +101,7 @@ class TestMigrateConfig:
         assert migrated["model"] == "o4-mini"
         assert migrated["provider"] == "openai"
         assert migrated["providers"]["openai"]["api_key"] == "${OPENAI_API_KEY}"
-        assert (
-            migrated["providers"]["openai"]["base_url"] == "https://api.openai.com/v1"
-        )
+        assert migrated["providers"]["openai"]["base_url"] == "https://api.openai.com/v1"
         assert "_migration" in migrated
 
     def test_migrate_with_external_fields(self):
@@ -119,9 +117,7 @@ class TestMigrateConfig:
         migrated = _migrate_config(external_config)
 
         assert migrated["_migration"]["original_fields"]["approvalMode"] == "suggest"
-        assert (
-            migrated["_migration"]["original_fields"]["fullAutoErrorMode"] == "ask-user"
-        )
+        assert migrated["_migration"]["original_fields"]["fullAutoErrorMode"] == "ask-user"
         assert migrated["_migration"]["original_fields"]["notify"] is True
 
     def test_migrate_multiple_providers(self):

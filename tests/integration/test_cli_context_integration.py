@@ -56,9 +56,7 @@ class TestCLIContextIntegration:
     def test_configure_persistence(self, isolated_env):
         """Configuration persists across invocations."""
         # Set config via CLI
-        with patch(
-            "sys.argv", ["ember", "configure", "set", "models.default", "gpt-4"]
-        ):
+        with patch("sys.argv", ["ember", "configure", "set", "models.default", "gpt-4"]):
             assert main() == 0
 
         # Verify file created
@@ -164,10 +162,7 @@ models:
                         # Context should have wizard's changes
                         ctx = EmberContext.current()
                         assert ctx.get_config("models.default") == "gpt-4"
-                        assert (
-                            ctx.get_credential("openai", "OPENAI_API_KEY")
-                            == "wizard-key"
-                        )
+                        assert ctx.get_credential("openai", "OPENAI_API_KEY") == "wizard-key"
 
 
 class TestEndToEndWorkflows:
@@ -182,9 +177,7 @@ class TestEndToEndWorkflows:
                 assert ret == 1  # Expected failure
 
         # 2. User sets config manually
-        with patch(
-            "sys.argv", ["ember", "configure", "set", "models.default", "gpt-3.5-turbo"]
-        ):
+        with patch("sys.argv", ["ember", "configure", "set", "models.default", "gpt-3.5-turbo"]):
             assert main() == 0
 
         # 3. User saves API key
@@ -221,9 +214,7 @@ class TestEndToEndWorkflows:
                 assert main() == 0
 
         # 3. Configure chosen model
-        with patch(
-            "sys.argv", ["ember", "configure", "set", "models.default", "gpt-4"]
-        ):
+        with patch("sys.argv", ["ember", "configure", "set", "models.default", "gpt-4"]):
             assert main() == 0
 
         # 4. Verify configuration

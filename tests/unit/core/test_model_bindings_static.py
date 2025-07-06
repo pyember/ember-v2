@@ -1,9 +1,10 @@
 """Test that model bindings and orchestration config remain static."""
 
+from typing import Any, Dict, List
+
 import jax
 import jax.numpy as jnp
 import pytest
-from typing import List, Dict, Any
 
 from ember._internal.module import Module
 

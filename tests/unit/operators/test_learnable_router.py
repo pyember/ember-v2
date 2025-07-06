@@ -6,12 +6,12 @@ Following CLAUDE.md principles:
 - Clear behavior
 """
 
-import jax
-import jax.numpy as jnp
 from typing import Any
 
-from ember.operators import Operator, LearnableRouter
+import jax
+import jax.numpy as jnp
 
+from ember.operators import LearnableRouter, Operator
 
 # Global call tracker for testing
 _lr_call_tracker = {}

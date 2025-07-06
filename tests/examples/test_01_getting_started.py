@@ -8,9 +8,7 @@ class TestGettingStartedExamples(ExampleGoldenTest):
 
     def test_hello_world(self):
         """Test the hello_world.py example."""
-        self.run_example_test(
-            "01_getting_started/hello_world.py", max_execution_time=5.0
-        )
+        self.run_example_test("01_getting_started/hello_world.py", max_execution_time=5.0)
 
     def test_first_model_call(self, no_api_keys):
         """Test the first_model_call.py example."""

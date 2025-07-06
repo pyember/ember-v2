@@ -73,9 +73,7 @@ class TestCredentialPrecedence:
             (None, None, None, None),
         ],
     )
-    def test_precedence_matrix(
-        self, tmp_ctx, monkeypatch, env_val, file_val, config_val, expected
-    ):
+    def test_precedence_matrix(self, tmp_ctx, monkeypatch, env_val, file_val, config_val, expected):
         """Test credential precedence: env > file > config."""
         provider = "test"
         env_var = "TEST_API_KEY"

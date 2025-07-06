@@ -1,50 +1,49 @@
 """Reusable test fixtures following SOLID principles.
 
-Larry Page: "Always work on things that will either succeed 
+Larry Page: "Always work on things that will either succeed
 in a really big way or teach you something important."
 
 These fixtures teach us to write better tests.
 """
 
-import pytest
-import os
-import tempfile
-from pathlib import Path
-from typing import Dict, List, Any, Optional
-from unittest.mock import patch
+from typing import Any, List
 
+import pytest
+
+from tests.test_constants import APIKeys, Models, TestData
 from tests.test_doubles import (
-    FakeProvider,
-    FakeModelRegistry,
+    ChatResponse,
     FakeContext,
     FakeDataSource,
-    ChatResponse,
+    FakeModelRegistry,
+    FakeProvider,
     UsageStats,
-    create_registry_with_models
+    create_registry_with_models,
 )
-from tests.test_constants import Models, APIKeys, TestData
 
 
 # Provider fixtures
 @pytest.fixture
 def fake_provider():
     """Basic fake provider for testing."""
-    return FakeProvider(responses={
-        TestData.SIMPLE_PROMPT: TestData.SIMPLE_RESPONSE,
-        "Hello": "Hi there!",
-        "Test": "Test response",
-    })
+    return FakeProvider(
+        responses={
+            TestData.SIMPLE_PROMPT: TestData.SIMPLE_RESPONSE,
+            "Hello": "Hi there!",
+            "Test": "Test response",
+        }
+    )
 
 
 @pytest.fixture
 def fake_provider_factory():
     """Factory for creating customized fake providers."""
+
     def _create(responses=None, should_fail=False, latency_ms=0):
         return FakeProvider(
-            responses=responses or {},
-            should_fail=should_fail,
-            latency_ms=latency_ms
+            responses=responses or {}, should_fail=should_fail, latency_ms=latency_ms
         )
+
     return _create
 
 
@@ -65,7 +64,7 @@ def empty_registry():
 @pytest.fixture
 def isolated_context(tmp_path, monkeypatch):
     """Completely isolated context for testing.
-    
+
     This fixture ensures:
     - Clean temporary directory
     - No environment variables
@@ -77,21 +76,21 @@ def isolated_context(tmp_path, monkeypatch):
     home.mkdir()
     ember_dir = home / ".ember"
     ember_dir.mkdir()
-    
+
     # Clear environment
     env_vars = [APIKeys.ENV_OPENAI, APIKeys.ENV_ANTHROPIC, APIKeys.ENV_GOOGLE]
     for var in env_vars:
         monkeypatch.delenv(var, raising=False)
-    
+
     # Set test environment
     monkeypatch.setenv("HOME", str(home))
     monkeypatch.setenv("EMBER_HOME", str(ember_dir))
-    
+
     # Create fake context
     ctx = FakeContext(isolated=True)
-    
+
     yield ctx
-    
+
     # Cleanup is automatic with tmp_path
 
 
@@ -99,13 +98,13 @@ def isolated_context(tmp_path, monkeypatch):
 def context_with_config(isolated_context):
     """Context with some pre-configured values."""
     ctx = isolated_context
-    
+
     # Add some default config
     ctx.set_config("model", Models.GPT4)
     ctx.set_config("provider", "openai")
     ctx.set_config("api_keys.openai", APIKeys.OPENAI)
     ctx.set_config("timeouts.api", 5.0)
-    
+
     return ctx
 
 
@@ -113,17 +112,18 @@ def context_with_config(isolated_context):
 @pytest.fixture
 def api_response_factory():
     """Factory for creating API responses."""
+
     class ResponseFactory:
         @staticmethod
         def create(
             content: str = "Test response",
             model: str = Models.GPT4,
             prompt_tokens: int = 10,
-            completion_tokens: int = 20
+            completion_tokens: int = 20,
         ) -> ChatResponse:
             # Use real cost calculation from ember.models.costs
             from ember.models.costs import get_model_cost
-            
+
             cost_info = get_model_cost(model)
             if cost_info:
                 input_cost = (prompt_tokens / 1000.0) * cost_info.get("input", 0.0)
@@ -132,7 +132,7 @@ def api_response_factory():
             else:
                 # Fallback for unknown models
                 cost_usd = 0.0
-            
+
             return ChatResponse(
                 data=content,
                 model_id=model,
@@ -141,10 +141,10 @@ def api_response_factory():
                     completion_tokens=completion_tokens,
                     total_tokens=prompt_tokens + completion_tokens,
                     cost_usd=cost_usd,
-                    actual_cost_usd=None
-                )
+                    actual_cost_usd=None,
+                ),
             )
-        
+
         @staticmethod
         def create_error_response(error: str = "API Error") -> ChatResponse:
             return ChatResponse(
@@ -155,10 +155,10 @@ def api_response_factory():
                     completion_tokens=0,
                     total_tokens=0,
                     cost_usd=0,
-                    actual_cost_usd=None
-                )
+                    actual_cost_usd=None,
+                ),
             )
-    
+
     return ResponseFactory()
 
 
@@ -167,12 +167,12 @@ def create_api_response(
     content: str = "Test response",
     model: str = Models.GPT4,
     prompt_tokens: int = 10,
-    completion_tokens: int = 20
+    completion_tokens: int = 20,
 ) -> ChatResponse:
     """Create API response directly without fixture complexity."""
     # Use real cost calculation from ember.models.costs
     from ember.models.costs import get_model_cost
-    
+
     cost_info = get_model_cost(model)
     if cost_info:
         input_cost = (prompt_tokens / 1000.0) * cost_info.get("input", 0.0)
@@ -181,7 +181,7 @@ def create_api_response(
     else:
         # Fallback for unknown models
         cost_usd = 0.0
-    
+
     return ChatResponse(
         data=content,
         model_id=model,
@@ -190,8 +190,8 @@ def create_api_response(
             completion_tokens=completion_tokens,
             total_tokens=prompt_tokens + completion_tokens,
             cost_usd=cost_usd,
-            actual_cost_usd=None  # Add the new field
-        )
+            actual_cost_usd=None,  # Add the new field
+        ),
     )
 
 
@@ -213,7 +213,7 @@ def fake_data_source(sample_data):
 def temp_json_file(tmp_path, sample_data):
     """Create temporary JSON file with sample data."""
     import json
-    
+
     file_path = tmp_path / "test_data.json"
     file_path.write_text(json.dumps(sample_data, indent=2))
     return file_path
@@ -223,16 +223,13 @@ def temp_json_file(tmp_path, sample_data):
 def temp_yaml_file(tmp_path):
     """Create temporary YAML file."""
     import yaml
-    
+
     data = {
         "model": Models.GPT4,
         "provider": "openai",
-        "config": {
-            "temperature": 0.7,
-            "max_tokens": 100
-        }
+        "config": {"temperature": 0.7, "max_tokens": 100},
     }
-    
+
     file_path = tmp_path / "test_config.yaml"
     file_path.write_text(yaml.dump(data))
     return file_path
@@ -245,7 +242,7 @@ def temp_csv_file(tmp_path):
 1,First item,A
 2,Second item,B
 3,Third item,A"""
-    
+
     file_path = tmp_path / "test_data.csv"
     file_path.write_text(csv_content)
     return file_path
@@ -260,9 +257,9 @@ def clean_env(monkeypatch):
         APIKeys.ENV_ANTHROPIC,
         APIKeys.ENV_GOOGLE,
         "EMBER_ENV",
-        "EMBER_HOME"
+        "EMBER_HOME",
     ]
-    
+
     for var in env_vars:
         monkeypatch.delenv(var, raising=False)
 
@@ -280,25 +277,25 @@ def test_api_keys(monkeypatch):
 def benchmark_timer():
     """Simple timer for performance measurements."""
     import time
-    
+
     class Timer:
         def __init__(self):
             self.start_time = None
             self.elapsed = None
-            
+
         def __enter__(self):
             self.start_time = time.perf_counter()
             return self
-            
+
         def __exit__(self, *args):
             self.elapsed = time.perf_counter() - self.start_time
-            
+
         def assert_faster_than(self, seconds: float):
             assert self.elapsed < seconds, f"Too slow: {self.elapsed:.3f}s > {seconds}s"
-            
+
         def assert_slower_than(self, seconds: float):
             assert self.elapsed > seconds, f"Too fast: {self.elapsed:.3f}s < {seconds}s"
-    
+
     return Timer()
 
 
@@ -306,24 +303,26 @@ def benchmark_timer():
 @pytest.fixture
 def assert_error_matches():
     """Helper for asserting error patterns."""
+
     def _assert(exc_info, pattern):
         """Assert that exception matches pattern."""
         from tests.test_constants import ErrorPatterns
-        
+
         error_str = str(exc_info.value)
-        
+
         # If pattern is a string, get it from ErrorPatterns
         if isinstance(pattern, str):
             pattern = getattr(ErrorPatterns, pattern)
-            
+
         assert pattern.search(error_str), f"Error '{error_str}' doesn't match pattern"
-    
+
     return _assert
 
 
 @pytest.fixture
 def assert_response_valid():
     """Helper for validating API responses."""
+
     def _assert(response: ChatResponse):
         """Assert that response is valid."""
         assert response is not None
@@ -331,7 +330,7 @@ def assert_response_valid():
         assert response.model_id
         assert response.usage.total_tokens >= 0
         assert response.usage.cost_usd >= 0
-    
+
     return _assert
 
 
@@ -339,17 +338,15 @@ def assert_response_valid():
 @pytest.fixture
 def batch_processor():
     """Simple batch processor for testing."""
+
     def process_batch(items: List[Any], batch_size: int = 32):
         """Process items in batches."""
         results = []
         for i in range(0, len(items), batch_size):
-            batch = items[i:i + batch_size]
+            batch = items[i : i + batch_size]
             # Simple processing - just uppercase strings
-            batch_results = [
-                item.upper() if isinstance(item, str) else item
-                for item in batch
-            ]
+            batch_results = [item.upper() if isinstance(item, str) else item for item in batch]
             results.extend(batch_results)
         return results
-    
+
     return process_batch

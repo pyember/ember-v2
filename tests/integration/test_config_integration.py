@@ -1,14 +1,14 @@
 """Integration tests for configuration system."""
 
 import json
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 import yaml
 
 from ember._internal.context import EmberContext
-from ember.core.config.loader import load_config
 from ember.core.config.compatibility_adapter import CompatibilityAdapter
+from ember.core.config.loader import load_config
 
 
 class TestConfigurationIntegration:
@@ -61,9 +61,7 @@ class TestConfigurationIntegration:
         config_file.write_text(json.dumps(external_config, indent=2))
 
         # Create context with this config
-        monkeypatch.setattr(
-            EmberContext, "get_config_path", staticmethod(lambda: config_file)
-        )
+        monkeypatch.setattr(EmberContext, "get_config_path", staticmethod(lambda: config_file))
 
         ctx = EmberContext()
 
@@ -120,17 +118,13 @@ class TestConfigurationIntegration:
         config_file.parent.mkdir(parents=True)
 
         config = {
-            "providers": {
-                "openai": {"api_key": "config-key-456", "env_key": "OPENAI_API_KEY"}
-            }
+            "providers": {"openai": {"api_key": "config-key-456", "env_key": "OPENAI_API_KEY"}}
         }
 
         config_file.write_text(yaml.dump(config))
 
         # Create context
-        monkeypatch.setattr(
-            EmberContext, "get_config_path", staticmethod(lambda: config_file)
-        )
+        monkeypatch.setattr(EmberContext, "get_config_path", staticmethod(lambda: config_file))
         ctx = EmberContext()
 
         # Environment variable should take precedence
@@ -138,9 +132,7 @@ class TestConfigurationIntegration:
         assert cred == "env-key-123"
 
     @patch("ember.models.registry.ModelRegistry")
-    def test_model_loading_with_adapted_config(
-        self, mock_registry, tmp_path, monkeypatch
-    ):
+    def test_model_loading_with_adapted_config(self, mock_registry, tmp_path, monkeypatch):
         """Test model loading works with adapted configuration."""
         # Set up environment
         monkeypatch.setenv("OPENAI_API_KEY", "sk-test-123")
@@ -168,9 +160,7 @@ class TestConfigurationIntegration:
         mock_registry.return_value.get_model.return_value = mock_model
 
         # Create context
-        monkeypatch.setattr(
-            EmberContext, "get_config_path", staticmethod(lambda: config_file)
-        )
+        monkeypatch.setattr(EmberContext, "get_config_path", staticmethod(lambda: config_file))
         ctx = EmberContext()
 
         # Get model
@@ -199,16 +189,12 @@ class TestConfigurationIntegration:
         config_file.write_text(yaml.dump(old_config))
 
         # Create context
-        monkeypatch.setattr(
-            EmberContext, "get_config_path", staticmethod(lambda: config_file)
-        )
+        monkeypatch.setattr(EmberContext, "get_config_path", staticmethod(lambda: config_file))
         ctx = EmberContext()
 
         # Should work normally
         assert ctx.get_config("models.default") == "gpt-3.5-turbo"
-        assert (
-            ctx.get_config("providers.openai.base_url") == "https://api.openai.com/v1"
-        )
+        assert ctx.get_config("providers.openai.base_url") == "https://api.openai.com/v1"
 
     def test_config_migration_preserves_data(self, tmp_path, monkeypatch):
         """Test config migration preserves all data."""
@@ -279,9 +265,7 @@ class TestRealWorldScenarios:
         }
 
         config_file.write_text(yaml.dump(config))
-        monkeypatch.setattr(
-            EmberContext, "get_config_path", staticmethod(lambda: config_file)
-        )
+        monkeypatch.setattr(EmberContext, "get_config_path", staticmethod(lambda: config_file))
 
         # Test with different contexts
         ctx = EmberContext()
@@ -293,10 +277,7 @@ class TestRealWorldScenarios:
         # Switch provider via child context
         with ctx.create_child(provider="anthropic") as child:
             assert child.get_config("provider") == "anthropic"
-            assert (
-                child.get_credential("anthropic", "ANTHROPIC_API_KEY")
-                == "ant-claude-456"
-            )
+            assert child.get_credential("anthropic", "ANTHROPIC_API_KEY") == "ant-claude-456"
 
         # Original context unchanged
         assert ctx.get_config("provider") == "openai"
@@ -339,9 +320,7 @@ class TestRealWorldScenarios:
         dev_file.parent.mkdir(parents=True)
         dev_file.write_text(yaml.dump(dev_config))
 
-        monkeypatch.setattr(
-            EmberContext, "get_config_path", staticmethod(lambda: dev_file)
-        )
+        monkeypatch.setattr(EmberContext, "get_config_path", staticmethod(lambda: dev_file))
         dev_ctx = EmberContext()
 
         assert dev_ctx.get_config("environment") == "development"
@@ -356,9 +335,7 @@ class TestRealWorldScenarios:
         prod_file.parent.mkdir(parents=True)
         prod_file.write_text(yaml.dump(prod_config))
 
-        monkeypatch.setattr(
-            EmberContext, "get_config_path", staticmethod(lambda: prod_file)
-        )
+        monkeypatch.setattr(EmberContext, "get_config_path", staticmethod(lambda: prod_file))
         prod_ctx = EmberContext()
 
         assert prod_ctx.get_config("environment") == "production"
@@ -377,9 +354,7 @@ class TestErrorHandling:
         # Write invalid YAML
         config_file.write_text("invalid: yaml: content: [")
 
-        monkeypatch.setattr(
-            EmberContext, "get_config_path", staticmethod(lambda: config_file)
-        )
+        monkeypatch.setattr(EmberContext, "get_config_path", staticmethod(lambda: config_file))
 
         # Should handle gracefully
         ctx = EmberContext()
@@ -397,9 +372,7 @@ class TestErrorHandling:
         }
 
         config_file.write_text(yaml.dump(config))
-        monkeypatch.setattr(
-            EmberContext, "get_config_path", staticmethod(lambda: config_file)
-        )
+        monkeypatch.setattr(EmberContext, "get_config_path", staticmethod(lambda: config_file))
 
         ctx = EmberContext()
 
@@ -411,9 +384,7 @@ class TestErrorHandling:
         """Test handling of circular environment variable references."""
         # This shouldn't happen in practice, but test graceful handling
         config = {
-            "providers": {
-                "test": {"api_key": "${CIRCULAR_REF}", "other_key": "${CIRCULAR_REF}"}
-            }
+            "providers": {"test": {"api_key": "${CIRCULAR_REF}", "other_key": "${CIRCULAR_REF}"}}
         }
 
         config_file = tmp_path / "config.yaml"

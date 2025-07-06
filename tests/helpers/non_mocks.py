@@ -65,11 +65,7 @@ class LMModule:
             Generated text response
         """
         # For testing, just return a simple transformation of the prompt
-        return (
-            f"Response to: {prompt[:30]}..."
-            if len(prompt) > 30
-            else f"Response to: {prompt}"
-        )
+        return f"Response to: {prompt[:30]}..." if len(prompt) > 30 else f"Response to: {prompt}"
 
 
 # -------------------------------------------------------------------------
@@ -180,9 +176,7 @@ class MostCommonSpecification(Specification):
 
     def __init__(self):
         """Initialize with appropriate models."""
-        super().__init__(
-            input_model=MostCommonInputs, structured_output=MostCommonOutputs
-        )
+        super().__init__(input_model=MostCommonInputs, structured_output=MostCommonOutputs)
 
 
 class MostCommon(Operator[MostCommonInputs, MostCommonOutputs]):
@@ -317,9 +311,7 @@ class JudgeSynthesisSpecification(Specification):
 
     def __init__(self):
         """Initialize with appropriate models."""
-        super().__init__(
-            input_model=JudgeSynthesisInputs, structured_output=JudgeSynthesisOutputs
-        )
+        super().__init__(input_model=JudgeSynthesisInputs, structured_output=JudgeSynthesisOutputs)
 
 
 class JudgeSynthesis(Operator[JudgeSynthesisInputs, JudgeSynthesisOutputs]):
@@ -367,13 +359,9 @@ class JudgeSynthesis(Operator[JudgeSynthesisInputs, JudgeSynthesisOutputs]):
         responses = inputs.responses
 
         synthesized = f"Synthesized answer to: {query}"
-        reasoning = (
-            f"Considered {len(responses)} responses and selected the best elements"
-        )
+        reasoning = f"Considered {len(responses)} responses and selected the best elements"
 
-        return JudgeSynthesisOutputs(
-            synthesized_response=synthesized, reasoning=reasoning
-        )
+        return JudgeSynthesisOutputs(synthesized_response=synthesized, reasoning=reasoning)
 
 
 # -------------------------------------------------------------------------

@@ -72,9 +72,7 @@ class GoldenUpdater(ExampleGoldenTest):
 
 def main():
     """Main entry point."""
-    parser = argparse.ArgumentParser(
-        description="Update golden outputs for Ember examples"
-    )
+    parser = argparse.ArgumentParser(description="Update golden outputs for Ember examples")
     parser.add_argument(
         "--example",
         type=str,
@@ -87,9 +85,7 @@ def main():
         default="simulated",
         help="Execution mode for generating golden outputs",
     )
-    parser.add_argument(
-        "--list", action="store_true", help="List all available examples"
-    )
+    parser.add_argument("--list", action="store_true", help="List all available examples")
 
     args = parser.parse_args()
     updater = GoldenUpdater()

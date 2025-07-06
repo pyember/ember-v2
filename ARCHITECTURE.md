@@ -11,28 +11,28 @@ Ember follows three core principles:
 ## System Overview
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                         PUBLIC API                          │
+┌────────────────────────────────────────────────────────────┐
+│                         PUBLIC API                         │
 ├─────────────────┬─────────────────┬────────────────────────┤
 │     models()    │   operators()   │    data.stream()       │
 │  Direct LLM API │ Composable AI   │  Streaming Data        │
 └────────┬────────┴────────┬────────┴───────┬────────────────┘
-         │                 │                 │
-┌────────▼────────┬────────▼────────┬───────▼────────────────┐
-│  Model Registry │ Operator System │   Data Pipeline        │
-│                 │                 │                        │
+         │                 │                │
+┌────────▼────────┬────────▼────────┬───────▼───────────────┐
+│  Model Registry │ Operator System │   Data Pipeline       │
+│                 │                 │                       │
 │  • Provider     │ • Composition   │  • Loaders            │
 │    Resolution   │ • Validation    │  • Transformers       │
 │  • Cost Tracking│ • JAX Pytrees   │  • Samplers           │
-└────────┬────────┴────────┬────────┴───────┬────────────────┘
-         │                 │                 │
-┌────────▼─────────────────▼─────────────────▼────────────────┐
-│                      XCS ENGINE                              │
-│                                                              │
+└────────┬────────┴────────┬────────┴───────┬───────────────┘
+         │                 │                │
+┌────────▼─────────────────▼────────────────▼─────────────────┐
+│                      XCS ENGINE                             │
+│                                                             │
 │  • Automatic JIT Compilation                                │
-│  • Parallelism Detection                                     │
-│  • Execution Optimization                                    │
-└──────────────────────────────────────────────────────────────┘
+│  • Parallelism Detection                                    │
+│  • Execution Optimization                                   │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ### CLI System Integration

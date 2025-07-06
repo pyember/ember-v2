@@ -1,0 +1,417 @@
+# EMBER AI FRAMEWORK - LLM SYNTAX REFERENCE
+
+## Overview
+Ember is a principled AI framework for building production systems with clean APIs, automatic optimization, and multi-provider support.
+
+## Models API - Multi-Provider LLM Orchestration
+
+### Direct Invocation
+```python
+from ember.api import models
+
+# One-off call
+response = models("gpt-4", "Your prompt here")
+response.text          # Generated text
+response.model_id      # Model used
+response.usage         # Dict with tokens and cost
+```
+
+### Model Binding
+```python
+# Create reusable model instance
+model = models.instance("gpt-4", temperature=0.7, system="You are helpful")
+response = model("Your prompt")
+
+# Multiple configurations
+creative = models.instance("gpt-4", temperature=0.9)
+precise = models.instance("gpt-4", temperature=0.1)
+```
+
+### Cost Tracking
+```python
+# Automatic cost tracking
+response.usage['cost']           # Cost in USD
+response.usage['prompt_tokens']  # Input tokens
+response.usage['completion_tokens']  # Output tokens
+
+# Global usage summary
+from ember.models.registry import get_global_registry
+summary = get_global_registry().get_usage_summary("gpt-4")
+summary.cost_usd         # Total cost
+summary.total_tokens     # Total tokens used
+```
+
+### Supported Providers (2025)
+
+**OpenAI**
+- o3-pro: Most capable reasoning model ($20/$80 per M tokens)
+- o3: Advanced reasoning model  
+- o4-mini: Efficient reasoning model
+- gpt-4.1: Latest GPT-4 with 1M context window
+- gpt-4.1-mini: Efficient GPT-4.1 variant
+- gpt-4.1-nano: First nano model from OpenAI
+- gpt-image-1: Multimodal image generation
+
+**Anthropic**  
+- claude-4-opus: World's best coding model (72.5% SWE-bench, Level 3 safety)
+- claude-4-sonnet: Balanced performance ($3/$15 per M tokens)
+- claude-4-haiku: Fast and efficient (if available)
+
+**Google**
+- gemini-2.5-pro: #1 on LMArena, thinking model
+- gemini-2.5-pro-deep-think: Enhanced reasoning (84% MMMU)
+- gemini-2.5-flash: Fast workhorse model
+- gemini-2.5-flash-lite: Most cost-efficient, thinking off by default
+
+## Data API - Streaming-First Processing
+
+### Stream Data
+```python
+from ember.api import stream, data
+
+# Stream dataset without loading into memory
+for item in stream("mmlu", subset="physics"):
+    print(item['question'], item['answer'])
+
+# Stream from file
+for item in data.from_file("data.jsonl"):
+    process(item)
+```
+
+### Pipeline Operations
+```python
+# Chain transformations
+results = (stream("dataset")
+    .filter(lambda x: x['score'] > 0.5)
+    .transform(add_metadata)
+    .limit(100)
+    .first(10))  # Materialize first 10
+
+# Collect all (loads into memory)
+all_items = stream("dataset").collect()
+```
+
+### Data Schema
+```python
+# Normalized fields
+item['question']  # Query text
+item['answer']    # Target response  
+item['choices']   # Dict of options
+item['metadata']  # Additional fields
+```
+
+## Operators API - Composable AI Components
+
+### Function Operators
+```python
+from ember.api import op
+
+@op
+def analyzer(text: str) -> dict:
+    response = models("gpt-4", f"Analyze: {text}")
+    return {"result": response.text}
+
+# Use like normal function
+result = analyzer("Some text")
+```
+
+### Class Operators
+```python
+from ember.operators import Operator
+
+class CustomOperator(Operator):
+    def __init__(self, model_name="gpt-4"):
+        self.model = models.instance(model_name)
+    
+    def forward(self, input_data):
+        return self.model(input_data).text
+```
+
+### Composition Patterns
+```python
+from ember.operators import chain, ensemble, Router
+
+# Sequential pipeline
+pipeline = chain(preprocess, analyze, postprocess)
+result = pipeline(input_data)
+
+# Parallel ensemble with voting
+experts = ensemble([expert1, expert2, expert3], aggregator=majority_vote)
+result = experts(input_data)
+
+# Conditional routing
+router = Router(
+    routes={"simple": fast_model, "complex": powerful_model},
+    router_fn=classify_complexity
+)
+```
+
+### Validated Operators
+```python
+from pydantic import BaseModel
+
+class InputSpec(BaseModel):
+    text: str
+    max_length: int = 100
+
+class ValidatedOp(Operator):
+    input_spec = InputSpec
+    output_spec = OutputSpec
+    
+    def forward(self, text: str, max_length: int) -> dict:
+        # Automatic validation
+        return process(text, max_length)
+```
+
+## XCS API - Zero-Config Optimization
+
+### Automatic Parallelization
+```python
+from ember.api.xcs import jit
+
+@jit
+def process_batch(items):
+    results = []
+    for item in items:
+        # Independent operations run in parallel
+        r1 = expensive_op1(item)
+        r2 = expensive_op2(item)  
+        r3 = expensive_op3(item)
+        results.append(combine(r1, r2, r3))
+    return results
+
+# First call: traces and optimizes
+# Subsequent calls: uses optimized version
+```
+
+### Optimization Insights
+```python
+# View optimization details
+process_batch._xcs_explain()  # Explanation of optimizations
+process_batch.stats()         # Performance statistics
+
+# Stats include:
+# - optimization_status: enabled/disabled
+# - speedup: measured speedup factor
+# - parallel_groups: detected parallelism
+```
+
+## JAX Integration - Gradients on Mixed Structures
+
+### Mixed Structure Operators
+```python
+from ember.operators import Operator
+import jax
+import jax.numpy as jnp
+
+class MixedOperator(Operator):
+    def __init__(self, key):
+        # Static fields (non-JAX types)
+        self.model_name = "gpt-4"        # str
+        self.config = {"temp": 0.7}      # dict
+        self.routes = ["a", "b", "c"]    # list
+        
+        # Dynamic fields (JAX arrays - learnable)
+        self.weights = jax.random.normal(key, (10, 5))
+        self.bias = jnp.zeros(5)
+```
+
+### Gradient Computation
+```python
+# Define loss function
+def loss_fn(operator, x, y):
+    pred = operator(x)
+    return jnp.mean((pred - y) ** 2)
+
+# Compute gradients - only for dynamic fields!
+grads = jax.grad(loss_fn)(operator, x, y)
+
+# grads.weights exists and has gradients
+# grads.model_name exists but is unchanged (static)
+```
+
+### Training with optax
+```python
+import optax
+
+# Initialize optimizer
+optimizer = optax.adam(learning_rate=0.01)
+opt_state = optimizer.init(operator)
+
+# Training step
+grads = jax.grad(loss_fn)(operator, x, y)
+updates, opt_state = optimizer.update(grads, opt_state)
+
+# Functional update
+operator = operator.update_params(
+    weights=operator.weights + updates.weights,
+    bias=operator.bias + updates.bias
+)
+```
+
+### JAX Transformations
+```python
+# Vectorization
+batched_op = jax.vmap(operator)
+results = batched_op(batch_inputs)
+
+# JIT compilation  
+fast_op = jax.jit(operator.forward)
+
+# Parallelization
+parallel_op = jax.pmap(operator)
+```
+
+## Common Patterns
+
+### Ensemble with Judge
+```python
+# Multiple experts
+experts = [
+    models.instance("gpt-4", system="Expert 1"),
+    models.instance("claude-3", system="Expert 2")
+]
+
+# Generate candidates
+candidates = [expert(question) for expert in experts]
+
+# Judge selects best
+judge = models.instance("gpt-4", temperature=0.1)
+best = judge(f"Select best answer: {candidates}")
+```
+
+### Learnable Routing
+```python
+class LearnableRouter(Operator):
+    def __init__(self, routes, key):
+        self.routes = routes  # Static: dict of models
+        self.embeddings = jax.random.normal(key, (len(routes), 64))  # Dynamic
+        
+    def forward(self, prompt):
+        scores = compute_scores(prompt, self.embeddings)
+        best_route = select_route(scores)
+        return self.routes[best_route](prompt)
+```
+
+### Streaming Evaluation
+```python
+# Evaluate on dataset
+accuracy = 0
+for item in stream("mmlu").limit(100):
+    prediction = model(item['question'])
+    if prediction == item['answer']:
+        accuracy += 1
+print(f"Accuracy: {accuracy}%")
+```
+
+## Best Practices
+
+### Error Handling
+```python
+try:
+    response = models("gpt-4", prompt)
+except Exception as e:
+    # Automatic retry with fallback
+    response = models("gpt-3.5-turbo", prompt)
+```
+
+### Memory Efficiency
+```python
+# Good: Stream large datasets
+for item in stream("large_dataset"):
+    process(item)
+
+# Avoid: Loading all into memory
+all_data = stream("large_dataset").collect()  # Only if needed
+```
+
+### Performance
+```python
+# Use @jit for repeated operations
+@jit
+def batch_process(items):
+    return [process(item) for item in items]
+
+# Bind models for reuse
+model = models.instance("gpt-4")  # Create once
+for prompt in prompts:
+    model(prompt)  # Reuse
+```
+
+## Key Concepts
+
+1. **Progressive Disclosure**: Simple API for common cases, advanced features available
+2. **Static vs Dynamic**: Non-JAX fields are static, JAX arrays are learnable
+3. **Streaming First**: Process data without loading into memory
+4. **Zero Config**: Works out of the box, optimization is automatic
+5. **Functional Design**: Immutable operators, pure functions
+
+## Environment Variables
+
+```bash
+# API Keys
+OPENAI_API_KEY=sk-...
+ANTHROPIC_API_KEY=sk-ant-...
+GOOGLE_API_KEY=...
+
+# Configuration
+EMBER_CACHE_DIR=~/.ember/cache
+EMBER_LOG_LEVEL=INFO
+```
+
+## Quick Examples
+
+### Simple Q&A
+```python
+# Ultra-fast nano model
+answer = models("gpt-4.1-nano", "What is 2+2?").text
+
+# Advanced reasoning
+proof = models("o3", "Prove the Pythagorean theorem").text
+```
+
+### Multi-Provider Analysis
+```python
+# Each provider for their strength
+sentiment = models("claude-4-sonnet", f"Analyze sentiment: {text}").text
+code = models("claude-4-opus", f"Implement quicksort in Rust").text
+creative = models("gemini-2.5-pro", f"Write a haiku about: {topic}").text
+```
+
+### Parallel Processing with Latest Models
+```python
+@jit
+def analyze_multimodel(texts):
+    # Different models run in parallel
+    summaries = [models("gpt-4.1-mini", f"Summarize: {t}").text for t in texts]
+    sentiments = [models("gemini-2.5-flash-lite", f"Sentiment: {t}").text for t in texts]
+    insights = [models("claude-4-sonnet", f"Key insight: {t}").text for t in texts]
+    return summaries, sentiments, insights
+```
+
+### Learnable Router with SOTA Models
+```python
+class SmartRouter(Operator):
+    def __init__(self, key):
+        # Static: 2025's best models
+        self.routes = {
+            "reasoning": models.instance("o3"),
+            "coding": models.instance("claude-4-opus"),
+            "creative": models.instance("gemini-2.5-pro")
+        }
+        # Dynamic: learnable routing weights
+        self.weights = jax.random.normal(key, (3, 64))
+        
+# Train router to select optimal model
+grads = jax.grad(routing_loss)(router, prompt, target_model)
+```
+
+### Thinking Models Control
+```python
+# Control Gemini 2.5's thinking budget
+quick = models("gemini-2.5-flash-lite", prompt, thinking_budget="off")
+balanced = models("gemini-2.5-pro", prompt, thinking_budget="auto")
+deep = models("gemini-2.5-pro-deep-think", prompt, thinking_budget="maximum")
+```
+
+This reference covers the essential Ember syntax for building AI systems efficiently.

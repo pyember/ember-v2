@@ -8,10 +8,9 @@ Following principles:
 """
 
 import json
-import yaml
-from unittest.mock import Mock
 
 import pytest
+import yaml
 
 from ember.cli.main import main
 from tests.unit.cli.fake_cli_registry import FakeCLIModelRegistry
@@ -80,7 +79,7 @@ class TestConfigureCommand:
         """Set configuration value."""
         # Make CLI use our test context
         monkeypatch.setattr("ember._internal.context.EmberContext.current", lambda: tmp_ctx)
-        
+
         mock_cli_args("configure", "set", "new.key", "new-value")
         ret = main()
 
@@ -174,7 +173,7 @@ class TestConnectionTest:
         # Create test registry and set it on the context
         test_registry = FakeCLIModelRegistry()
         test_registry.set_model_response("test-model", "Hello from test model!")
-        
+
         # Monkey patch the registry methods we need
         monkeypatch.setattr(tmp_ctx.model_registry, "get_model", test_registry.get_model)
         monkeypatch.setattr(tmp_ctx.model_registry, "invoke_model", test_registry.invoke_model)
@@ -192,11 +191,11 @@ class TestConnectionTest:
         """Failed API connection shows error."""
         # Make CLI use our test context
         monkeypatch.setattr("ember._internal.context.EmberContext.current", lambda: tmp_ctx)
-        
+
         # Create test registry that fails
         test_registry = FakeCLIModelRegistry()
         test_registry.set_model_error("gpt-3.5-turbo", Exception("No API key"))
-        
+
         # Monkey patch the registry methods
         monkeypatch.setattr(tmp_ctx.model_registry, "get_model", test_registry.get_model)
         monkeypatch.setattr(tmp_ctx.model_registry, "invoke_model", test_registry.invoke_model)

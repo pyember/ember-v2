@@ -1,6 +1,7 @@
 """Tests for examples in 05_data_processing directory."""
 
 import pytest
+
 from .test_base import ExampleGoldenTest
 
 

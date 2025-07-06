@@ -10,13 +10,14 @@ Following principles that Jeff Dean, Sanjay Ghemawat, and others would advocate:
 
 import os
 import sys
-import pytest
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 
-from ember.models.providers.openai import OpenAIProvider
+import pytest
+
+from ember._internal.exceptions import ProviderAPIError
 from ember.models.providers.anthropic import AnthropicProvider
 from ember.models.providers.google import GoogleProvider
-from ember._internal.exceptions import ProviderAPIError
+from ember.models.providers.openai import OpenAIProvider
 
 
 class TestBaseProvider:
@@ -77,9 +78,7 @@ class TestOpenAIProvider:
 
         mock_response = Mock()
         mock_response.choices = [Mock(message=Mock(content="Hello!"))]
-        mock_response.usage = Mock(
-            prompt_tokens=10, completion_tokens=5, total_tokens=15
-        )
+        mock_response.usage = Mock(prompt_tokens=10, completion_tokens=5, total_tokens=15)
         mock_response.model = "gpt-4"
 
         mock_client.chat.completions.create.return_value = mock_response
@@ -175,9 +174,7 @@ class TestGoogleProvider:
 
         try:
             # This was the failing operation
-            subtypeSpec = univ.Integer.subtypeSpec + constraint.SingleValueConstraint(
-                0, 1
-            )
+            subtypeSpec = univ.Integer.subtypeSpec + constraint.SingleValueConstraint(0, 1)
             assert subtypeSpec is not None
         except TypeError as e:
             if "can only concatenate tuple" in str(e):
@@ -338,8 +335,8 @@ class TestGoogleProvider:
 
     def test_concurrent_initialization(self):
         """Test thread-safe provider initialization."""
-        import threading
         import queue
+        import threading
 
         errors = queue.Queue()
         providers = queue.Queue()
@@ -428,9 +425,7 @@ class TestRegressionGuards:
             source = f.read()
 
         assert "pyasn1_patch" in source, "Google provider must import pyasn1_patch"
-        assert (
-            "ensure_pyasn1_compatibility" in source
-        ), "Must call ensure_pyasn1_compatibility"
+        assert "ensure_pyasn1_compatibility" in source, "Must call ensure_pyasn1_compatibility"
 
     def test_no_pyasn1_errors_in_imports(self):
         """Test that no pyasn1 errors occur during imports."""

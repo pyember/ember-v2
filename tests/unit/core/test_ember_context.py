@@ -10,13 +10,9 @@ Principles:
 """
 
 import asyncio
-import os
-import tempfile
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
-from pathlib import Path
-from unittest.mock import patch, Mock
 
 import pytest
 
@@ -28,16 +24,14 @@ from ember.context import (
 )
 
 # Import test infrastructure
-from tests.test_constants import Timeouts, ErrorPatterns
-from tests.test_doubles import FakeContext
-from tests.fixtures import isolated_context
+from tests.test_constants import Timeouts
 
 
 @pytest.fixture(autouse=True)
 def reset_context():
     """Reset context between tests to ensure isolation."""
     # Use public API to reset if available
-    if hasattr(EmberContext, 'reset'):
+    if hasattr(EmberContext, "reset"):
         EmberContext.reset()
         yield
         EmberContext.reset()
@@ -63,17 +57,17 @@ class TestContextCore:
 
         # Contexts should be different instances
         assert ctx1 != ctx2
-        
+
         # Bug: isolated contexts share config - using unique keys
-        
+
         # Use unique keys to avoid collision
         ctx1.set_config("test_ctx1", "value1")
         ctx2.set_config("test_ctx2", "value2")
-        
+
         # Verify they have their own values
         assert ctx1.get_config("test_ctx1") == "value1"
         assert ctx2.get_config("test_ctx2") == "value2"
-        
+
         # Verify they don't see each other's keys
         assert ctx1.get_config("test_ctx2") is None
         assert ctx2.get_config("test_ctx1") is None
@@ -224,7 +218,6 @@ class TestAsyncPropagation:
             assert ctx2.get_config("test") == "value"
 
 
-
 class TestPublicAPI:
     """Public API surface."""
 
@@ -254,14 +247,14 @@ class TestPersistence:
         # Create context and save config
         ctx1 = EmberContext(isolated=True)
         ctx1.set_config("test", {"nested": "value"})
-        
+
         # If save method exists, use it
-        if hasattr(ctx1, 'save'):
+        if hasattr(ctx1, "save"):
             ctx1.save()
-            
+
             # Create new context and verify it loads the config
             ctx2 = EmberContext(isolated=True)
-            if hasattr(ctx2, 'reload'):
+            if hasattr(ctx2, "reload"):
                 ctx2.reload()
                 assert ctx2.get_config("test.nested") == "value"
         else:
@@ -274,11 +267,11 @@ class TestPersistence:
         bad_file.write_text("{ invalid: yaml: }")
 
         ctx = EmberContext(isolated=True)
-        
+
         # If reload method exists, test it
-        if hasattr(ctx, 'reload'):
+        if hasattr(ctx, "reload"):
             ctx.reload()  # Should not raise
-            
+
             # Config should be empty or contain only partial data
             config = ctx.get_all_config()
             # YAML might parse some of it, but it should be safe
@@ -321,12 +314,15 @@ class TestPerformance:
 
 
 # Parameterized tests for better coverage
-@pytest.mark.parametrize("config_key,value,expected", [
-    pytest.param("simple", "value", "value", id="simple-value"),
-    pytest.param("nested.key", {"data": 123}, {"data": 123}, id="nested-dict"),
-    pytest.param("list.items", [1, 2, 3], [1, 2, 3], id="list-value"),
-    pytest.param("null.value", None, None, id="null-value"),
-])
+@pytest.mark.parametrize(
+    "config_key,value,expected",
+    [
+        pytest.param("simple", "value", "value", id="simple-value"),
+        pytest.param("nested.key", {"data": 123}, {"data": 123}, id="nested-dict"),
+        pytest.param("list.items", [1, 2, 3], [1, 2, 3], id="list-value"),
+        pytest.param("null.value", None, None, id="null-value"),
+    ],
+)
 def test_config_roundtrip(config_key, value, expected):
     """Test various config values roundtrip correctly."""
     ctx = EmberContext(isolated=True)
@@ -334,16 +330,19 @@ def test_config_roundtrip(config_key, value, expected):
     assert ctx.get_config(config_key) == expected
 
 
-@pytest.mark.parametrize("num_threads", [
-    pytest.param(5, id="5-threads"),
-    pytest.param(10, id="10-threads"),
-    pytest.param(20, id="20-threads"),
-])
+@pytest.mark.parametrize(
+    "num_threads",
+    [
+        pytest.param(5, id="5-threads"),
+        pytest.param(10, id="10-threads"),
+        pytest.param(20, id="20-threads"),
+    ],
+)
 def test_thread_stress(num_threads):
     """Stress test with many threads."""
     ctx = EmberContext(isolated=True)
     errors = []
-    
+
     def worker(thread_id):
         try:
             # Each thread sets and gets its own config
@@ -353,47 +352,47 @@ def test_thread_stress(num_threads):
                 assert ctx.get_config(key) == thread_id * 100 + i
         except Exception as e:
             errors.append((thread_id, str(e)))
-    
+
     threads = []
     for i in range(num_threads):
         t = threading.Thread(target=worker, args=(i,))
         threads.append(t)
         t.start()
-    
+
     for t in threads:
         t.join()
-    
+
     assert not errors, f"Thread errors: {errors}"
 
 
 # Contract tests for context behavior
 class TestContextContract:
     """Verify context satisfies expected contract."""
-    
+
     def test_context_is_hashable(self):
         """Context instances should be hashable."""
         ctx = EmberContext(isolated=True)
         # Should be able to use as dict key
         d = {ctx: "value"}
         assert d[ctx] == "value"
-    
+
     def test_context_repr(self):
         """Context should have useful repr."""
         ctx = EmberContext(isolated=True)
         repr_str = repr(ctx)
         assert "EmberContext" in repr_str
-    
+
     def test_context_equality(self):
         """Test context equality semantics."""
         ctx1 = EmberContext(isolated=True)
         ctx2 = EmberContext(isolated=True)
-        
+
         # Different isolated contexts are not equal
         assert ctx1 != ctx2
-        
+
         # Same context is equal to itself
         assert ctx1 == ctx1
-        
+
         # Singleton contexts are equal
         singleton1 = EmberContext.current()
         singleton2 = EmberContext.current()

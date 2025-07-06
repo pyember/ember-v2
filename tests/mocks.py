@@ -3,12 +3,12 @@
 No magic, explicit behavior, deterministic results.
 """
 
-from typing import Dict, List, Any, Optional, Iterator
 import hashlib
+from typing import Any, Dict, Iterator, List, Optional
 
-from ember.models.schemas import ChatResponse, UsageStats
-from ember.models.providers.base import BaseProvider
 from ember.api.data import DataSource
+from ember.models.providers.base import BaseProvider
+from ember.models.schemas import ChatResponse, UsageStats
 
 
 class MockProvider(BaseProvider):
@@ -167,9 +167,7 @@ class ErrorMockProvider(BaseProvider):
 class LatencyMockProvider(BaseProvider):
     """Provider with configurable latency for performance testing."""
 
-    def __init__(
-        self, latency_ms: float = 100, base_provider: Optional[BaseProvider] = None
-    ):
+    def __init__(self, latency_ms: float = 100, base_provider: Optional[BaseProvider] = None):
         """Initialize with latency configuration.
 
         Args:

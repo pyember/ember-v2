@@ -98,6 +98,7 @@ target/
 
 # Cython debug symbols
 cython_debug/
+
 # Deprecated code moved during cleanup
 .deprecated/
 
@@ -113,3 +114,34 @@ diagnostic_*.json
 test_diagnostics.log
 test_*.md
 *.orig
+
+# Ruff
+.ruff_cache/
+
+# tox
+.tox/
+
+# Coverage reports
+.coverage.*
+coverage/
+
+# Credentials (just in case)
+credentials.json
+*.pem
+*.key
+*.crt
+
+# Local development
+.local/
+local_tests/
+
+# Generated files
+*.generated.py
+
+# Poetry
+poetry.lock
+
+# PDM
+.pdm.toml
+.pdm-python
+__pypackages__/

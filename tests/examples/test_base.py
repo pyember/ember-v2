@@ -13,7 +13,8 @@ import time
 from contextlib import contextmanager
 from io import StringIO
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Any, Dict, List, Optional, Tuple
+
 import pytest
 
 
@@ -94,9 +95,7 @@ class ExampleGoldenTest:
             duration = time.time() - start_time
             raise TimeoutError(f"Example {example_path} exceeded timeout of {timeout}s")
 
-    def load_golden_output(
-        self, example_path: str, mode: str = "simulated"
-    ) -> Dict[str, Any]:
+    def load_golden_output(self, example_path: str, mode: str = "simulated") -> Dict[str, Any]:
         """Load golden output for an example.
 
         Args:
@@ -150,9 +149,7 @@ class ExampleGoldenTest:
             content = f.read()
             lines_of_code = len([l for l in content.splitlines() if l.strip()])
             api_calls = (
-                content.count("@model")
-                + content.count(".call(")
-                + content.count(".stream(")
+                content.count("@model") + content.count(".call(") + content.count(".stream(")
             )
 
         golden_data = {
@@ -239,9 +236,7 @@ class ExampleGoldenTest:
                     f"got {len(actual_sections)}"
                 )
 
-            for i, (actual, expected) in enumerate(
-                zip(actual_sections, expected_sections)
-            ):
+            for i, (actual, expected) in enumerate(zip(actual_sections, expected_sections)):
                 if actual["header"] != expected["header"]:
                     errors.append(
                         f"Section {i} header mismatch: expected '{expected['header']}', "
@@ -294,9 +289,7 @@ class ExampleGoldenTest:
 
         # Check execution succeeded
         if returncode != 0:
-            pytest.fail(
-                f"Example failed with return code {returncode}\nStderr: {stderr}"
-            )
+            pytest.fail(f"Example failed with return code {returncode}\nStderr: {stderr}")
 
         # Check performance bounds
         if duration > 10.0:  # Simulated mode should be reasonably fast
@@ -307,7 +300,7 @@ class ExampleGoldenTest:
             golden_data = self.load_golden_output(example_path, "simulated")
             errors = self.validate_golden(stdout, golden_data)
             if errors:
-                pytest.fail(f"Golden validation failed:\n" + "\n".join(errors))
+                pytest.fail("Golden validation failed:\n" + "\n".join(errors))
         except FileNotFoundError:
             # No golden file yet - create it
             print(f"Creating golden output for {example_path}")
@@ -323,24 +316,24 @@ class ExampleGoldenTest:
         if not skip_real_mode and requires_api_keys:
             # Check if we have ANY of the major API keys, not just the specific ones requested
             # Check both environment variables AND Ember's config
-            from ember._internal.config.manager import ConfigManager
             from ember.core.config.loader import load_config
-            
+
             # Load config file directly
             try:
                 config_data = load_config()
                 creds = config_data.get("credentials", {})
             except:
                 creds = {}
-            
+
             available_api_keys = {
                 "OPENAI_API_KEY": os.environ.get("OPENAI_API_KEY") or creds.get("openai_api_key"),
-                "ANTHROPIC_API_KEY": os.environ.get("ANTHROPIC_API_KEY") or creds.get("anthropic_api_key"), 
+                "ANTHROPIC_API_KEY": os.environ.get("ANTHROPIC_API_KEY")
+                or creds.get("anthropic_api_key"),
                 "GOOGLE_API_KEY": os.environ.get("GOOGLE_API_KEY") or creds.get("google_api_key"),
                 "GEMINI_API_KEY": os.environ.get("GEMINI_API_KEY") or creds.get("gemini_api_key"),
             }
             has_any_key = any(available_api_keys.values())
-            
+
             if has_any_key:
                 print(f"Testing {example_path} in real mode...")
                 stdout, stderr, duration, returncode = self.run_example(
@@ -348,14 +341,10 @@ class ExampleGoldenTest:
                 )
 
                 if returncode != 0:
-                    pytest.fail(
-                        f"Real mode failed with return code {returncode}\nStderr: {stderr}"
-                    )
+                    pytest.fail(f"Real mode failed with return code {returncode}\nStderr: {stderr}")
 
                 if duration > max_execution_time:
-                    pytest.fail(
-                        f"Real execution too slow: {duration:.2f}s > {max_execution_time}s"
-                    )
+                    pytest.fail(f"Real execution too slow: {duration:.2f}s > {max_execution_time}s")
             else:
                 available_keys = [k for k, v in available_api_keys.items() if v]
                 pytest.skip(
@@ -453,7 +442,5 @@ class ExampleGoldenTest:
 
 def pytest_configure(config):
     """Configure pytest with custom markers."""
-    config.addinivalue_line(
-        "markers", "requires_api_keys: mark test as requiring API keys"
-    )
+    config.addinivalue_line("markers", "requires_api_keys: mark test as requiring API keys")
     config.addinivalue_line("markers", "slow: mark test as slow running")

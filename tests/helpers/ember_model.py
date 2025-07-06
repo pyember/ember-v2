@@ -87,17 +87,13 @@ class EmberModel(BaseModel):
     def set_default_output_format(cls, format: str) -> None:
         """Set the default output format for all EmberModel instances."""
         if format not in ["model", "dict", "json"]:
-            raise ValueError(
-                f"Unsupported format: {format}. Use 'model', 'dict', or 'json'"
-            )
+            raise ValueError(f"Unsupported format: {format}. Use 'model', 'dict', or 'json'")
         cls.__output_format__ = format
 
     def set_output_format(self, format: str) -> None:
         """Set the output format for this specific instance."""
         if format not in ["model", "dict", "json"]:
-            raise ValueError(
-                f"Unsupported format: {format}. Use 'model', 'dict', or 'json'"
-            )
+            raise ValueError(f"Unsupported format: {format}. Use 'model', 'dict', or 'json'")
         self._instance_output_format = format
 
     @property

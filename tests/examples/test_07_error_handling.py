@@ -8,6 +8,4 @@ class TestErrorHandlingExamples(ExampleGoldenTest):
 
     def test_robust_patterns(self):
         """Test the robust_patterns.py example."""
-        self.run_example_test(
-            "07_error_handling/robust_patterns.py", max_execution_time=30.0
-        )
+        self.run_example_test("07_error_handling/robust_patterns.py", max_execution_time=30.0)

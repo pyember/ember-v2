@@ -6,22 +6,22 @@ Following CLAUDE.md principles:
 - Clear test cases
 """
 
-import pytest
 from collections import Counter
 from typing import Any
 
+import pytest
+
 from ember.operators import (
-    Operator,
-    Ensemble,
-    Chain,
-    Router,
-    Retry,
     Cache,
-    ensemble,
+    Chain,
+    Ensemble,
+    Operator,
+    Retry,
+    Router,
     chain,
+    ensemble,
     router,
 )
-
 
 # Global call tracker for testing
 _call_tracker = {}

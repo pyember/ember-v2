@@ -3,6 +3,7 @@
 import os
 from pathlib import Path
 from unittest.mock import patch
+
 import pytest
 
 
@@ -12,9 +13,7 @@ class TestSetupWizardConfig:
     def test_config_save_format(self, tmp_path):
         """Test that config is saved in correct format."""
         config = {
-            "providers": {
-                "openai": {"default_model": "gpt-4", "api_key": "${OPENAI_API_KEY}"}
-            }
+            "providers": {"openai": {"default_model": "gpt-4", "api_key": "${OPENAI_API_KEY}"}}
         }
 
         config_file = tmp_path / "config.yaml"
@@ -60,11 +59,7 @@ class TestSetupWizardConfig:
         """Test that provider configurations have correct structure."""
         # Since the setup wizard is TypeScript, we check the TypeScript source
         setup_wizard_dir = (
-            Path(__file__).parent.parent.parent.parent
-            / "src"
-            / "ember"
-            / "cli"
-            / "setup-wizard"
+            Path(__file__).parent.parent.parent.parent / "src" / "ember" / "cli" / "setup-wizard"
         )
         types_file = setup_wizard_dir / "src" / "types.ts"
 
@@ -74,9 +69,7 @@ class TestSetupWizardConfig:
         content = types_file.read_text()
 
         # Verify PROVIDERS constant exists
-        assert (
-            "export const PROVIDERS" in content
-        ), "PROVIDERS constant should be exported"
+        assert "export const PROVIDERS" in content, "PROVIDERS constant should be exported"
 
         # Verify required fields in provider structure
         required_fields = ["name", "envVar", "testModel", "description"]
@@ -93,11 +86,7 @@ class TestSetupWizardConfig:
     def test_setup_mode_options(self):
         """Test that setup modes are properly defined."""
         setup_wizard_dir = (
-            Path(__file__).parent.parent.parent.parent
-            / "src"
-            / "ember"
-            / "cli"
-            / "setup-wizard"
+            Path(__file__).parent.parent.parent.parent / "src" / "ember" / "cli" / "setup-wizard"
         )
         setup_mode_file = (
             setup_wizard_dir / "src" / "components" / "steps" / "SetupModeSelection.tsx"
@@ -112,9 +101,7 @@ class TestSetupWizardConfig:
         assert (
             "'single'" in content or '"single"' in content
         ), "Setup mode 'single' should be defined"
-        assert (
-            "'all'" in content or '"all"' in content
-        ), "Setup mode 'all' should be defined"
+        assert "'all'" in content or '"all"' in content, "Setup mode 'all' should be defined"
 
         # Verify type definition
         assert (

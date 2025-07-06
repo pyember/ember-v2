@@ -95,24 +95,24 @@ class OpenAIProvider(BaseProvider):
             # Build usage stats
             usage = None
             actual_cost = None
-            
+
             # Check for actual cost in response headers (if available)
-            if hasattr(response, '_headers'):
+            if hasattr(response, "_headers"):
                 # OpenAI sometimes returns costs in headers
-                cost_header = response._headers.get('X-OpenAI-Billing-Usage')
+                cost_header = response._headers.get("X-OpenAI-Billing-Usage")
                 if cost_header and isinstance(cost_header, str):
                     try:
                         # Parse cost from header (format: "0.0015 USD")
                         actual_cost = float(cost_header.split()[0])
                     except (ValueError, IndexError, AttributeError):
                         logger.debug(f"Could not parse cost header: {cost_header}")
-            
+
             if response.usage:
                 usage = UsageStats(
                     prompt_tokens=response.usage.prompt_tokens,
                     completion_tokens=response.usage.completion_tokens,
                     total_tokens=response.usage.total_tokens,
-                    actual_cost_usd=actual_cost
+                    actual_cost_usd=actual_cost,
                 )
 
             return ChatResponse(

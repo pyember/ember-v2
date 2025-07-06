@@ -137,9 +137,7 @@ class MinimalModelFactory:
         """Initialize with optional registry."""
         self.registry = registry or MinimalModelRegistry()
 
-    def create_model(
-        self, model_id: str
-    ) -> Union[MinimalAnthropicModel, MinimalOpenAIModel]:
+    def create_model(self, model_id: str) -> Union[MinimalAnthropicModel, MinimalOpenAIModel]:
         """Create a model instance by ID."""
         # For testing, create a minimal model based on ID prefix
         if model_id.startswith("anthropic:"):

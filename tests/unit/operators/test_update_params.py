@@ -114,9 +114,7 @@ def test_optax_integration():
     updates, opt_state = optimizer.update(grads, opt_state)
 
     # Apply updates using update_params
-    new_op = op.update_params(
-        weights=op.weights + updates.weights, bias=op.bias + updates.bias
-    )
+    new_op = op.update_params(weights=op.weights + updates.weights, bias=op.bias + updates.bias)
 
     # Check parameters changed
     assert not jnp.allclose(new_op.weights, op.weights)

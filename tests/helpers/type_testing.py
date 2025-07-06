@@ -70,10 +70,7 @@ def type_check_test_models(obj: Any, expected_type: Type) -> Optional[bool]:
         Boolean result if a test-specific case was handled, None otherwise
     """
     # Check for ModelWithTypes special case
-    if (
-        hasattr(expected_type, "__name__")
-        and expected_type.__name__ == "ModelWithTypes"
-    ):
+    if hasattr(expected_type, "__name__") and expected_type.__name__ == "ModelWithTypes":
         if hasattr(obj, "a") and not isinstance(obj.a, int):
             return False
         return True

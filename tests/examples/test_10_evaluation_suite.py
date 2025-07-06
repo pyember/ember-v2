@@ -1,6 +1,7 @@
 """Tests for examples in 10_evaluation_suite directory."""
 
 import pytest
+
 from .test_base import ExampleGoldenTest
 
 

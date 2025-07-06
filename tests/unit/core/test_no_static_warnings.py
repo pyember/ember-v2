@@ -1,9 +1,10 @@
 """Test that nested operator structures don't produce JAX static warnings."""
 
 import warnings
+from typing import List
+
 import jax
 import jax.numpy as jnp
-from typing import List
 import pytest
 
 from ember._internal.module import Module
@@ -36,14 +37,11 @@ class DeeplyNestedOp(Module):
     config: dict
     branches: List[NestedOp]
 
-    def __init__(
-        self, num_branches: int, ops_per_branch: int, dim: int, key: jax.random.PRNGKey
-    ):
+    def __init__(self, num_branches: int, ops_per_branch: int, dim: int, key: jax.random.PRNGKey):
         self.config = {"branches": num_branches, "ops": ops_per_branch}
         keys = jax.random.split(key, num_branches)
         self.branches = [
-            NestedOp(f"branch_{i}", ops_per_branch, dim, keys[i])
-            for i in range(num_branches)
+            NestedOp(f"branch_{i}", ops_per_branch, dim, keys[i]) for i in range(num_branches)
         ]
 
 
@@ -62,9 +60,7 @@ def test_no_warnings_for_nested_operators():
 
         # Filter to only JAX static warnings
         static_warnings = [
-            warning
-            for warning in w
-            if "JAX array is being set as static" in str(warning.message)
+            warning for warning in w if "JAX array is being set as static" in str(warning.message)
         ]
 
         # This test should FAIL with current implementation
@@ -89,9 +85,7 @@ def test_jit_with_nested_operators():
 
         # Should work without warnings
         static_warnings = [
-            warning
-            for warning in w
-            if "JAX array is being set as static" in str(warning.message)
+            warning for warning in w if "JAX array is being set as static" in str(warning.message)
         ]
 
         assert len(static_warnings) == 0
@@ -141,9 +135,7 @@ def test_mixed_static_dynamic_fields():
 
         # No warnings
         static_warnings = [
-            warning
-            for warning in w
-            if "JAX array is being set as static" in str(warning.message)
+            warning for warning in w if "JAX array is being set as static" in str(warning.message)
         ]
         assert len(static_warnings) == 0
 

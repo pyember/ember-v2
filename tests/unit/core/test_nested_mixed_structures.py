@@ -1,12 +1,13 @@
 """Test that nested mixed structures work correctly with the Module system."""
 
 import dataclasses
+import warnings
+from typing import Any, Dict, List, Optional, Tuple
+
+import equinox as eqx
 import jax
 import jax.numpy as jnp
 import pytest
-from typing import List, Dict, Any, Optional, Tuple
-import warnings
-import equinox as eqx
 
 from ember._internal.module import Module
 
@@ -149,26 +150,26 @@ def create_complex_router(key: jax.random.PRNGKey):
         "code": [("python", 0.6), ("javascript", 0.4)],
         "general": [("gpt4", 0.7), ("claude", 0.3)],
     }
-    
+
     k1, k2 = jax.random.split(key)
     operators = {
         "static_analyzer": SimpleOperator("analyzer"),
         "dynamic_processor": LearningOperator("processor", 3, k1),
         "mixed_ensemble": MixedEnsemble("ensemble", 1, 2, 3, k2),
     }
-    
+
     # Create with placeholder for dynamic field
     router = ComplexRouter(
         routes=routes,
         operators=operators,
         default_route="general",
-        adaptation=jnp.zeros(len(routes))  # Placeholder
+        adaptation=jnp.zeros(len(routes)),  # Placeholder
     )
-    
+
     # Use tree_at to properly set the dynamic field
     adaptation = jax.random.normal(key, (len(routes),))
     router = eqx.tree_at(lambda r: r.adaptation, router, adaptation)
-    
+
     return router
 
 
@@ -179,7 +180,7 @@ class ComplexRouter(Module):
     operators: Dict[str, Module]
     default_route: str
     adaptation: jnp.ndarray
-    
+
     def __init__(self, routes, operators, default_route, adaptation):
         self.routes = routes
         self.operators = operators
@@ -200,9 +201,7 @@ def test_no_static_warnings_complex():
 
         # Check no static array warnings during creation
         static_warnings = [
-            warning
-            for warning in w
-            if "JAX array is being set as static" in str(warning.message)
+            warning for warning in w if "JAX array is being set as static" in str(warning.message)
         ]
         assert (
             len(static_warnings) == 0
@@ -241,7 +240,7 @@ def test_deep_nesting_compilation():
     """Test that deeply nested structures compile efficiently."""
     # Clear JAX compilation cache for test isolation
     jax.clear_caches()
-    
+
     key = jax.random.PRNGKey(42)
     shallow = NestedHierarchy(depth=1, key=key)
     deep = NestedHierarchy(depth=5, key=key)
@@ -261,13 +260,9 @@ def test_deep_nesting_compilation():
     # Time execution (not compilation)
     import timeit
 
-    shallow_time = (
-        timeit.timeit(lambda: process_first(shallow, jnp.ones(4)), number=100) / 100
-    )
+    shallow_time = timeit.timeit(lambda: process_first(shallow, jnp.ones(4)), number=100) / 100
 
-    deep_time = (
-        timeit.timeit(lambda: process_first(deep, jnp.ones(4)), number=100) / 100
-    )
+    deep_time = timeit.timeit(lambda: process_first(deep, jnp.ones(4)), number=100) / 100
 
     # Execution time should be similar regardless of depth
     # (since we only process first ensemble)
@@ -374,9 +369,7 @@ def test_serialization_deserialization():
     # Tree definitions should match (same structure)
     # Note: Direct comparison of treedefs may not work, so we check leaf count
     assert len(leaves) == len(new_leaves)
-    assert len(dynamic_leaves) == len(
-        [l for l in new_leaves if isinstance(l, jnp.ndarray)]
-    )
+    assert len(dynamic_leaves) == len([l for l in new_leaves if isinstance(l, jnp.ndarray)])
 
 
 def test_inference_mode_behavior():

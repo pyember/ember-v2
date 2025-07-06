@@ -1,9 +1,10 @@
 """Test the new context and registry CLI commands."""
 
 import json
-import yaml
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
+import yaml
 
 from ember.cli.main import main
 

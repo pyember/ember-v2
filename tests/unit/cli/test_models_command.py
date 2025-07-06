@@ -6,7 +6,6 @@ Following CLAUDE.md principles: minimal, focused, no magic.
 import sys
 from unittest.mock import Mock, patch
 
-
 from ember.cli.main import cmd_models
 
 

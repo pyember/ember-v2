@@ -1,10 +1,11 @@
 """Test that model bindings and orchestration work correctly with static fields."""
 
+import warnings
+from typing import Any, Dict, List
+
 import jax
 import jax.numpy as jnp
 import pytest
-from typing import List, Dict, Any
-import warnings
 
 from ember._internal.module import Module
 
@@ -69,9 +70,7 @@ def test_orchestration_module_creation():
 
         # No static array warnings
         static_warnings = [
-            warning
-            for warning in w
-            if "JAX array is being set as static" in str(warning.message)
+            warning for warning in w if "JAX array is being set as static" in str(warning.message)
         ]
         assert len(static_warnings) == 0
 
@@ -256,9 +255,7 @@ def test_complex_orchestration_graph():
 
         # No warnings
         static_warnings = [
-            warning
-            for warning in w
-            if "JAX array is being set as static" in str(warning.message)
+            warning for warning in w if "JAX array is being set as static" in str(warning.message)
         ]
         assert len(static_warnings) == 0
 
@@ -310,9 +307,7 @@ def test_model_switching_recompilation():
     import equinox as eqx
 
     new_confidence = jnp.ones(10) * 0.9
-    orchestrator_high = eqx.tree_at(
-        lambda x: x.confidence_history, orchestrator, new_confidence
-    )
+    orchestrator_high = eqx.tree_at(lambda x: x.confidence_history, orchestrator, new_confidence)
 
     needs_fallback = check_fallback(orchestrator_high)
     assert not bool(needs_fallback)  # High confidence now

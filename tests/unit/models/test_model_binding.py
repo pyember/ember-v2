@@ -6,11 +6,12 @@ Following CLAUDE.md principles:
 - Clear test names
 """
 
-import pytest
 from unittest.mock import Mock, patch
 
-from ember.api.models import models, ModelBinding, Response
+import pytest
+
 from ember._internal.exceptions import ModelNotFoundError
+from ember.api.models import ModelBinding, Response, models
 
 
 class TestModelBinding:

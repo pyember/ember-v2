@@ -97,9 +97,7 @@ class MinimalXCSGraph:
 
         # Return results for requested nodes
         return {
-            node_id: self._results[node_id]
-            for node_id in output_nodes
-            if node_id in self._results
+            node_id: self._results[node_id] for node_id in output_nodes if node_id in self._results
         }
 
 

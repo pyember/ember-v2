@@ -8,8 +8,8 @@ from statistics import mean, stdev
 import pytest
 import yaml
 
-from ember.core.config.loader import load_config, save_config
 from ember.core.config.compatibility_adapter import CompatibilityAdapter
+from ember.core.config.loader import load_config, save_config
 
 
 class TestConfigLoadPerformance:
@@ -118,16 +118,14 @@ class TestConfigLoadPerformance:
 
         results = self._measure_load_time(config_file)
 
-        print(f"\nSmall YAML config load time:")
+        print("\nSmall YAML config load time:")
         print(f"  Mean: {results['mean']:.2f}ms")
         print(f"  Min: {results['min']:.2f}ms")
         print(f"  Max: {results['max']:.2f}ms")
         print(f"  StdDev: {results['stdev']:.2f}ms")
 
         # Assert mean load time is under 10ms
-        assert (
-            results["mean"] < 10
-        ), f"Mean load time {results['mean']:.2f}ms exceeds 10ms target"
+        assert results["mean"] < 10, f"Mean load time {results['mean']:.2f}ms exceeds 10ms target"
 
     def test_small_json_performance(self, tmp_path, small_config):
         """Test performance of loading small JSON config."""
@@ -136,15 +134,13 @@ class TestConfigLoadPerformance:
 
         results = self._measure_load_time(config_file)
 
-        print(f"\nSmall JSON config load time:")
+        print("\nSmall JSON config load time:")
         print(f"  Mean: {results['mean']:.2f}ms")
         print(f"  Min: {results['min']:.2f}ms")
         print(f"  Max: {results['max']:.2f}ms")
         print(f"  StdDev: {results['stdev']:.2f}ms")
 
-        assert (
-            results["mean"] < 10
-        ), f"Mean load time {results['mean']:.2f}ms exceeds 10ms target"
+        assert results["mean"] < 10, f"Mean load time {results['mean']:.2f}ms exceeds 10ms target"
 
     def test_medium_config_performance(self, tmp_path, medium_config):
         """Test performance of loading medium-sized config."""
@@ -153,7 +149,7 @@ class TestConfigLoadPerformance:
 
         results = self._measure_load_time(config_file)
 
-        print(f"\nMedium YAML config load time:")
+        print("\nMedium YAML config load time:")
         print(f"  Mean: {results['mean']:.2f}ms")
         print(f"  Min: {results['min']:.2f}ms")
         print(f"  Max: {results['max']:.2f}ms")
@@ -162,9 +158,7 @@ class TestConfigLoadPerformance:
             print(f"  Outliers removed: {results['outliers_removed']}")
 
         # Medium configs might take slightly longer
-        assert (
-            results["mean"] < 20
-        ), f"Mean load time {results['mean']:.2f}ms exceeds 20ms target"
+        assert results["mean"] < 20, f"Mean load time {results['mean']:.2f}ms exceeds 20ms target"
 
     def test_large_config_performance(self, tmp_path, large_config):
         """Test performance of loading large config."""
@@ -173,19 +167,17 @@ class TestConfigLoadPerformance:
 
         results = self._measure_load_time(config_file, iterations=50)
 
-        print(f"\nLarge YAML config load time:")
+        print("\nLarge YAML config load time:")
         print(f"  Mean: {results['mean']:.2f}ms")
         print(f"  Min: {results['min']:.2f}ms")
         print(f"  Max: {results['max']:.2f}ms")
         print(f"  StdDev: {results['stdev']:.2f}ms")
 
         # Large configs are allowed more time (this is a stress test)
-        assert (
-            results["mean"] < 200
-        ), f"Mean load time {results['mean']:.2f}ms exceeds 200ms target"
+        assert results["mean"] < 200, f"Mean load time {results['mean']:.2f}ms exceeds 200ms target"
 
         # But typical configs should still be fast
-        print(f"\n✓ Typical configs load in <10ms")
+        print("\n✓ Typical configs load in <10ms")
         print(f"✓ Large stress-test config loads in {results['mean']:.0f}ms")
 
     def test_env_var_resolution_performance(self, tmp_path, monkeypatch):
@@ -209,15 +201,13 @@ class TestConfigLoadPerformance:
 
         results = self._measure_load_time(config_file)
 
-        print(f"\nConfig with 50 env vars load time:")
+        print("\nConfig with 50 env vars load time:")
         print(f"  Mean: {results['mean']:.2f}ms")
         print(f"  Min: {results['min']:.2f}ms")
         print(f"  Max: {results['max']:.2f}ms")
         print(f"  StdDev: {results['stdev']:.2f}ms")
 
-        assert (
-            results["mean"] < 20
-        ), f"Mean load time {results['mean']:.2f}ms exceeds 20ms target"
+        assert results["mean"] < 20, f"Mean load time {results['mean']:.2f}ms exceeds 20ms target"
 
     def test_compatibility_adapter_performance(self, tmp_path):
         """Test performance of compatibility adapter."""
@@ -260,7 +250,7 @@ class TestConfigLoadPerformance:
             "max": max(times),
         }
 
-        print(f"\nExternal config adaptation time:")
+        print("\nExternal config adaptation time:")
         print(f"  Mean: {results['mean']:.2f}ms")
         print(f"  Min: {results['min']:.2f}ms")
         print(f"  Max: {results['max']:.2f}ms")
@@ -303,12 +293,8 @@ class TestConfigSavePerformance:
             end = time.perf_counter()
             json_times.append((end - start) * 1000)
 
-        print(
-            f"\nYAML save time: {mean(yaml_times):.2f}ms (±{stdev(yaml_times):.2f}ms)"
-        )
+        print(f"\nYAML save time: {mean(yaml_times):.2f}ms (±{stdev(yaml_times):.2f}ms)")
         print(f"JSON save time: {mean(json_times):.2f}ms (±{stdev(json_times):.2f}ms)")
 
         # JSON should generally be faster than YAML
-        assert mean(json_times) < mean(
-            yaml_times
-        ), "JSON save should be faster than YAML"
+        assert mean(json_times) < mean(yaml_times), "JSON save should be faster than YAML"

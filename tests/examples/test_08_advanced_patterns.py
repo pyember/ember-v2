@@ -1,6 +1,7 @@
 """Tests for examples in 08_advanced_patterns directory."""
 
 import pytest
+
 from .test_base import ExampleGoldenTest
 
 

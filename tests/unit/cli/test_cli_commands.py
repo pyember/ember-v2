@@ -9,24 +9,24 @@ Principles:
 """
 
 import json
-from unittest.mock import Mock, patch
 import re
+from unittest.mock import Mock, patch
 
 import pytest
 import yaml
 
-from ember.cli.main import (
-    main,
-    cmd_setup,
-    cmd_version,
-    cmd_models,
-    cmd_test,
-)
-from ember.cli.commands.configure import cmd_configure as configure_cmd
 from ember._internal.context import EmberContext
+from ember.cli.commands.configure import cmd_configure as configure_cmd
+from ember.cli.main import (
+    cmd_models,
+    cmd_setup,
+    cmd_test,
+    cmd_version,
+    main,
+)
 
 # Import test infrastructure
-from tests.test_constants import ErrorPatterns, Models
+from tests.test_constants import Models
 
 
 class TestCLIEntry:
@@ -103,19 +103,22 @@ class TestConfigure:
 
         ctx.set_config.assert_called_with("test", test_data)
 
-    @pytest.mark.parametrize("format_type,loader", [
-        pytest.param("yaml", yaml.safe_load, id="yaml-format"),
-        pytest.param("json", json.loads, id="json-format"),
-    ])
+    @pytest.mark.parametrize(
+        "format_type,loader",
+        [
+            pytest.param("yaml", yaml.safe_load, id="yaml-format"),
+            pytest.param("json", json.loads, id="json-format"),
+        ],
+    )
     def test_list_formats(self, ctx, capsys, format_type, loader):
         """List supports multiple formats."""
         test_config = {"models": {"default": Models.GPT4}}
         ctx.get_all_config.return_value = test_config
-        
+
         args = Mock(action="list", format=format_type, context=ctx)
         configure_cmd(args)
         output = capsys.readouterr().out
-        
+
         # Parse output and verify structure
         parsed = loader(output)
         assert parsed["models"]["default"] == Models.GPT4
@@ -178,7 +181,7 @@ class TestModels:
         with patch.object(_global_models_api, "providers", return_value=test_providers):
             cmd_models(Mock(providers=True))
             output = capsys.readouterr().out
-            
+
             # Verify all providers appear
             for provider in test_providers:
                 assert provider in output
@@ -196,11 +199,12 @@ class TestModels:
         mock_models.providers.return_value = ["openai"]
 
         import sys
+
         monkeypatch.setitem(sys.modules, "ember.api.models", mock_models)
 
         cmd_models(Mock(providers=False, provider=None))
         output = capsys.readouterr().out
-        
+
         # Verify models appear
         assert Models.GPT4 in output
         # Verify some description appears
@@ -225,7 +229,7 @@ class TestConnection:
         ctx = Mock()
         test_model = Models.GPT4
         test_response = "Hello from test!"
-        
+
         ctx.get_config.return_value = test_model
         ctx.model_registry.invoke_model.return_value = Mock(data=test_response)
 
@@ -243,23 +247,26 @@ class TestConnection:
         ctx = Mock()
         test_model = Models.GPT4
         test_error = "API key not found"
-        
+
         ctx.get_config.return_value = test_model
         ctx.model_registry.invoke_model.side_effect = Exception(test_error)
 
         assert cmd_test(Mock(model=None, context=ctx)) == 1
         output = capsys.readouterr().out
-        
+
         # Verify error is shown
         assert test_error in output
         # Some indication of failure
         assert any(indicator in output.lower() for indicator in ["✗", "fail", "error"])
 
-    @pytest.mark.parametrize("model", [
-        pytest.param(Models.GPT4, id="gpt4"),
-        pytest.param(Models.CLAUDE3, id="claude3"),
-        pytest.param(Models.GEMINI_PRO, id="gemini"),
-    ])
+    @pytest.mark.parametrize(
+        "model",
+        [
+            pytest.param(Models.GPT4, id="gpt4"),
+            pytest.param(Models.CLAUDE3, id="claude3"),
+            pytest.param(Models.GEMINI_PRO, id="gemini"),
+        ],
+    )
     def test_explicit_model(self, model):
         """Test specific models."""
         ctx = Mock()
@@ -275,11 +282,14 @@ class TestConnection:
 class TestVersion:
     """Version command."""
 
-    @pytest.mark.parametrize("version,expected_pattern", [
-        pytest.param("1.0.0", r"1\.0\.0", id="stable"),
-        pytest.param("2.1.0-beta", r"2\.1\.0-beta", id="prerelease"),
-        pytest.param("0.0.1", r"0\.0\.1", id="early"),
-    ])
+    @pytest.mark.parametrize(
+        "version,expected_pattern",
+        [
+            pytest.param("1.0.0", r"1\.0\.0", id="stable"),
+            pytest.param("2.1.0-beta", r"2\.1\.0-beta", id="prerelease"),
+            pytest.param("0.0.1", r"0\.0\.1", id="early"),
+        ],
+    )
     def test_with_version(self, capsys, version, expected_pattern):
         """Shows version when available."""
         with patch("ember.__version__", version):
@@ -308,11 +318,14 @@ class TestVersion:
 # Contract tests for CLI behavior
 class TestCLIContracts:
     """Verify CLI commands follow expected contracts."""
-    
-    @pytest.mark.parametrize("command,expected_code", [
-        pytest.param(["ember", "--help"], 0, id="help"),
-        pytest.param(["ember", "unknown-command"], 2, id="unknown-command"),
-    ])
+
+    @pytest.mark.parametrize(
+        "command,expected_code",
+        [
+            pytest.param(["ember", "--help"], 0, id="help"),
+            pytest.param(["ember", "unknown-command"], 2, id="unknown-command"),
+        ],
+    )
     def test_exit_codes(self, command, expected_code):
         """Test standard exit codes."""
         with patch("sys.argv", command):
@@ -320,11 +333,11 @@ class TestCLIContracts:
             with pytest.raises(SystemExit) as exc_info:
                 main()
             assert exc_info.value.code == expected_code
-    
+
     def test_all_commands_have_context(self):
         """Verify all commands accept context parameter."""
         commands = [cmd_setup, cmd_models, cmd_test, cmd_version]
-        
+
         for cmd in commands:
             # Create mock args with context
             args = Mock(context=Mock())

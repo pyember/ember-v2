@@ -196,23 +196,15 @@ class MinimalSchemaValidator(MinimalValidator):
                 if field in data and "type" in props:
                     if props["type"] == "string" and not isinstance(data[field], str):
                         return False
-                    elif props["type"] == "integer" and not isinstance(
-                        data[field], int
-                    ):
+                    elif props["type"] == "integer" and not isinstance(data[field], int):
                         return False
-                    elif props["type"] == "number" and not isinstance(
-                        data[field], (int, float)
-                    ):
+                    elif props["type"] == "number" and not isinstance(data[field], (int, float)):
                         return False
-                    elif props["type"] == "boolean" and not isinstance(
-                        data[field], bool
-                    ):
+                    elif props["type"] == "boolean" and not isinstance(data[field], bool):
                         return False
                     elif props["type"] == "array" and not isinstance(data[field], list):
                         return False
-                    elif props["type"] == "object" and not isinstance(
-                        data[field], dict
-                    ):
+                    elif props["type"] == "object" and not isinstance(data[field], dict):
                         return False
 
         return True

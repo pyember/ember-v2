@@ -5,9 +5,8 @@ import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
-
+from ember._internal.migrations import migrate_config, migrate_credentials
 from ember.context import EmberContext
-from ember._internal.migrations import migrate_credentials, migrate_config
 
 
 def test_migrate_credentials():
@@ -18,9 +17,7 @@ def test_migrate_credentials():
         old_dir.mkdir()
         old_creds = old_dir / "credentials"
 
-        old_data = {
-            "openai": {"api_key": "sk-test123", "created_at": "2024-01-01T00:00:00"}
-        }
+        old_data = {"openai": {"api_key": "sk-test123", "created_at": "2024-01-01T00:00:00"}}
 
         with open(old_creds, "w") as f:
             json.dump(old_data, f)
@@ -74,9 +71,7 @@ def test_migrate_config():
             ctx = EmberContext(isolated=True)
 
             # Patch current context
-            with patch(
-                "ember._internal.migrations.EmberContext.current", return_value=ctx
-            ):
+            with patch("ember._internal.migrations.EmberContext.current", return_value=ctx):
                 # Run migration
                 result = migrate_config()
 

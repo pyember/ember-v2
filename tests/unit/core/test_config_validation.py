@@ -7,7 +7,6 @@ No magic, explicit assertions, fast execution.
 import pytest
 
 
-
 class TestConfigKeyValidation:
     """Configuration key validation."""
 

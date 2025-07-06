@@ -68,9 +68,7 @@ class TracerContext:
 class TraceRecord:
     """Implementation of TraceRecord for testing."""
 
-    def __init__(
-        self, operator_name="", node_id="", inputs=None, outputs=None, **kwargs
-    ):
+    def __init__(self, operator_name="", node_id="", inputs=None, outputs=None, **kwargs):
         self.operator_name = operator_name
         self.node_id = node_id
         self.inputs = inputs or {}
@@ -107,11 +105,7 @@ class XCSAPI:
     def mesh_sharded(self, func=None, **kwargs):
         """Mesh-sharded implementation."""
         mesh = kwargs.get("mesh", DeviceMesh())
-        return (
-            mesh_sharded(func, mesh)
-            if func is not None
-            else lambda f: mesh_sharded(f, mesh)
-        )
+        return mesh_sharded(func, mesh) if func is not None else lambda f: mesh_sharded(f, mesh)
 
 
 # Create instance of the API

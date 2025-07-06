@@ -2,10 +2,11 @@
 
 import json
 import os
+
 import pytest
 import yaml
 
-from ember.core.config.loader import load_config, save_config, _resolve_env_vars
+from ember.core.config.loader import _resolve_env_vars, load_config, save_config
 
 
 class TestConfigLoader:
@@ -169,9 +170,7 @@ class TestEnvironmentVariableResolution:
         resolved = _resolve_env_vars(config)
         assert resolved["providers"]["openai"]["api_key"] == "openai-123"
         assert resolved["providers"]["anthropic"]["api_key"] == "anthropic-456"
-        assert (
-            resolved["providers"]["openai"]["base_url"] == "https://api.openai.com/v1"
-        )
+        assert resolved["providers"]["openai"]["base_url"] == "https://api.openai.com/v1"
         assert resolved["default"] == "openai"
 
     def test_resolve_env_vars_in_list(self, monkeypatch):

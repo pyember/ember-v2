@@ -1,6 +1,5 @@
 """Tests for configuration compatibility adapter."""
 
-
 from ember.core.config.compatibility_adapter import CompatibilityAdapter
 
 
@@ -36,9 +35,7 @@ class TestExternalFormatDetection:
         """Test non-external format detection."""
         # Ember format with api_key
         config = {
-            "providers": {
-                "openai": {"api_key": "sk-123", "base_url": "https://api.openai.com/v1"}
-            }
+            "providers": {"openai": {"api_key": "sk-123", "base_url": "https://api.openai.com/v1"}}
         }
         assert CompatibilityAdapter.needs_adaptation(config) is False
 

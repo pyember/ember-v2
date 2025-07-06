@@ -6,15 +6,16 @@ Following CLAUDE.md principles:
 - Deterministic behavior
 """
 
-import pytest
 from unittest.mock import patch
 
-from ember.api.models import models, Response
+import pytest
+
 from ember._internal.exceptions import (
     ModelNotFoundError,
     ModelProviderError,
     ProviderAPIError,
 )
+from ember.api.models import Response, models
 
 
 class TestModelsFunction:
@@ -64,7 +65,7 @@ class TestModelsFunction:
             assert usage["prompt_tokens"] == 10
             assert usage["completion_tokens"] == 20
             assert usage["total_tokens"] == 30
-            # Cost should match actual GPT-4 pricing: 
+            # Cost should match actual GPT-4 pricing:
             # 10 tokens @ $0.03/1k input + 20 tokens @ $0.06/1k output = $0.0015
             assert usage["cost"] == 0.0015
 
@@ -104,9 +105,7 @@ class TestModelsFunction:
     def test_provider_api_error(self):
         """Test error from provider API (rate limits, etc)."""
         with patch("ember.api.models._global_models_api._registry") as mock_registry:
-            mock_registry.invoke_model.side_effect = ProviderAPIError(
-                "Rate limit exceeded"
-            )
+            mock_registry.invoke_model.side_effect = ProviderAPIError("Rate limit exceeded")
 
             with pytest.raises(ProviderAPIError) as exc_info:
                 models("gpt-4", "Hello")
@@ -131,9 +130,7 @@ class TestModelsFunction:
 
         with patch("ember.api.models._global_models_api._registry") as mock_registry:
             # Response without usage
-            mock_registry.invoke_model.return_value = ChatResponse(
-                data="Response without usage"
-            )
+            mock_registry.invoke_model.return_value = ChatResponse(data="Response without usage")
 
             result = models("gpt-4", "Hello")
 
@@ -159,9 +156,7 @@ class TestModelsFunction:
 
         with patch("ember.api.models._global_models_api._registry") as mock_registry:
             # Unicode response
-            mock_registry.invoke_model.return_value = ChatResponse(
-                data="Hello 世界! 🌍"
-            )
+            mock_registry.invoke_model.return_value = ChatResponse(data="Hello 世界! 🌍")
 
             result = models("gpt-4", "你好")
 

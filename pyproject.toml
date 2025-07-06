@@ -3,7 +3,7 @@ name = "ember-ai"
 version = "0.1.0"
 description = "Compositional framework for building and orchestrating Compound AI Systems and Networks of Networks (NONs)."
 authors = [
-    {name = "Jared Quincy Davis", email = "jaredq@cs.stanford.edu"}
+    {name = "Jared Quincy Davis", email = "jared@mlfoundry.com"}
 ]
 maintainers = [
     {name = "Ember Team", email = "team@pyember.org"}

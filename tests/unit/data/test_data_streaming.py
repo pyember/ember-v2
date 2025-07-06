@@ -67,9 +67,7 @@ class TestStreamFunction:
         ]
         source = MockDataSource(items)
 
-        results = list(
-            stream(source, filter=lambda x: x["score"] > 0.4, normalize=False)
-        )
+        results = list(stream(source, filter=lambda x: x["score"] > 0.4, normalize=False))
 
         assert len(results) == 2
         assert results[0]["question"] == "Q1"
@@ -224,9 +222,7 @@ class TestStreamIterator:
         items = [{"id": i} for i in range(5)]
         source = MockDataSource(items)
 
-        results = (
-            stream(source, normalize=False).filter(lambda x: x["id"] % 2 == 0).collect()
-        )
+        results = stream(source, normalize=False).filter(lambda x: x["id"] % 2 == 0).collect()
         assert isinstance(results, list)
         assert len(results) == 3
         assert [r["id"] for r in results] == [0, 2, 4]
@@ -514,9 +510,7 @@ class TestEdgeCases:
         items = [{"value": 1}, {"value": 2}, {"value": 3}]
         source = MockDataSource(items)
 
-        results = list(
-            stream(source, filter=lambda x: x["value"] > 10, normalize=False)
-        )
+        results = list(stream(source, filter=lambda x: x["value"] > 10, normalize=False))
         assert results == []
 
     def test_transform_error_propagation(self):

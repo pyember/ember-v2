@@ -2,6 +2,7 @@
 
 import subprocess
 from pathlib import Path
+
 import pytest
 
 
@@ -11,13 +12,7 @@ class TestSetupWizardTypeScript:
     @pytest.fixture
     def setup_wizard_dir(self):
         """Get the setup wizard directory."""
-        return (
-            Path(__file__).parent.parent.parent
-            / "src"
-            / "ember"
-            / "cli"
-            / "setup-wizard"
-        )
+        return Path(__file__).parent.parent.parent / "src" / "ember" / "cli" / "setup-wizard"
 
     def test_typescript_compiles(self, setup_wizard_dir):
         """Test that TypeScript code compiles without errors."""
@@ -39,9 +34,7 @@ class TestSetupWizardTypeScript:
         )
 
         # Check for compilation errors
-        assert (
-            result.returncode == 0
-        ), f"TypeScript compilation failed:\n{result.stderr}"
+        assert result.returncode == 0, f"TypeScript compilation failed:\n{result.stderr}"
 
     def test_required_files_exist(self, setup_wizard_dir):
         """Test that all required TypeScript files exist."""
@@ -80,9 +73,7 @@ class TestSetupWizardTypeScript:
         )
 
         # Check for type errors
-        assert (
-            result.returncode == 0
-        ), f"TypeScript type checking failed:\n{result.stderr}"
+        assert result.returncode == 0, f"TypeScript type checking failed:\n{result.stderr}"
 
     def test_components_have_proper_types(self, setup_wizard_dir):
         """Test that component files have proper TypeScript types."""

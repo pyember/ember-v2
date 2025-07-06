@@ -341,8 +341,10 @@ class StreamIterator:
         # Combine with existing filter using AND logic
         if self._filter:
             old_filter = self._filter
+
             def new_filter(x):
                 return old_filter(x) and predicate(x)
+
         else:
             new_filter = predicate
 
@@ -393,8 +395,10 @@ class StreamIterator:
         # Combine with existing transformation
         if self._transform:
             old_transform = self._transform
+
             def new_transform(x):
                 return fn(old_transform(x))
+
         else:
             new_transform = fn
 

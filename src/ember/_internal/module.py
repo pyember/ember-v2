@@ -119,9 +119,11 @@ class EmberModuleMeta(type(eqx.Module)):
                         elif hasattr(value_type, "__mro__"):
                             # Check if it's a Module subclass by checking base classes
                             try:
-                                if any(base.__name__ in ("Module", "Operator") and 
-                                      "ember" in getattr(base, "__module__", "") 
-                                      for base in value_type.__mro__):
+                                if any(
+                                    base.__name__ in ("Module", "Operator")
+                                    and "ember" in getattr(base, "__module__", "")
+                                    for base in value_type.__mro__
+                                ):
                                     is_static = False  # Dict containing Modules
                                 else:
                                     is_static = True
@@ -134,9 +136,12 @@ class EmberModuleMeta(type(eqx.Module)):
                         if default_value is not None and isinstance(default_value, dict):
                             # Check if any values in the dict are JAX arrays or Modules
                             import jax.numpy as jnp
+
                             has_dynamic = any(
-                                isinstance(v, jnp.ndarray) or 
-                                (hasattr(v, "__class__") and "Module" in str(v.__class__.__mro__))
+                                isinstance(v, jnp.ndarray)
+                                or (
+                                    hasattr(v, "__class__") and "Module" in str(v.__class__.__mro__)
+                                )
                                 for v in default_value.values()
                             )
                             is_static = not has_dynamic
@@ -156,7 +161,7 @@ class EmberModuleMeta(type(eqx.Module)):
                 else:
                     # No type args - let equinox decide
                     is_static = False
-            
+
             # For bare dict/list without type parameters, default to static
             # This maintains backward compatibility
             elif field_type in (dict, list):
@@ -233,18 +238,22 @@ class Module(eqx.Module, metaclass=EmberModuleMeta):
                         raise
                 else:
                     original_init(self, *args, **kwargs)
-                    
+
                     # After init, check if any dict/list fields contain JAX arrays
                     # and mark them as dynamic if needed
                     import jax.numpy as jnp
+
                     for field_name in cls.__annotations__:
                         if hasattr(self, field_name):
                             value = getattr(self, field_name)
                             if isinstance(value, dict):
                                 # Check if dict contains JAX arrays or Modules
                                 has_dynamic = any(
-                                    isinstance(v, jnp.ndarray) or 
-                                    (hasattr(v, "__class__") and "Module" in str(v.__class__.__mro__))
+                                    isinstance(v, jnp.ndarray)
+                                    or (
+                                        hasattr(v, "__class__")
+                                        and "Module" in str(v.__class__.__mro__)
+                                    )
                                     for v in value.values()
                                 )
                                 if has_dynamic:

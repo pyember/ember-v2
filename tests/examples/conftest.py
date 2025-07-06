@@ -7,8 +7,9 @@ This module configures pytest for testing Ember examples, including:
 """
 
 import os
-import pytest
 from pathlib import Path
+
+import pytest
 
 
 def pytest_addoption(parser):
@@ -95,9 +96,7 @@ def pytest_collection_modifyitems(config, items):
 
     for item in items:
         # Check if this is an example test
-        if not hasattr(item, "function") or not item.function.__name__.startswith(
-            "test_"
-        ):
+        if not hasattr(item, "function") or not item.function.__name__.startswith("test_"):
             selected.append(item)
             continue
 
@@ -128,8 +127,5 @@ def pytest_runtest_setup(item):
             required_keys = marker.args[0] if marker.args else []
             missing_keys = [key for key in required_keys if not os.environ.get(key)]
 
-            if (
-                missing_keys
-                and "--no-api-keys" not in item.config.invocation_params.args
-            ):
+            if missing_keys and "--no-api-keys" not in item.config.invocation_params.args:
                 pytest.skip(f"Missing required API keys: {missing_keys}")

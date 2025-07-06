@@ -88,9 +88,7 @@ def check_migration_status():
             print(f"  ... and {len(not_migrated) - 10} more")
 
     if migrated_no_golden:
-        print(
-            f"\n\n⚠️  {len(migrated_no_golden)} migrated examples need golden outputs:"
-        )
+        print(f"\n\n⚠️  {len(migrated_no_golden)} migrated examples need golden outputs:")
         for ex in sorted(migrated_no_golden):
             print(f"  - {ex}")
 

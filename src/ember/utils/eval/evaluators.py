@@ -62,7 +62,7 @@ class ExactMatchEvaluator(IEvaluator[str, str]):
 
     Args:
         compare_fn (Optional[Callable[[str, str], bool]]): Optional custom comparison function.
-            If not provided, strings are normalized (whitespace removed, lowercase) 
+            If not provided, strings are normalized (whitespace removed, lowercase)
             before comparison.
 
     Returns:
@@ -93,7 +93,7 @@ class ExactMatchEvaluator(IEvaluator[str, str]):
             **kwargs: Additional keyword arguments (unused).
 
         Returns:
-            EvaluationResult: An object with `is_correct` set to True if the normalized 
+            EvaluationResult: An object with `is_correct` set to True if the normalized
             strings match,
                               along with a corresponding score.
         """
@@ -119,7 +119,7 @@ class NumericToleranceEvaluator(IEvaluator[float, float]):
     def evaluate(
         self, system_output: float, correct_answer: float, **kwargs: Any
     ) -> EvaluationResult:
-        """Evaluates the numeric system output against the correct value within a 
+        """Evaluates the numeric system output against the correct value within a
         specified tolerance.
 
         Args:
@@ -128,7 +128,7 @@ class NumericToleranceEvaluator(IEvaluator[float, float]):
             **kwargs: Additional keyword arguments (unused).
 
         Returns:
-            EvaluationResult: The result including a correctness flag, score, and 
+            EvaluationResult: The result including a correctness flag, score, and
             metadata about the difference.
         """
         difference = abs(system_output - correct_answer)
@@ -154,7 +154,7 @@ class CodeExecutionEvaluator(IEvaluator[str, str]):
         self.timeout = timeout
 
     def evaluate(self, system_output: str, correct_answer: str, **kwargs: Any) -> EvaluationResult:
-        """Executes the provided Python code and compares its standard output to the 
+        """Executes the provided Python code and compares its standard output to the
         expected result.
 
         Args:
@@ -163,7 +163,7 @@ class CodeExecutionEvaluator(IEvaluator[str, str]):
             **kwargs: Additional keyword arguments (unused).
 
         Returns:
-            EvaluationResult: The result of execution, including stdout, stderr, and 
+            EvaluationResult: The result of execution, including stdout, stderr, and
             exit code in metadata.
         """
         try:

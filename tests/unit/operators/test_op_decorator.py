@@ -7,10 +7,11 @@ Following CLAUDE.md principles:
 - Integrates with JAX
 """
 
-import pytest
+from typing import Dict, List
+
 import jax
 import jax.numpy as jnp
-from typing import List, Dict
+import pytest
 
 from ember.api.decorators import op
 from ember.api.operators import Operator, chain, ensemble

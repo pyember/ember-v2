@@ -8,8 +8,8 @@ Following CLAUDE.md principles:
 
 import pytest
 
-from ember.operators import Operator
 from ember._internal.types import EmberModel
+from ember.operators import Operator
 
 
 class TestOperatorBase:

@@ -1,9 +1,10 @@
 """Test that vmap works correctly with hybrid tensor/orchestration operations."""
 
+from typing import List, Tuple
+
 import jax
 import jax.numpy as jnp
 import pytest
-from typing import List, Tuple
 
 from ember._internal.module import Module
 from ember.xcs import vmap
@@ -19,9 +20,7 @@ class HybridOperator(Module):
         self.operation_name = "hybrid_op"
         self.weight = jax.random.normal(key, (dim, dim))
 
-    def forward(
-        self, tensor_input: jnp.ndarray, text_input: str
-    ) -> Tuple[jnp.ndarray, str]:
+    def forward(self, tensor_input: jnp.ndarray, text_input: str) -> Tuple[jnp.ndarray, str]:
         # Tensor operation
         tensor_output = jnp.tanh(tensor_input @ self.weight)
 
@@ -93,9 +92,7 @@ def test_vmap_nested_operators():
         name: str
         inner_ops: List[HybridOperator]  # Properly typed
 
-        def __init__(
-            self, name: str, num_inner: int, dim: int, key: jax.random.PRNGKey
-        ):
+        def __init__(self, name: str, num_inner: int, dim: int, key: jax.random.PRNGKey):
             self.name = name
             keys = jax.random.split(key, num_inner)
             self.inner_ops = [HybridOperator(dim, keys[i]) for i in range(num_inner)]

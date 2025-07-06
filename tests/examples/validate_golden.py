@@ -99,9 +99,7 @@ def validate_golden_file(file_path: Path) -> List[str]:
         if not isinstance(metrics, dict):
             errors.append("Metrics must be a dict")
         else:
-            if "lines_of_code" in metrics and not isinstance(
-                metrics["lines_of_code"], int
-            ):
+            if "lines_of_code" in metrics and not isinstance(metrics["lines_of_code"], int):
                 errors.append("Metrics.lines_of_code must be an integer")
             if "api_calls" in metrics and not isinstance(metrics["api_calls"], int):
                 errors.append("Metrics.api_calls must be an integer")

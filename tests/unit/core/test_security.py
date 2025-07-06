@@ -68,6 +68,7 @@ class TestCredentialSecurity:
 
                 # Original data intact
                 import warnings
+
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore", DeprecationWarning)
                     assert mgr.get("test1") == "test-key-1234"

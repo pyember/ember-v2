@@ -69,14 +69,10 @@ class TestCredentialValidation:
         """Provider name must be valid."""
         cred_mgr = CredentialManager(tmp_path)
 
-        with pytest.raises(
-            ValueError, match="Provider name must be a non-empty string"
-        ):
+        with pytest.raises(ValueError, match="Provider name must be a non-empty string"):
             cred_mgr.save_api_key("", "key")
 
-        with pytest.raises(
-            ValueError, match="Provider name must be a non-empty string"
-        ):
+        with pytest.raises(ValueError, match="Provider name must be a non-empty string"):
             cred_mgr.save_api_key(None, "key")
 
     def test_save_api_key_validates_key(self, tmp_path):
@@ -107,7 +103,7 @@ class TestCredentialValidation:
     def test_save_api_key_accepts_valid_keys(self, tmp_path):
         """Valid API keys are accepted."""
         import warnings
-        
+
         # Suppress deprecation warnings for this test since we're testing the deprecated system
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", DeprecationWarning)

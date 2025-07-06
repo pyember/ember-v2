@@ -5,7 +5,8 @@ functionality while providing a cleaner interface.
 """
 
 import pytest
-from ember.context import context, EmberContext
+
+from ember.context import EmberContext, context
 
 
 class TestUnifiedContextAPI:

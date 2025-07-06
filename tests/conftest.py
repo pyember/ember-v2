@@ -16,14 +16,14 @@ import pytest
 
 # Import our new test infrastructure
 try:
-    from .test_constants import APIKeys, Models, TestData
-    from .test_doubles import FakeProvider, FakeModelRegistry, FakeContext
     from .fixtures import *
+    from .test_constants import APIKeys, Models, TestData
+    from .test_doubles import FakeContext, FakeModelRegistry, FakeProvider
 except ImportError:
     # Fallback for when running pytest from different locations
-    from test_constants import APIKeys, Models, TestData
-    from test_doubles import FakeProvider, FakeModelRegistry, FakeContext
     from fixtures import *
+    from test_constants import APIKeys, Models, TestData
+    from test_doubles import FakeContext, FakeModelRegistry
 
 # Setup paths
 PROJECT_ROOT = Path(__file__).parent.parent.absolute()
@@ -52,29 +52,29 @@ def tmp_ctx(tmp_path, monkeypatch):
     # Import only if we need the real context
     try:
         from ember._internal.context import EmberContext
-        
+
         # Create fake home
         home = tmp_path / "home"
         home.mkdir()
         ember_dir = home / ".ember"
         ember_dir.mkdir()
-        
+
         # Set environment to use temp directory
         monkeypatch.setenv("HOME", str(home))
         monkeypatch.setenv("EMBER_HOME", str(ember_dir))
-        
+
         # Try to use public API for context reset if available
-        if hasattr(EmberContext, 'reset'):
+        if hasattr(EmberContext, "reset"):
             EmberContext.reset()
-            
+
         # Create fresh context
         ctx = EmberContext(isolated=True)
         yield ctx
-        
+
         # Cleanup via public API if available
-        if hasattr(EmberContext, 'reset'):
+        if hasattr(EmberContext, "reset"):
             EmberContext.reset()
-            
+
     except ImportError:
         # If real context not available, use fake
         ctx = FakeContext(isolated=True)
@@ -96,12 +96,9 @@ def mock_cli_args(monkeypatch):
 def mock_model_response():
     """Standard mock response for model tests."""
     from tests.fixtures import create_api_response
-    
+
     return create_api_response(
-        content="Test response",
-        model=Models.GPT4,
-        prompt_tokens=10,
-        completion_tokens=20
+        content="Test response", model=Models.GPT4, prompt_tokens=10, completion_tokens=20
     )
 
 
@@ -188,6 +185,7 @@ def mock_api_keys(monkeypatch):
 def fixed_seed():
     """Fix random seeds for deterministic tests."""
     import random
+
     import numpy as np
 
     # Set seeds
@@ -209,11 +207,11 @@ def fixed_seed():
 def no_api_keys():
     """Check if any real API keys are available."""
     import os
-    
+
     real_keys = [
         os.environ.get(APIKeys.ENV_OPENAI, "").startswith("sk-"),
         os.environ.get(APIKeys.ENV_ANTHROPIC, "").startswith("ant-"),
-        os.environ.get(APIKeys.ENV_GOOGLE, "").startswith("goog-")
+        os.environ.get(APIKeys.ENV_GOOGLE, "").startswith("goog-"),
     ]
-    
+
     return not any(real_keys)
