@@ -336,8 +336,12 @@ def resolve_model_id(model: str) -> tuple[str, str]:
         model_lower.startswith("babbage") or
         model_lower.startswith("ada") or
         model_lower.startswith("text-") or
-        model_lower.startswith("o1-") or  # New reasoning models
-        model_lower in ["gpt-4o", "gpt-4o-mini"]):
+        model_lower.startswith("o1-") or  # Original reasoning models
+        model_lower.startswith("o3-") or  # New o3 reasoning models
+        model_lower.startswith("o4-") or  # New o4 reasoning models
+        model_lower.startswith("codex-") or  # Codex models
+        model_lower.startswith("computer-use-") or  # Computer use models
+        model_lower in ["gpt-4o", "gpt-4o-mini", "o1", "o1-pro", "o1-mini", "o3", "o3-pro", "o3-mini", "o4-mini"]):
         return "openai", model
     
     # Anthropic models - all Claude variants

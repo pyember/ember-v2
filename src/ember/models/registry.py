@@ -442,8 +442,9 @@ class ModelRegistry:
             return 0.0
         
         # Calculate input and output costs separately
-        input_cost = (usage.prompt_tokens / 1000.0) * cost_info.get("input", 0.0)
-        output_cost = (usage.completion_tokens / 1000.0) * cost_info.get("output", 0.0)
+        # Cost is stored per 1M tokens, so divide by 1,000,000
+        input_cost = (usage.prompt_tokens / 1_000_000.0) * cost_info.get("input", 0.0)
+        output_cost = (usage.completion_tokens / 1_000_000.0) * cost_info.get("output", 0.0)
         
         return round(input_cost + output_cost, 6)  # Round to 6 decimal places
     

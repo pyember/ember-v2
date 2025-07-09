@@ -132,12 +132,12 @@ class ModelCost:
     """Cost information for a model.
     
     This schema standardizes cost representation across all providers.
-    Costs are always in USD per 1000 tokens for consistency and to
+    Costs are always in USD per 1,000,000 tokens for consistency and to
     avoid floating point precision issues with per-token costs.
     
     Attributes:
-        input_cost_per_thousand: USD cost per 1000 input tokens.
-        output_cost_per_thousand: USD cost per 1000 output tokens.
+        input_cost_per_million: USD cost per 1,000,000 input tokens.
+        output_cost_per_million: USD cost per 1,000,000 output tokens.
         
     Properties:
         input_cost_per_token: Calculated cost per single input token.
@@ -147,35 +147,35 @@ class ModelCost:
         Define costs:
         
         >>> gpt4_cost = ModelCost(
-        ...     input_cost_per_thousand=30.0,
-        ...     output_cost_per_thousand=60.0
+        ...     input_cost_per_million=2.0,
+        ...     output_cost_per_million=8.0
         ... )
         
         Calculate request cost:
         
-        >>> cost = ModelCost(input_cost_per_thousand=30.0,
-        ...                  output_cost_per_thousand=60.0)
+        >>> cost = ModelCost(input_cost_per_million=2.0,
+        ...                  output_cost_per_million=8.0)
         >>> input_tokens = 1500
         >>> output_tokens = 500
         >>> total = (
-        ...     (input_tokens / 1000) * cost.input_cost_per_thousand +
-        ...     (output_tokens / 1000) * cost.output_cost_per_thousand
+        ...     (input_tokens / 1_000_000) * cost.input_cost_per_million +
+        ...     (output_tokens / 1_000_000) * cost.output_cost_per_million
         ... )
-        >>> print(f"Total cost: ${total:.4f}")
-        Total cost: $75.0000
+        >>> print(f"Total cost: ${total:.6f}")
+        Total cost: $0.007000
     """
-    input_cost_per_thousand: float
-    output_cost_per_thousand: float
+    input_cost_per_million: float
+    output_cost_per_million: float
     
     @property
     def input_cost_per_token(self) -> float:
         """Cost per single input token."""
-        return self.input_cost_per_thousand / 1000.0
+        return self.input_cost_per_million / 1_000_000.0
     
     @property
     def output_cost_per_token(self) -> float:
         """Cost per single output token."""
-        return self.output_cost_per_thousand / 1000.0
+        return self.output_cost_per_million / 1_000_000.0
 
 
 @dataclass

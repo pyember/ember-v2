@@ -69,13 +69,13 @@ def main():
         print_example_output("Prompt tokens", response2.usage["prompt_tokens"])
         print_example_output("Completion tokens", response2.usage["completion_tokens"])
         print_example_output("Total tokens", response2.usage["total_tokens"])
-        print_example_output("Estimated cost", f"${response2.usage['cost']:.4f}")
+        print_example_output("Estimated cost", f"${response2.usage['cost']:.6f}")
         
         # Bonus: Show how to use different models
         print("\nBonus: Using different models")
         # You can use any supported model
         models_to_try = [
-            "gpt-4",           # More capable but more expensive
+            "o4-mini",           # More capable but more expensive
             "claude-3-opus",   # Anthropic's model
             "gemini-pro",      # Google's model
         ]

@@ -10,6 +10,7 @@ Example:
 """
 
 import sys
+import os
 from pathlib import Path
 from typing import Dict, Any, Optional
 
@@ -18,271 +19,267 @@ sys.path.append(str(Path(__file__).parent.parent))
 from _shared.example_utils import print_section_header, print_example_output
 
 
-def example_basic_context():
-    """Show basic context usage."""
-    print("\n=== Basic Context Management ===\n")
+def show_the_problem():
+    """Demonstrate why context management matters."""
+    print("\n=== The Problem: Direct Usage Doesn't Scale ===\n")
     
-    from ember.context import get_context, create_context
+    print("🤔 Let's say you start simple...")
+    print()
     
-    # Get current context (creates if needed)
-    ctx = get_context()
+    # Show the naive approach
+    print("# Simple approach that everyone starts with:")
+    print("from ember.api import models")
+    print()
+    print("def analyze_text(text):")
+    print("    model = models('gpt-4', temperature=0.7)")
+    print("    return model(f'Analyze: {text}').text")
+    print()
+    print("result = analyze_text('Some text')")
+    print()
     
-    print("Getting current context:")
-    print("  ctx = get_context()")
-    print("  Thread-safe: Yes")
-    print("  Isolated: Yes")
-    print("  Auto-configures from environment\n")
+    print("✅ This works great... until you need:")
+    print("  • Different settings for dev vs production")
+    print("  • Testing with mock models")
+    print("  • Multiple API keys or providers")
+    print("  • Sharing configuration across components")
+    print("  • Different models per environment")
+    print()
     
-    # Access components through context
-    print("Accessing components:")
-    print("  model_registry = ctx.model_registry")
-    print("  data_registry = ctx.data_registry")
-    print("  metrics = ctx.metrics")
+    print("❌ Problems with direct usage:")
+    print("  • Hard-coded configuration scattered everywhere")
+    print("  • No way to easily switch environments")
+    print("  • Testing requires changing production code")
+    print("  • Configuration duplication")
+    print("  • No centralized resource management")
 
 
-def example_configuration_context():
-    """Demonstrate configuration management."""
-    print("\n\n=== Configuration in Context ===\n")
+def show_basic_solution():
+    """Show how context solves the basic problem."""
+    print("\n\n=== The Solution: Context Management ===\n")
     
-    from ember.context import get_context, create_context
+    print("🎯 Context centralizes configuration and state:")
+    print()
     
-    # Create context with custom config
-    config = {
-        "models": {
-            "default": "gpt-3.5-turbo",
-            "temperature": 0.7
+    # Mock context API for demonstration
+    class MockContext:
+        def __init__(self, config):
+            self.config = config
+        
+        def get_model(self, name=None, **overrides):
+            model_config = self.config.get('models', {})
+            if name:
+                return f"Model({name}, {model_config})"
+            else:
+                default = model_config.get('default', 'gpt-3.5-turbo')
+                return f"Model({default}, {model_config})"
+    
+    # Show the context approach
+    print("# Context approach:")
+    print("from ember.context import get_context")
+    print()
+    print("def analyze_text(text):")
+    print("    ctx = get_context()")
+    print("    model = ctx.get_model()  # Uses configured default")
+    print("    return model(f'Analyze: {text}').text")
+    print()
+    
+    # Demonstrate different configurations
+    configs = {
+        'development': {
+            'models': {'default': 'gpt-3.5-turbo', 'temperature': 0.9}
         },
-        "cache": {
-            "enabled": True,
-            "ttl": 3600
+        'production': {
+            'models': {'default': 'gpt-4', 'temperature': 0.3}
+        },
+        'testing': {
+            'models': {'default': 'mock-model', 'temperature': 0.0}
         }
     }
     
-    print("Custom configuration:")
-    print("  config = {")
-    print("      'models': {'default': 'gpt-3.5-turbo', 'temperature': 0.7},")
-    print("      'cache': {'enabled': True, 'ttl': 3600}")
-    print("  }")
+    print("✅ Same code, different environments:")
+    for env, config in configs.items():
+        ctx = MockContext(config)
+        model = ctx.get_model()
+        print(f"  {env:>11}: {model}")
     
-    # Create context with custom configuration
-    ctx = create_context(**config)
-    
-    print("\nContext manages configuration:")
-    print("  • Validates configuration schema")
-    print("  • Provides type-safe access")
-    print("  • Supports environment variables")
-    print("  • Handles defaults gracefully")
-
-
-def example_model_context():
-    """Show model management through context."""
-    print("\n\n=== Model Management in Context ===\n")
-    
-    print("Model access patterns:")
     print()
-    
-    # Mock model access
-    print("1. Get default model:")
-    print("   model = ctx.get_model()")
-    print("   → Returns configured default model\n")
-    
-    print("2. Get specific model:")
-    print("   model = ctx.get_model('gpt-4')")
-    print("   → Returns requested model if available\n")
-    
-    print("3. List available models:")
-    print("   models = ctx.list_models()")
-    print("   → ['gpt-3.5-turbo', 'gpt-4', 'claude-3-opus', ...]\n")
-    
-    print("4. Model with custom settings:")
-    print("   model = ctx.get_model('gpt-4', temperature=0.2)")
-    print("   → Model instance with overridden parameters")
+    print("💡 Benefits:")
+    print("  • One place to change configuration")
+    print("  • Easy environment switching")
+    print("  • Testable without changing code")
+    print("  • Shared configuration across components")
 
 
-def example_data_context():
-    """Demonstrate data management in context."""
-    print("\n\n=== Data Management in Context ===\n")
+def show_real_scenarios():
+    """Show realistic scenarios where context management shines."""
+    print("\n\n=== Real-World Scenarios ===\n")
     
-    print("Data access through context:")
-    print()
-    
-    print("1. Load dataset:")
-    print("   dataset = ctx.load_dataset('mmlu')")
-    print("   → Loads and caches dataset\n")
-    
-    print("2. List available datasets:")
-    print("   datasets = ctx.list_datasets()")
-    print("   → ['mmlu', 'gsm8k', 'humaneval', ...]\n")
-    
-    print("3. Register custom dataset:")
-    print("   ctx.register_dataset('my_data', loader_func)")
-    print("   → Makes dataset available in context\n")
-    
-    print("4. Dataset with transforms:")
-    print("   dataset = ctx.load_dataset('mmlu', transform=preprocess)")
-    print("   → Applies transformation pipeline")
-
-
-def example_context_isolation():
-    """Show context isolation and thread safety."""
-    print("\n\n=== Context Isolation ===\n")
-    
-    from ember.context import create_context
-    import threading
-    
-    print("Context isolation ensures:")
-    print("  • Each context has its own state")
-    print("  • No interference between contexts")
-    print("  • Thread-safe operations")
-    print("  • Clean testing environments\n")
-    
-    # Demonstrate isolation
-    print("Example: Multiple contexts")
-    print("  ctx1 = create_context()  # Production")
-    print("  ctx2 = create_context()  # Testing")
-    print("  ctx3 = create_context()  # Development\n")
-    
-    print("Each context maintains:")
-    print("  • Separate model instances")
-    print("  • Independent caches")
-    print("  • Isolated metrics")
-    print("  • Own configuration")
-
-
-def example_context_sharing():
-    """Show how to share context across components."""
-    print("\n\n=== Sharing Context ===\n")
-    
-    # Define a service that uses context
-    class AIService:
-        def __init__(self, context):
-            self.ctx = context
-            self.model = None
+    # Mock implementations for demonstration
+    class AppService:
+        def __init__(self, ctx):
+            self.ctx = ctx
+            self.model = ctx.get_model()
         
-        def initialize(self):
-            # Get model from context
-            self.model = "model from context"
-            return True
-        
-        def process(self, text: str) -> str:
-            # Use context resources
-            return f"Processed: {text}"
+        def process(self, text):
+            return f"Processed '{text}' with {self.model}"
     
-    print("Sharing context across services:")
+    class MockContext:
+        def __init__(self, config):
+            self.config = config
+        
+        def get_model(self, name=None):
+            models_config = self.config.get('models', {})
+            default = models_config.get('default', 'gpt-3.5-turbo')
+            return f"{name or default}"
+    
+    print("Scenario 1: Multi-Environment Deployment")
+    print("=" * 45)
+    
+    # Show environment-specific configs
+    environments = {
+        'development': MockContext({'models': {'default': 'gpt-3.5-turbo'}}),
+        'staging': MockContext({'models': {'default': 'gpt-4'}}),
+        'production': MockContext({'models': {'default': 'gpt-4-turbo'}})
+    }
+    
+    print("Same application code, different configurations:")
+    for env_name, ctx in environments.items():
+        service = AppService(ctx)
+        result = service.process("user input")
+        print(f"  {env_name:>11}: {result}")
+    
     print()
-    print("class AIService:")
+    print("Scenario 2: Testing with Mock Models")
+    print("=" * 42)
+    
+    # Production context
+    prod_ctx = MockContext({'models': {'default': 'gpt-4'}})
+    
+    # Test context with mocks
+    test_ctx = MockContext({'models': {'default': 'mock-model'}})
+    
+    print("Production:")
+    prod_service = AppService(prod_ctx)
+    print(f"  {prod_service.process('real user data')}")
+    
+    print("Testing:")
+    test_service = AppService(test_ctx)
+    print(f"  {test_service.process('test data')}")
+    
+    print()
+    print("Scenario 3: Component Sharing")
+    print("=" * 33)
+    
+    # Multiple services sharing the same context
+    shared_ctx = MockContext({'models': {'default': 'claude-3'}})
+    
+    services = {
+        'classifier': AppService(shared_ctx),
+        'summarizer': AppService(shared_ctx),
+        'analyzer': AppService(shared_ctx)
+    }
+    
+    print("All services use the same configuration:")
+    for name, service in services.items():
+        print(f"  {name}: {service.model}")
+    
+    print("\n💡 Key insight: Configuration changes in one place!")
+
+
+def show_practical_usage():
+    """Show practical context usage patterns."""
+    print("\n\n=== Practical Usage Patterns ===\n")
+    
+    print("Pattern 1: Explicit Configuration")
+    print("=" * 34)
+    print("# Create context with specific config")
+    print("from ember.context import create_context")
+    print()
+    print("prod_ctx = create_context(")
+    print("    models={'default': 'gpt-4', 'temperature': 0.3}")
+    print(")")
+    print("model = prod_ctx.get_model()  # Uses gpt-4")
+    print()
+    
+    print("Pattern 2: Configuration Files")
+    print("=" * 30)
+    print("# Use config files with environment variables")
+    print("# ~/.ember/config.yaml:")
+    print("models:")
+    print("  default: ${MODEL_NAME:-gpt-3.5-turbo}")
+    print("  temperature: ${MODEL_TEMP:-0.7}")
+    print()
+    print("# Then set environment variables")
+    print("export MODEL_NAME=gpt-4")
+    print("export MODEL_TEMP=0.3")
+    print()
+    print("# Your code uses the substituted values")
+    print("ctx = get_context()  # Loads config with env vars")
+    print()
+    
+    print("Pattern 3: Context Injection")
+    print("=" * 30)
+    print("# Pass context to components")
+    print("class DocumentProcessor:")
     print("    def __init__(self, context):")
     print("        self.ctx = context")
-    print("        self.model = self.ctx.get_model()\n")
-    
-    print("# Create shared context")
-    print("ctx = get_context()")
+    print("        self.model = context.get_model()")
     print()
-    print("# Initialize services with same context")
-    print("classifier = TextClassifier(ctx)")
-    print("summarizer = TextSummarizer(ctx)")
-    print("analyzer = SentimentAnalyzer(ctx)")
-    print()
-    print("Benefits:")
-    print("  • Shared configuration")
-    print("  • Consistent model access")
-    print("  • Unified metrics collection")
-    print("  • Centralized resource management")
-
-
-def example_context_lifecycle():
-    """Demonstrate context lifecycle management."""
-    print("\n\n=== Context Lifecycle ===\n")
-    
-    print("Context lifecycle stages:")
+    print("# Easy to test and configure")
+    print("processor = DocumentProcessor(ctx)")
     print()
     
-    print("1. Creation:")
-    print("   ctx = get_context()")
-    print("   → Initializes registries")
-    print("   → Loads configuration")
-    print("   → Sets up metrics\n")
-    
-    print("2. Usage:")
-    print("   model = ctx.get_model()")
-    print("   data = ctx.load_dataset('mmlu')")
-    print("   → Resources loaded on demand")
-    print("   → Automatic caching\n")
-    
-    print("3. Cleanup:")
-    print("   ctx.close()  # or use context manager")
-    print("   → Releases resources")
-    print("   → Flushes metrics")
-    print("   → Clears caches\n")
-    
-    print("Context manager pattern:")
-    print("  with create_context() as ctx:")
-    print("      model = ctx.get_model()")
-    print("      # Automatic cleanup on exit")
+    print("Pattern 4: Testing with Mock Context")
+    print("=" * 37)
+    print("# Testing setup")
+    print("test_ctx = create_context(")
+    print("    models={'default': 'mock-model'},")
+    print("    cache={'enabled': False}")
+    print(")")
+    print("# Use in tests without affecting production config")
 
 
-def example_advanced_patterns():
-    """Show advanced context patterns."""
-    print("\n\n=== Advanced Context Patterns ===\n")
-    
-    print("1. Context Inheritance:")
-    print("   base_ctx = create_context(**base_config)")
-    print("   dev_ctx = create_context(parent=base_ctx, **dev_overrides)")
-    print("   → Child inherits parent configuration\n")
-    
-    print("2. Context Decorators:")
-    print("   @with_context")
-    print("   def my_function(ctx, data):")
-    print("       model = ctx.get_model()")
-    print("       return model.process(data)\n")
-    
-    print("3. Global Context:")
-    print("   from ember.context import get_context")
-    print("   ctx = get_context()")
-    print("   → Singleton for simple scripts\n")
-    
-    print("4. Testing Context:")
-    print("   from ember.testing import TestContext")
-    print("   ctx = TestContext(mock_models=True)")
-    print("   → Isolated context for tests")
 
 
 def main():
     """Run all context management examples."""
     print_section_header("Context Management")
     
-    print("🎯 Context Management in Ember:\n")
-    print("• Centralized configuration and state")
-    print("• Thread-safe resource access")
-    print("• Isolated environments")
-    print("• Lifecycle management")
-    print("• Dependency injection")
+    print("🎯 Why Context Management?")
+    print("Learn when and how to manage configuration and state in AI applications.")
+    print()
     
-    example_basic_context()
-    example_configuration_context()
-    example_model_context()
-    example_data_context()
-    example_context_isolation()
-    example_context_sharing()
-    example_context_lifecycle()
-    example_advanced_patterns()
+    # Start with the problem
+    show_the_problem()
     
+    # Show the solution
+    show_basic_solution()
+    
+    # Show realistic scenarios
+    show_real_scenarios()
+    
+    # Show practical patterns
+    show_practical_usage()
+    
+    # Simplified best practices
     print("\n" + "="*50)
-    print("✅ Context Best Practices")
+    print("✅ When to Use Context Management")
     print("="*50)
-    print("\n1. Create context early in application lifecycle")
-    print("2. Share context instead of creating multiple")
-    print("3. Use context managers for automatic cleanup")
-    print("4. Leverage context for dependency injection")
-    print("5. Keep context immutable after initialization")
-    print("6. Use child contexts for testing/experimentation")
-    print("7. Access all resources through context")
+    print("\n🟢 Use context when you have:")
+    print("  • Multiple environments (dev/staging/prod)")
+    print("  • Testing that needs different configurations")
+    print("  • Multiple components sharing configuration")
+    print("  • Complex applications with many settings")
     
-    print("\n🔧 Common Patterns:")
-    print("• Application context: Single shared context")
-    print("• Request context: Per-request isolation")
-    print("• Test context: Isolated test environment")
-    print("• Worker context: Per-worker in parallel processing")
+    print("\n🔴 Skip context for:")
+    print("  • Simple scripts with one model call")
+    print("  • Prototypes and quick experiments")
+    print("  • Single-environment applications")
+    
+    print("\n💡 Progressive approach:")
+    print("  1. Start simple: Direct model usage")
+    print("  2. Add context when you need configuration management")
+    print("  3. Use advanced patterns for complex applications")
     
     print("\nNext: Learn about error handling in 'error_handling.py'")
     
