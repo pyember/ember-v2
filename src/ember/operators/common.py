@@ -130,7 +130,7 @@ class Ensemble(Operator):
         
         Args:
             input: Input to pass to all operators.
-            
+
         Returns:
             List of results if no aggregator, otherwise aggregated result.
         """
@@ -150,8 +150,8 @@ class Chain(Operator):
     Examples:
         >>> chain = Chain([
         ...     Preprocessor(),      # Clean and normalize text
-        ...     Classifier(),        # Classify cleaned text
-        ...     Postprocessor()      # Format classification result
+        ...     ModelCall("gpt-4"),  # Call model on cleaned text
+        ...     Postprocessor()      # Format model response
         ... ])
         >>> result = chain(raw_input)
     """
@@ -171,7 +171,7 @@ class Chain(Operator):
         
         Args:
             input: Initial input to the chain.
-            
+
         Returns:
             Output from the final operator.
         """
@@ -357,7 +357,7 @@ class LearnableRouter(Operator):
         Args:
             input: If embedding_fn is provided, this is the raw input to process.
                 If embedding_fn is None, expects input with 'data' and 'embedding' attributes.
-            
+
         Returns:
             Result from the selected operator.
         """
@@ -436,7 +436,7 @@ class Retry(Operator):
         
         Args:
             input: Input to pass to wrapped operator.
-            
+
         Returns:
             Result from successful execution.
             
@@ -468,7 +468,7 @@ class Cache(Operator):
     Examples:
         >>> # Simple in-memory cache
         >>> cached_classifier = Cache(
-        ...     operator=ExpensiveClassifier(),
+        ...     operator=ExpensiveClassifier("gpt-4"),
         ...     max_size=1000
         ... )
         >>> 
