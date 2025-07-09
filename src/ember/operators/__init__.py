@@ -6,7 +6,7 @@ simplified design with automatic JAX integration.
 Key components:
 - Operator: Base class for all operators with optional validation
 - Common operators: Ensemble, ModelCall, Chain, Router, etc.
-- Context operators: ContextAgnostic, ContextAware, ContextualInput, ContextualOutput
+- Context operators: ContextualData, ContextualChain
 - Progressive disclosure from simple functions to complex systems
 """
 
@@ -27,12 +27,7 @@ from ember.operators.common import (
 )
 
 # Import context operators
-from ember.operators.common_context import (
-    ContextAgnostic,
-    ContextAware,
-    ContextualData,
-    InitialContext,
-)
+from ember.operators.common_context import ContextualData, ContextualChain
 
 __all__ = [
     # Base class
@@ -52,8 +47,6 @@ __all__ = [
     "router",
     
     # Context operators
-    "ContextAgnostic",
-    "ContextAware",
     "ContextualData",
-    "InitialContext",
+    "ContextualChain"
 ]
