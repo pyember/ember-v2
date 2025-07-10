@@ -543,28 +543,6 @@ class Cache(Operator):
 
 # Convenience operators for common model calling tasks
 
-class ExtractText(Operator):
-    """Operator that extracts text from a model response.
-    
-    This operator takes a Response object and returns just the text content;
-    useful for chaining after model calls when you only need the text output.
-    """
-    
-    def forward(self, response: Response) -> str:
-        """Return the text from the response object."""
-        return response.text
-
-class ModelText(Operator):
-    """Operator that calls a model and returns the text from the response."""
-    model_text: Operator
-
-    def __init__(self, model_name: str, **kwargs):
-        """Initialize the model text operator."""
-        self.model_text = Chain([ModelCall(model_name, **kwargs), ExtractText()])
-
-    def forward(self, input: Any) -> Any:
-        """Call the model and return the text from the response."""
-        return self.model_text(input)
 
 
 class EmberEmbedding(Operator):
@@ -588,14 +566,17 @@ class EmberEmbedding(Operator):
     """
     
     inner: Operator
+    initial_metadata: Dict[str, Any]
     
-    def __init__(self, inner_operator: Operator):
-        """Initialize with the operator to wrap.
+    def __init__(self, inner_operator: Operator, initial_metadata: Optional[Dict[str, Any]] = None):
+        """Initialize with the operator to wrap and optional initial metadata.
         
         Args:
             inner_operator: The operator to wrap with EmberData conversion.
+            initial_metadata: Optional metadata to initialize in the context.
         """
         self.inner = inner_operator
+        self.initial_metadata = initial_metadata.copy() or {}
     
     def forward(self, input: Any) -> EmberData:
         """Convert raw input to EmberData and forward to inner operator.
@@ -606,8 +587,11 @@ class EmberEmbedding(Operator):
         Returns:
             EmberData result from the inner operator.
         """
-        # Create EmberData with Context
-        context = Context(original_input=input)
+        # Create EmberData with Context and initial metadata
+        context = Context(
+            original_input=input,
+            metadata=self.initial_metadata
+        )
         ember_data = EmberData(input, context)
         
         # Forward to inner operator
@@ -656,6 +640,6 @@ def router(routes: Dict[str, Operator], **kwargs) -> Router:
 
 __all__ = [
     "ModelCall", "Ensemble", "Chain", "Router", "LearnableRouter", 
-    "Retry", "Cache", "ExtractText", "ModelText", "EmberEmbedding",
+    "Retry", "Cache", "EmberEmbedding",
     "ensemble", "chain", "router"
 ]

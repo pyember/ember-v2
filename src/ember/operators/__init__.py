@@ -22,8 +22,6 @@ from ember.operators.common import (
     LearnableRouter,
     Retry,
     Cache,
-    ExtractText,
-    ModelText,
     ensemble,
     chain,
     router,
@@ -44,8 +42,6 @@ __all__ = [
     "LearnableRouter",
     "Retry",
     "Cache",
-    "ExtractText",
-    "ModelText",
     
     # Convenience functions
     "ensemble",

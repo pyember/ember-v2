@@ -27,7 +27,7 @@ Basic usage:
 from ember.api.decorators import op
 from ember.operators import (
     Operator, ModelCall, Ensemble, Chain, Router, LearnableRouter, 
-    ModelText, ExtractText, chain, ensemble, router
+    chain, ensemble, router
 )
 
 __all__ = [
@@ -39,8 +39,6 @@ __all__ = [
     "Chain",
     "Router",
     "LearnableRouter", 
-    "ModelText",
-    "ExtractText",
     # Convenience functions
     "chain",
     "ensemble", 
