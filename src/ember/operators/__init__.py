@@ -5,7 +5,8 @@ simplified design with automatic JAX integration.
 
 Key components:
 - Operator: Base class for all operators with optional validation
-- Common operators: Ensemble, Chain, Router, etc.
+- Common operators: Ensemble, ModelCall, Chain, Router, etc.
+- Core metadata-containing objects: EmberData, EmberEmbedding
 - Progressive disclosure from simple functions to complex systems
 """
 
@@ -26,7 +27,10 @@ from ember.operators.common import (
     ensemble,
     chain,
     router,
+    EmberEmbedding
 )
+
+from ember.operators.ember_data import EmberData
 
 __all__ = [
     # Base class
@@ -47,4 +51,8 @@ __all__ = [
     "ensemble",
     "chain",
     "router",
+    
+    # Context operators
+    "EmberData",
+    "EmberEmbedding"
 ]
