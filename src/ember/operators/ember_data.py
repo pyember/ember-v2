@@ -2,7 +2,7 @@
 
 This module provides EmberData, which is like PyTorch tensors but for LLM 
 operations. EmberData carries both the actual data and metadata (usage metrics,
-initial query, routing path) through the computation graph.
+original prompt) through the computation graph.
 
 Following Google Python Style Guide:
     https://google.github.io/styleguide/pyguide.html
@@ -35,27 +35,17 @@ class UsageMetrics:
 
 @dataclass
 class Context:
-    """Context metadata that flows through operations."""
-    initial_query: str = ""
+    """Core context that every EmberData should have."""
+    original_input: Any = None
     usage_metrics: UsageMetrics = field(default_factory=UsageMetrics)
-    routing_path: List[Dict[str, Any]] = field(default_factory=list)
+    metadata: Dict[str, Any] = field(default_factory=dict)
     
     def accumulate_usage(self, usage: Dict[str, Any]) -> 'Context':
         """Return new context with accumulated usage."""
-        return Context(
-            initial_query=self.initial_query,
+        return self.__class__(
+            original_input=self.original_input,
             usage_metrics=self.usage_metrics.accumulate(usage),
-            routing_path=self.routing_path.copy()
-        )
-    
-    def add_routing_step(self, route: str, step: int) -> 'Context':
-        """Return new context with added routing step."""
-        new_routing_path = self.routing_path.copy()
-        new_routing_path.append({"route": route, "step": step})
-        return Context(
-            initial_query=self.initial_query,
-            usage_metrics=self.usage_metrics,
-            routing_path=new_routing_path
+            metadata=self.metadata.copy()
         )
 
 
@@ -63,25 +53,20 @@ class EmberData:
     """Data embedded with context metadata (like PyTorch tensor).
     
     EmberData carries both the actual data and metadata (usage metrics,
-    initial query, routing path) through the computation graph. This allows
+    original input) through the computation graph. This allows
     operators to access context when needed while maintaining clean interfaces.
     
     Examples:
         >>> # Create EmberData (usually done by EmberEmbedding)
-        >>> context = Context(initial_query="What is 2+2?")
+        >>> context = Context(original_input="What is 2+2?")
         >>> data = EmberData("What is 2+2?", context)
         >>> 
         >>> # Access data directly
         >>> print(data.data)  # "What is 2+2?"
         >>> 
         >>> # Access context metadata (PyTorch-style)
-        >>> print(data.initial_query)  # "What is 2+2?"
+        >>> print(data.original_input)  # "What is 2+2?"
         >>> print(data.total_usage.total_cost)  # 0.0
-        >>> 
-        >>> # Operators can access context when needed
-        >>> if data.initial_query:
-        ...     # Use original query for synthesis
-        ...     pass
     """
     
     def __init__(self, data: Any, context: Optional[Context] = None):
@@ -96,28 +81,18 @@ class EmberData:
     
     # PyTorch-style direct access to metadata
     @property
-    def initial_query(self) -> str:
-        """Get the initial query that started this computation."""
-        return self._context.initial_query
+    def original_input(self) -> Any:
+        """Get the original input that started this computation."""
+        return self._context.original_input
     
     @property
     def total_usage(self) -> UsageMetrics:
         """Get accumulated usage metrics."""
         return self._context.usage_metrics
     
-    @property
-    def routing_path(self) -> List[Dict[str, Any]]:
-        """Get the routing path taken."""
-        return self._context.routing_path
-    
     def accumulate_usage(self, usage: Dict[str, Any]) -> 'EmberData':
         """Return new EmberData with accumulated usage."""
         new_context = self._context.accumulate_usage(usage)
-        return EmberData(self.data, new_context)
-    
-    def add_routing_step(self, route: str, step: int) -> 'EmberData':
-        """Return new EmberData with added routing step."""
-        new_context = self._context.add_routing_step(route, step)
         return EmberData(self.data, new_context)
     
     def with_data(self, new_data: Any) -> 'EmberData':
@@ -129,17 +104,17 @@ class EmberData:
 
 
 # Helper functions for working with EmberData
-def create_ember_data(data: Any, initial_query: Optional[str] = None) -> EmberData:
-    """Create EmberData with optional initial query.
+def create_ember_data(data: Any, original_input: Optional[Any] = None) -> EmberData:
+    """Create EmberData with optional original input.
     
     Args:
         data: The actual data
-        initial_query: Optional initial query to set
+        original_input: The original input that started this computation
         
     Returns:
         EmberData instance
     """
-    context = Context(initial_query=initial_query or str(data))
+    context = Context(original_input=original_input or data)
     return EmberData(data, context)
 
 

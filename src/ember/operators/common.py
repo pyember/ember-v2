@@ -8,7 +8,7 @@ Following Google Python Style Guide:
     https://google.github.io/styleguide/pyguide.html
 """
 
-from typing import List, Dict, Any, Callable, Optional
+from typing import List, Dict, Any, Callable, Optional, Type
 import jax
 import jax.numpy as jnp
 
@@ -571,7 +571,7 @@ class EmberEmbedding(Operator):
     """Operator that creates EmberData from raw input (like PyTorch embedding layer).
     
     This operator converts raw input into EmberData, which carries both the data
-    and metadata (usage metrics, initial query, routing path) through the
+    and metadata (usage metrics, original prompt) through the
     computation graph. This is similar to PyTorch's embedding layers that
     convert tokens into rich tensor representations.
     
@@ -579,12 +579,12 @@ class EmberEmbedding(Operator):
         >>> # Create embedding layer for a model
         >>> model = EmberEmbedding(ThinkingModel())
         >>> result = model("What is 2+2?")
-        >>> # result is EmberData with context tracking
+        >>> # result is EmberData with Context
         
         >>> # Use with complex operators
         >>> router = EmberEmbedding(RouterOperator([...]))
         >>> result = router("Complex question")
-        >>> # All sub-operators work with EmberData
+        >>> # result is EmberData with Context
     """
     
     inner: Operator
@@ -606,8 +606,8 @@ class EmberEmbedding(Operator):
         Returns:
             EmberData result from the inner operator.
         """
-        # Create EmberData with initial context
-        context = Context(initial_query=str(input))
+        # Create EmberData with Context
+        context = Context(original_input=input)
         ember_data = EmberData(input, context)
         
         # Forward to inner operator
