@@ -576,7 +576,7 @@ class EmberEmbedding(Operator):
             initial_metadata: Optional metadata to initialize in the context.
         """
         self.inner = inner_operator
-        self.initial_metadata = initial_metadata.copy() or {}
+        self.initial_metadata = initial_metadata.copy() if initial_metadata else {}
     
     def forward(self, input: Any) -> EmberData:
         """Convert raw input to EmberData and forward to inner operator.
