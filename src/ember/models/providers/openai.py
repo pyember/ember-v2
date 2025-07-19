@@ -80,6 +80,8 @@ class OpenAIProvider(BaseProvider):
             params["top_p"] = kwargs.pop("top_p")
         if "stop" in kwargs:
             params["stop"] = kwargs.pop("stop")
+        if "reasoning" in kwargs:
+            params["reasoning"] = kwargs.pop("reasoning")
         
         # Add any remaining provider-specific parameters
         params.update(kwargs)
@@ -95,10 +97,15 @@ class OpenAIProvider(BaseProvider):
             # Build usage stats
             usage = None
             if response.usage:
+                reasoning_tokens = 0
+                if hasattr(response.usage, 'output_tokens_details') and response.usage.output_tokens_details:
+                    reasoning_tokens = getattr(response.usage.output_tokens_details, 'reasoning_tokens', 0)
+                
                 usage = UsageStats(
                     prompt_tokens=response.usage.prompt_tokens,
                     completion_tokens=response.usage.completion_tokens,
                     total_tokens=response.usage.total_tokens,
+                    reasoning_tokens=reasoning_tokens
                 )
             
             return ChatResponse(

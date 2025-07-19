@@ -474,6 +474,7 @@ class UsageStats:
     completion_tokens: int = 0
     total_tokens: int = 0
     cost_usd: Optional[float] = None
+    reasoning_tokens: int = 0
     
     def __post_init__(self):
         """Ensure total_tokens is consistent.
@@ -501,6 +502,7 @@ class UsageStats:
         self.prompt_tokens += other.prompt_tokens
         self.completion_tokens += other.completion_tokens
         self.total_tokens += other.total_tokens
+        self.reasoning_tokens += other.reasoning_tokens
         if self.cost_usd is not None and other.cost_usd is not None:
             self.cost_usd += other.cost_usd
         elif other.cost_usd is not None:
@@ -527,7 +529,8 @@ class UsageStats:
             prompt_tokens=self.prompt_tokens + other.prompt_tokens,
             completion_tokens=self.completion_tokens + other.completion_tokens,
             total_tokens=self.total_tokens + other.total_tokens,
-            cost_usd=(self.cost_usd or 0) + (other.cost_usd or 0)
+            cost_usd=(self.cost_usd or 0) + (other.cost_usd or 0),
+            reasoning_tokens=self.reasoning_tokens + other.reasoning_tokens
         )
 
 
