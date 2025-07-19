@@ -98,8 +98,13 @@ class OpenAIProvider(BaseProvider):
             usage = None
             if response.usage:
                 reasoning_tokens = 0
-                if hasattr(response.usage, 'output_tokens_details') and response.usage.output_tokens_details:
-                    reasoning_tokens = getattr(response.usage.output_tokens_details, 'reasoning_tokens', 0)
+                if (
+                    hasattr(response.usage, 'output_tokens_details')
+                    and response.usage.output_tokens_details
+                ):
+                    reasoning_tokens = getattr(
+                        response.usage.output_tokens_details, 'reasoning_tokens', 0
+                    )
                 
                 usage = UsageStats(
                     prompt_tokens=response.usage.prompt_tokens,
