@@ -60,11 +60,13 @@ class AnthropicProvider(BaseProvider):
             "claude-3-sonnet": "claude-3-sonnet-20240229", 
             "claude-3-haiku": "claude-3-haiku-20240307",
             "claude-3.5-sonnet": "claude-3-5-sonnet-20241022",
+            "claude-3.7-sonnet": "claude-3-7-sonnet-20250514",
             # Already versioned names pass through unchanged
             "claude-3-opus-20240229": "claude-3-opus-20240229",
             "claude-3-sonnet-20240229": "claude-3-sonnet-20240229",
             "claude-3-haiku-20240307": "claude-3-haiku-20240307",
             "claude-3-5-sonnet-20241022": "claude-3-5-sonnet-20241022",
+            "claude-3-7-sonnet-20250514": "claude-3-7-sonnet-20250514",
             # Legacy models
             "claude-2.1": "claude-2.1",
             "claude-2.0": "claude-2.0",
@@ -117,6 +119,16 @@ class AnthropicProvider(BaseProvider):
         if "stop" in kwargs:
             params["stop_sequences"] = kwargs.pop("stop")
         
+        # Handle thinking parameter for supported models
+        if "thinking" in kwargs:
+            thinking_param = kwargs.pop("thinking")
+            # Validate thinking parameter structure
+            if isinstance(thinking_param, dict) and "type" in thinking_param and "budget_tokens" in thinking_param:
+                params["thinking"] = thinking_param
+                logger.debug(f"Adding thinking parameter: {thinking_param}")
+            else:
+                logger.warning("Invalid thinking parameter format. Expected dict with 'type' and 'budget_tokens'")
+        
         # Add any remaining provider-specific parameters
         params.update(kwargs)
         
@@ -125,15 +137,25 @@ class AnthropicProvider(BaseProvider):
             logger.debug(f"Anthropic API call: model={resolved_model} (requested: {model}), messages={len(messages)}")
             response = self.client.messages.create(**params)
             
-            # Extract response text
+            # Extract response text and thinking content
             text = ""
+            thinking_text = ""
             if response.content:
                 # Handle different content types
                 for content in response.content:
-                    if hasattr(content, "text"):
+                    if hasattr(content, "type"):
+                        if content.type == "text" and hasattr(content, "text"):
+                            text += content.text
+                        elif content.type == "thinking" and hasattr(content, "text"):
+                            thinking_text += content.text
+                    elif hasattr(content, "text"):
                         text += content.text
                     elif isinstance(content, str):
                         text += content
+            
+            # Log thinking content if present
+            if thinking_text:
+                logger.debug(f"Model thinking process: {thinking_text[:500]}...")
             
             # Build usage stats
             usage = None
@@ -217,6 +239,7 @@ class AnthropicProvider(BaseProvider):
             "claude-3-opus", "claude-3-opus-20240229",
             "claude-3-sonnet", "claude-3-sonnet-20240229",
             "claude-3-5-sonnet", "claude-3-5-sonnet-20241022",
+            "claude-3.7-sonnet", "claude-3-7-sonnet-20250514",
             "claude-3-haiku", "claude-3-haiku-20240307",
             "claude-2.1", "claude-2.0",
             "claude-instant-1.2",
@@ -245,6 +268,7 @@ class AnthropicProvider(BaseProvider):
             "claude-3-opus-20240229": 200000,
             "claude-3-sonnet-20240229": 200000,
             "claude-3-5-sonnet-20241022": 200000,
+            "claude-3-7-sonnet-20250514": 200000,
             "claude-3-haiku-20240307": 200000,
             "claude-2.1": 200000,
             "claude-2.0": 100000,

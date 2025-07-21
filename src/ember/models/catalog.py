@@ -152,6 +152,18 @@ MODEL_CATALOG: Dict[str, ModelInfo] = {
         description="Latest Claude 3.5 Sonnet model",
         context_window=200000
     ),
+    "claude-3.7-sonnet": ModelInfo(
+        id="claude-3.7-sonnet",
+        provider="anthropic",
+        description="Claude 3.7 Sonnet with extended thinking",
+        context_window=200000
+    ),
+    "claude-3-7-sonnet-20250514": ModelInfo(
+        id="claude-3-7-sonnet-20250514",
+        provider="anthropic",
+        description="Claude 3.7 Sonnet with extended thinking (versioned)",
+        context_window=200000
+    ),
     "claude-3-haiku": ModelInfo(
         id="claude-3-haiku",
         provider="anthropic", 
@@ -270,6 +282,7 @@ class Models:
     # Anthropic
     CLAUDE_3_OPUS = "claude-3-opus"
     CLAUDE_3_SONNET = "claude-3-sonnet"
+    CLAUDE_3_7_SONNET = "claude-3.7-sonnet"
     CLAUDE_3_HAIKU = "claude-3-haiku"
     CLAUDE_2_1 = "claude-2.1"
     CLAUDE_INSTANT = "claude-instant-1.2"
