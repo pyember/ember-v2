@@ -100,3 +100,6 @@ target/
 cython_debug/
 # Deprecated code moved during cleanup
 .deprecated/
+
+# Javascript
+node_modules/
