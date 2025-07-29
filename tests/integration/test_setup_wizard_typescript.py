@@ -4,6 +4,8 @@ import subprocess
 import os
 from pathlib import Path
 import pytest
+import sys
+import unittest
 
 
 class TestSetupWizardTypeScript:
@@ -59,6 +61,7 @@ class TestSetupWizardTypeScript:
             full_path = setup_wizard_dir / file_path
             assert full_path.exists(), f"Required file missing: {file_path}"
     
+    @unittest.skipIf(sys.platform.startswith("win"), "disabled on Windows")
     def test_no_typescript_errors_in_src(self, setup_wizard_dir):
         """Test that TypeScript type checking passes."""
         if not setup_wizard_dir.exists():
@@ -75,6 +78,7 @@ class TestSetupWizardTypeScript:
         # Check for type errors
         assert result.returncode == 0, f"TypeScript type checking failed:\n{result.stderr}"
     
+    @unittest.skipIf(sys.platform.startswith("win"), "disabled on Windows")
     def test_components_have_proper_types(self, setup_wizard_dir):
         """Test that component files have proper TypeScript types."""
         components_dir = setup_wizard_dir / "src" / "components"

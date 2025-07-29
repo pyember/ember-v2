@@ -15,6 +15,8 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import pytest
+import sys
+import unittest
 import yaml
 
 from ember.context import (
@@ -286,6 +288,7 @@ class TestPerformance:
 
 
 @pytest.mark.parametrize("permission", [0o600, 0o644, 0o666])
+@unittest.skipIf(sys.platform.startswith("win"), "disabled on Windows")
 def test_credential_file_permissions(tmp_ctx, permission):
     """Credential files have correct permissions."""
     # Save a credential

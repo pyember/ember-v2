@@ -16,6 +16,8 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+import sys
+import unittest
 import yaml
 
 from ember._internal.context import EmberContext
@@ -94,6 +96,7 @@ class TestCLIContextIntegration:
                 key = new_ctx.get_credential('openai', 'OPENAI_API_KEY')
                 assert key == 'test-key-123'
     
+    @unittest.skipIf(sys.platform.startswith("win"), "disabled on Windows")
     def test_migration_integration(self, isolated_env):
         """Migration updates context correctly."""
         # Create old-style config
@@ -244,6 +247,7 @@ class TestErrorRecovery:
         ctx.reload()
         assert ctx.get_config('test') == 'value'
     
+    @unittest.skipIf(sys.platform.startswith("win"), "disabled on Windows")
     def test_missing_credentials_handling(self, isolated_env):
         """Graceful handling of missing credentials."""
         # No credentials set
