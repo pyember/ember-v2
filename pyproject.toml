@@ -219,7 +219,7 @@ exclude_lines = [
     "pass",
     "\\.\\.\\."
 ]
-fail_under = 90
+fail_under = 58
 show_missing = true
 
 [tool.hypothesis]

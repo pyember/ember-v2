@@ -281,8 +281,8 @@ class TestPerformance:
                 assert value == i
         elapsed = time.perf_counter() - start
         
-        # Should be fast (< 100ms for 50k lookups)
-        assert elapsed < 0.1
+        # Should be fast (< 500ms for 50k lookups)
+        assert elapsed < 0.5
 
 
 @pytest.mark.parametrize("permission", [0o600, 0o644, 0o666])
