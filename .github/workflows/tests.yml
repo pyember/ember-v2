@@ -16,7 +16,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: ["3.11", "3.12"] # TODO: 3.9, 3.10: 'ember.api.models' is not a package
+        python-version:
+          # TODO: 3.9, 3.10: 'ember.api.models' is not a package
+          - "3.11"
+          - "3.12"
+          - "3.13"
         os:
           - macos-latest
           - ubuntu-latest
