@@ -17,6 +17,7 @@ from pathlib import Path
 from unittest.mock import Mock, patch
 
 import pytest
+import unittest
 
 from ember._internal.context import EmberContext
 from ember.core.credentials import CredentialManager
@@ -24,7 +25,8 @@ from ember.core.credentials import CredentialManager
 
 class TestCredentialSecurity:
     """Credential storage security."""
-    
+
+    @unittest.skipIf(sys.platform.startswith("win"), "disabled on Windows")
     def test_file_permissions(self):
         """Credentials saved with restricted permissions."""
         with tempfile.TemporaryDirectory() as tmpdir:

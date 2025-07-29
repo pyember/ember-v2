@@ -6,6 +6,8 @@ import tempfile
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 import pytest
+import sys
+import unittest
 
 
 class TestSetupWizardConfig:
@@ -35,6 +37,7 @@ class TestSetupWizardConfig:
         assert loaded == config
         assert loaded["providers"]["openai"]["api_key"] == "${OPENAI_API_KEY}"
     
+    @unittest.skipIf(sys.platform.startswith("win"), "disabled on Windows")
     def test_credentials_save_secure(self, tmp_path):
         """Test that credentials are saved securely."""
         # Mock home directory
