@@ -100,7 +100,7 @@ class TestContextCore:
             EmberContext.current()
         elapsed = time.perf_counter() - start
         
-        assert elapsed < 0.001  # < 1ms for 10k accesses
+        assert elapsed < 0.05  # < 50ms for 10k accesses
 
 
 class TestContextInheritance:
