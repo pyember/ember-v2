@@ -37,6 +37,7 @@ from ember.models.providers.base import BaseProvider
 from ember.models.providers.openai import OpenAIProvider
 from ember.models.providers.anthropic import AnthropicProvider
 from ember.models.providers.google import GoogleProvider
+from ember.models.providers.ollama import OllamaProvider
 
 
 # Explicit mapping of provider names to their implementation classes.
@@ -47,6 +48,7 @@ PROVIDERS: Dict[str, Type[BaseProvider]] = {
     "anthropic": AnthropicProvider,
     "google": GoogleProvider,
     "deepmind": GoogleProvider,  # Alias for backward compatibility
+    "ollama": OllamaProvider,
 }
 
 # Custom providers can be registered at runtime.

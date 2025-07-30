@@ -75,6 +75,7 @@ dependencies = [
     
     # Testing and monitoring
     "psutil>=5.9.0",  # For resource monitoring in tests
+    "ollama>=0.1.7",
 ]
 
 [project.optional-dependencies]
