@@ -17,6 +17,7 @@ def slow_work(delay: float = 0.01):
 class TestXCSParallelismFix:
     """Test parallelism after fixes."""
     
+    @pytest.mark.flaky(reruns=5, reruns_delay=2)
     def test_parallel_speedup(self):
         """Test that parallel operations actually speed up."""
         

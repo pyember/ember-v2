@@ -43,4 +43,4 @@ jobs:
       - name: Configure setup-wizard
         run: cd src/ember/cli/setup-wizard/ && npm ci
       - name: Run all tests
-        run: uv run pytest
+        run: uv run pytest -n auto

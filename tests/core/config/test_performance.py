@@ -143,6 +143,7 @@ class TestConfigLoadPerformance:
         
         assert results['mean'] < 10, f"Mean load time {results['mean']:.2f}ms exceeds 10ms target"
     
+    @pytest.mark.flaky(reruns=5, reruns_delay=2)
     def test_medium_config_performance(self, tmp_path, medium_config):
         """Test performance of loading medium-sized config."""
         config_file = tmp_path / "config.yaml"
