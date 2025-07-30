@@ -264,6 +264,8 @@ build-backend = "setuptools.build_meta"
 [dependency-groups]
 dev = [
     "black>=25.1.0",
+    "pytest-rerunfailures>=15.1",
+    "pytest-xdist>=3.8.0",
 ]
 
 [tool.setuptools]
