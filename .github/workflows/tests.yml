@@ -24,7 +24,7 @@ jobs:
         os:
           - macos-latest
           - ubuntu-latest
-          - windows-latest
+          # - windows-latest # TODO: the tests work, but we are running into private repo limits
           # - ubuntu-24.04-arm # TODO: not enabled for private repos at the moment
 
     steps:
