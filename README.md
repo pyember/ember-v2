@@ -1,5 +1,7 @@
 # Ember
 
+[![Python tests](https://github.com/pyember/ember-v2/actions/workflows/tests.yml/badge.svg)](https://github.com/pyember/ember-v2/actions/workflows/tests.yml)
+
 Build AI systems with the elegance of print("Hello World").
 
 ## Installation
