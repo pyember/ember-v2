@@ -10,7 +10,7 @@ maintainers = [
 ]
 readme = "README.md"
 license = {text = "MIT"}
-requires-python = ">=3.9,<3.14"
+requires-python = ">=3.10,<3.14"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -30,7 +30,7 @@ dependencies = [
     "equinox>=0.11.0",
     "jax>=0.4.0",
     "pandas>=2.2.3,<2.4.0",
-    "numpy>=1.21.0,<1.27.0",
+    "numpy>=2.1.0",
     "pydantic>=2.7.4",
     "pydantic-core>=2.18.4",
     "pydantic-settings>=2.3.0",
