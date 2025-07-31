@@ -36,6 +36,8 @@ from ember.models.schemas import ChatResponse, UsageStats
 
 logger = logging.getLogger(__name__)
 
+# Some model providers do not absolutely require an api_key
+PROVIDERS_API_KEY_NOT_MANDATORY = ["ollama"]
 
 class ModelRegistry:
     """Thread-safe registry with integrated service functionality.
@@ -224,7 +226,7 @@ class ModelRegistry:
         
         # Retrieve API key from environment
         api_key = self._get_api_key(provider_name)
-        if not api_key:
+        if not api_key and not provider_name in PROVIDERS_API_KEY_NOT_MANDATORY:
             env_var = f"{provider_name.upper()}_API_KEY"
             
             # Try interactive setup if in TTY
