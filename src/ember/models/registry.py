@@ -321,21 +321,25 @@ class ModelRegistry:
             ...         print("Rate limited, please retry later")
         """
         start_time = time.time()
-        
-        # Get the model provider
-        model = self.get_model(model_id)
-        
+
         # Record invocation metric if available
         if "model_invocations" in self._metrics:
             self._metrics["model_invocations"].labels(model_id=model_id).inc()
         
         try:
-            # Invoke with optional metrics timing
+            import asyncio
+            import spnl
+            # Add system message if provided via context
+            system = kwargs.pop("context", None)
+            if system is None:
+                system = "You are a smart agent"
+            query = f'{{"cross": [{{"g": {{"model": "{model_id}", "temperature": {kwargs.get('temperature', 0)}, "max_tokens": {kwargs.get('max_tokens', 10_000)}, "input": {{"cross": [{{"system": "{system}"}}, {{"user": "{prompt}"}}]}}}}}}]}}'
+
             if "invocation_duration" in self._metrics:
                 with self._metrics["invocation_duration"].labels(model_id=model_id).time():
-                    response = model.complete(prompt, model_id, **kwargs)
+                    response = asyncio.run(spnl.execute(query))
             else:
-                response = model.complete(prompt, model_id, **kwargs)
+                response = asyncio.run(spnl.execute(query))
             
             # Calculate and add cost if usage is available
             if response.usage:
@@ -351,6 +355,11 @@ class ModelRegistry:
             
             return response
             
+        except OSError as e: # TODO exception precision
+            raise ModelNotFoundError(
+                f"Cannot determine provider for model '{model_id}'. ",
+                context={"model_id": model_id}
+            )
         except Exception as e:
             self._logger.exception(f"Error invoking model '{model_id}'")
             raise ProviderAPIError(
@@ -397,17 +406,19 @@ class ModelRegistry:
             >>> import asyncio
             >>> result = asyncio.run(generate_async())
         """
-        model = self.get_model(model_id)
-        
         try:
-            # Check if provider supports async natively
-            if asyncio.iscoroutinefunction(model.complete):
-                response = await model.complete(prompt, model_id, **kwargs)
+            import spnl
+            # Add system message if provided via context
+            system = kwargs.pop("context", None)
+            if system is None:
+                system = "You are a smart agent"
+            query = f'{{"cross": [{{"g": {{"model": "{model_id}", "temperature": {kwargs.get('temperature', 0)}, "max_tokens": {kwargs.get('max_tokens', 0)}, "input": {{"cross": [{{"system": "{system}"}}, {{"user": "{prompt}"}}]}}}}}}]}}'
+
+            if "invocation_duration" in self._metrics:
+                with self._metrics["invocation_duration"].labels(model_id=model_id).time():
+                    response = await spnl.execute(query)
             else:
-                # Run sync model in thread pool to avoid blocking
-                response = await asyncio.to_thread(
-                    model.complete, prompt, model_id, **kwargs
-                )
+                response = await spnl.execute(query)
             
             # Calculate cost and track usage
             if response.usage:
@@ -417,6 +428,11 @@ class ModelRegistry:
             
             return response
             
+        except OSError as e: # TODO exception precision
+            raise ModelNotFoundError(
+                f"Cannot determine provider for model '{model_id}'. ",
+                context={"model_id": model_id}
+            )
         except Exception as e:
             self._logger.exception(f"Async error invoking model '{model_id}'")
             raise ProviderAPIError(
