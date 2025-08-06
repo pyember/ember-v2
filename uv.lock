@@ -821,6 +821,7 @@ dependencies = [
     { name = "requests" },
     { name = "six" },
     { name = "sniffio" },
+    { name = "spnl" },
     { name = "tenacity" },
     { name = "tqdm" },
     { name = "typing-extensions" },
@@ -1048,6 +1049,7 @@ requires-dist = [
     { name = "sphinx", marker = "extra == 'docs'", specifier = ">=7.1.0" },
     { name = "sphinx-rtd-theme", marker = "extra == 'all'", specifier = ">=1.3.0" },
     { name = "sphinx-rtd-theme", marker = "extra == 'docs'", specifier = ">=1.3.0" },
+    { name = "spnl", specifier = ">=0.4.0" },
     { name = "tenacity", specifier = ">=9.0.0" },
     { name = "tox", marker = "extra == 'all'", specifier = ">=4.11.4" },
     { name = "tox", marker = "extra == 'dev'", specifier = ">=4.11.4" },
@@ -1085,7 +1087,7 @@ name = "exceptiongroup"
 version = "1.3.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
+    { name = "typing-extensions", marker = "python_full_version < '3.11'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/0b/9f/a65090624ecf468cdca03533906e7c69ed7588582240cfe7cc9e770b50eb/exceptiongroup-1.3.0.tar.gz", hash = "sha256:b241f5885f560bc56a59ee63ca4c6a8bfa46ae4ad651af316d4e81817bb9fd88", size = 29749, upload-time = "2025-05-10T17:42:51.123Z" }
 wheels = [
@@ -4547,6 +4549,21 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/3b/44/6716b257b0aa6bfd51a1b31665d1c205fb12cb5ad56de752dfa15657de2f/sphinxcontrib_serializinghtml-2.0.0.tar.gz", hash = "sha256:e9d912827f872c029017a53f0ef2180b327c3f7fd23c87229f7a8e8b70031d4d", size = 16080, upload-time = "2024-07-29T01:10:09.332Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/52/a7/d2782e4e3f77c8450f727ba74a8f12756d5ba823d81b941f1b04da9d033a/sphinxcontrib_serializinghtml-2.0.0-py3-none-any.whl", hash = "sha256:6e2cb0eef194e10c27ec0023bfeb25badbbb5868244cf5bc5bdc04e4464bf331", size = 92072, upload-time = "2024-07-29T01:10:08.203Z" },
+]
+
+[[package]]
+name = "spnl"
+version = "0.4.0"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0c/cc/891616bd49c7b45c93214c763ed51d67dc61eb043c10c06b685d1fef8cd5/spnl-0.4.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:5cf9de9a983bf7beea634c4876bba9559bdd3cdd3e78e41686326efb3c376ef5", size = 4162584, upload-time = "2025-08-06T20:23:47.659Z" },
+    { url = "https://files.pythonhosted.org/packages/dc/89/afc922adfd2a2152ab6b49812c2be9cdf023e8bdf483d3d4c51d1b6056da/spnl-0.4.0-cp310-cp310-manylinux_2_34_x86_64.whl", hash = "sha256:c0742acb857750fe0441c9cb26042efc614ed49beced6dd54b77d47f24b2f996", size = 7002816, upload-time = "2025-08-06T20:23:49.444Z" },
+    { url = "https://files.pythonhosted.org/packages/b5/02/ad812f88a525d1dbb5ec68d54fe9568226616062cd6a5be248baf399ffdf/spnl-0.4.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:d57510b538b9728e619fc869c67d76c2546b4f18866f840e2d23667d0b1278a4", size = 4161297, upload-time = "2025-08-06T20:23:51.318Z" },
+    { url = "https://files.pythonhosted.org/packages/50/21/f0c5fdac20e201711dff03a979e028ae618b0f162e41f74b59c05ac2bfd1/spnl-0.4.0-cp311-cp311-manylinux_2_34_x86_64.whl", hash = "sha256:046429a84676997cebcceb9fbe9abebd1b6029df3e09236b552b2af102ccd3a9", size = 7001537, upload-time = "2025-08-06T20:23:53.027Z" },
+    { url = "https://files.pythonhosted.org/packages/5a/8b/e85777a933cd5c6d9a7bc0a967b493bba879776c1f35760feade3c4e511c/spnl-0.4.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:4a502b312d98c44d1959e2aad2251ce176df4487effe01c76ad1540d1f651db1", size = 4157765, upload-time = "2025-08-06T20:23:55.087Z" },
+    { url = "https://files.pythonhosted.org/packages/ca/e4/e9dadd279e28aac93bc69be5d314e5332612f81e2c5dba9bcc1c33ec47fd/spnl-0.4.0-cp312-cp312-manylinux_2_34_x86_64.whl", hash = "sha256:3a7d49cec419e847c6499e24800fc8bddb897a4673c1fdd0edd3e17858bb8f61", size = 6997811, upload-time = "2025-08-06T20:23:57.41Z" },
+    { url = "https://files.pythonhosted.org/packages/d2/14/c0f63cb7e1323b597a01e755fd55a901d25bf2aabca6355c4e9344aa2cd8/spnl-0.4.0-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:330edf684a600294335610b6994d6ccfa414b78c9e32639784d4a137d2c9521d", size = 4157129, upload-time = "2025-08-06T20:23:58.901Z" },
+    { url = "https://files.pythonhosted.org/packages/8d/6e/fdcf94edf57885854e39bd148bea87e06cc69df3e4e791d6d38911244356/spnl-0.4.0-cp313-cp313-manylinux_2_34_x86_64.whl", hash = "sha256:080804d9026ee3a19179924c21536880ecd8c533646b2c3d734c579f3e2078b0", size = 6996321, upload-time = "2025-08-06T20:24:00.74Z" },
 ]
 
 [[package]]

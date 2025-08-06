@@ -150,7 +150,7 @@ class ModelBinding:
         self.model_id = model_id
         self.registry = registry
         self.params = params
-        self._validate_model_id()
+        # self._validate_model_id()
     
     def _validate_model_id(self) -> None:
         """Validate that the model exists.
