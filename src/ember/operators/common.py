@@ -8,48 +8,45 @@ Following Google Python Style Guide:
     https://google.github.io/styleguide/pyguide.html
 """
 
-from typing import List, Dict, Any, Callable, Optional
+from typing import List, Dict, Any, Callable, Optional, Type
 import jax
 import jax.numpy as jnp
 
 from ember.operators.base import Operator
 from ember.api.models import models, ModelBinding, Response
+from ember.operators.ember_data import EmberData, Context
 
 
 class ModelCall(Operator):
-    """Operator that calls a language model and returns the full response.
+    """Operator that calls a language model with EmberData and returns EmberData.
     
     This operator wraps a model binding and provides a consistent interface
-    for calling language models. It returns the complete response object,
-    preserving metadata like token counts, costs, and model information.
+    for calling language models with EmberData. It automatically accumulates
+    usage metrics and returns EmberData with the response text and updated context.
     
     Attributes:
         model: The bound model instance to call.
     
     Examples:
-        Basic model calling:
+        Basic model calling with EmberData:
         
-        >>> # Create operator with default model
-        >>> model_op = ModelCall()
-        >>> response = model_op("What is the capital of France?")
-        >>> print(response.text)  # "Paris is the capital of France."
-        >>> print(response.usage.total_tokens)  # 25
+        >>> # Create EmberData (usually done by EmberEmbedding)
+        >>> ember_data = EmberData("What is the capital of France?")
+        >>> model_op = ModelCall("gpt-4")
+        >>> result = model_op(ember_data)
+        >>> print(result.data)  # "Paris is the capital of France."
+        >>> print(result.total_usage.total_tokens)  # 25
         
-        >>> # Use specific model
-        >>> claude_op = ModelCall("claude-3-sonnet")
-        >>> response = claude_op("Explain quantum computing")
-        >>> print(f"Cost: ${response.cost:.4f}")
+        >>> # Usage is automatically accumulated
+        >>> result2 = ModelCall("claude-3-sonnet")(result)
+        >>> print(result2.total_usage.total_cost)  # Combined cost
         
-        >>> # Chain with text extraction
-        >>> @operator.op
-        >>> def extract_text(response):
-        ...     return response.text
-        >>> 
+        >>> # Chain naturally with other operators
         >>> pipeline = Chain([
         ...     ModelCall("gpt-4"),
-        ...     extract_text
+        ...     ModelCall("claude-3-sonnet")  # Context flows through
         ... ])
-        >>> result = pipeline("Summarize this article")
+        >>> final_result = pipeline(ember_data)
     """
     
     model: ModelBinding
@@ -63,16 +60,26 @@ class ModelCall(Operator):
         """
         self.model = models.instance(model_name, **kwargs)
     
-    def forward(self, input: Any) -> Any:
-        """Call the model with the input and return full response.
+    def forward(self, input: EmberData) -> EmberData:
+        """Call the model with EmberData and return EmberData with updated context.
         
         Args:
-            input: The input to send to the model.
+            input: EmberData containing the input to send to the model.
             
         Returns:
-            Complete response object with text, metadata, usage, and costs.
+            EmberData with the model response and accumulated usage metrics.
         """
-        return self.model(input)
+        # Extract actual data from EmberData
+        result = self.model(input.data)
+        
+        # Accumulate usage metrics if available
+        if hasattr(result, 'usage') and result.usage:
+            updated_ember_data = input.accumulate_usage(result.usage)
+        else:
+            updated_ember_data = input
+        
+        # Return new EmberData with the result text and updated context
+        return updated_ember_data.with_data(result.text)
 
 class Ensemble(Operator):
     """Ensemble operator that combines multiple operators.
@@ -536,28 +543,59 @@ class Cache(Operator):
 
 # Convenience operators for common model calling tasks
 
-class ExtractText(Operator):
-    """Operator that extracts text from a model response.
+
+
+class EmberEmbedding(Operator):
+    """Operator that creates EmberData from raw input (like PyTorch embedding layer).
     
-    This operator takes a Response object and returns just the text content;
-    useful for chaining after model calls when you only need the text output.
+    This operator converts raw input into EmberData, which carries both the data
+    and metadata (usage metrics, original prompt) through the
+    computation graph. This is similar to PyTorch's embedding layers that
+    convert tokens into rich tensor representations.
+    
+    Examples:
+        >>> # Create embedding layer for a model
+        >>> model = EmberEmbedding(ThinkingModel())
+        >>> result = model("What is 2+2?")
+        >>> # result is EmberData with Context
+        
+        >>> # Use with complex operators
+        >>> router = EmberEmbedding(RouterOperator([...]))
+        >>> result = router("Complex question")
+        >>> # result is EmberData with Context
     """
     
-    def forward(self, response: Response) -> str:
-        """Return the text from the response object."""
-        return response.text
-
-class ModelText(Operator):
-    """Operator that calls a model and returns the text from the response."""
-    model_text: Operator
-
-    def __init__(self, model_name: str, **kwargs):
-        """Initialize the model text operator."""
-        self.model_text = Chain([ModelCall(model_name, **kwargs), ExtractText()])
-
-    def forward(self, input: Any) -> Any:
-        """Call the model and return the text from the response."""
-        return self.model_text(input)
+    inner: Operator
+    initial_metadata: Dict[str, Any]
+    
+    def __init__(self, inner_operator: Operator, initial_metadata: Optional[Dict[str, Any]] = None):
+        """Initialize with the operator to wrap and optional initial metadata.
+        
+        Args:
+            inner_operator: The operator to wrap with EmberData conversion.
+            initial_metadata: Optional metadata to initialize in the context.
+        """
+        self.inner = inner_operator
+        self.initial_metadata = initial_metadata.copy() if initial_metadata else {}
+    
+    def forward(self, input: Any) -> EmberData:
+        """Convert raw input to EmberData and forward to inner operator.
+        
+        Args:
+            input: The raw input to convert to EmberData.
+            
+        Returns:
+            EmberData result from the inner operator.
+        """
+        # Create EmberData with Context and initial metadata
+        context = Context(
+            original_input=input,
+            metadata=self.initial_metadata
+        )
+        ember_data = EmberData(input, context)
+        
+        # Forward to inner operator
+        return self.inner(ember_data)
 
 
 # Convenience functions for creating common patterns
@@ -598,3 +636,10 @@ def router(routes: Dict[str, Operator], **kwargs) -> Router:
         Router operator.
     """
     return Router(routes, **kwargs)
+
+
+__all__ = [
+    "ModelCall", "Ensemble", "Chain", "Router", "LearnableRouter", 
+    "Retry", "Cache", "EmberEmbedding",
+    "ensemble", "chain", "router"
+]
